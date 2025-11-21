@@ -17,7 +17,7 @@ fitness_tracker/
 ## Getting Started
 
 ### Prerequisites
-- Node.js (v18 or higher)
+- Node.js (v22 or higher)
 - npm or yarn
 
 ### Installation
@@ -53,8 +53,8 @@ npm run build
 
 ## Tech Stack
 
-- **Frontend**: React, TypeScript, Vite
-- **Backend**: Express, TypeScript, Node.js
+- **Frontend**: React, TypeScript
+- **Backend**: TypeScript, Node.js
 - **Shared**: TypeScript types and interfaces
 
 ## Next Steps
