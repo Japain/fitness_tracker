@@ -30,6 +30,11 @@ This is a **monorepo** using npm workspaces with three packages:
 - **State Persistence**: Application must preserve workout state if user closes browser mid-workout
 - **User Data Segregation**: Authentication required; users can only access their own data
 
+### Visual Development
+- Comprehensive design checklist in `context/DESIGN-PRINCIPLES.md`
+- When making visual (front-end, UI,UX) changes, always refer to that file for guidance.
+
+
 ## Development Commands
 
 ```bash
