@@ -25,6 +25,8 @@ A web-based fitness tracking application built with TypeScript (frontend + backe
 
 **Target Users:** Individual fitness enthusiasts who want a simple, fast way to log workouts without social features or complex nutrition tracking.
 
+**Audience Size:** Less than 1000 users initially and not expected to grow much.
+
 **Key Differentiators:**
 - Sub-30 second workout logging workflow
 - Mobile-optimized interface with touch-first interactions
@@ -637,6 +639,7 @@ A web-based fitness tracking application built with TypeScript (frontend + backe
 - Testing: Jest + React Testing Library + Supertest
 
 **WARNING - RESEARCH NEEDED:**
+- Backend: Express or an alternative
 - Database selection: PostgreSQL (production-ready) vs. SQLite (simpler setup)
 - State management: React Context vs. Redux vs. Zustand
 - CSS approach: Tailwind (utility-first) vs. CSS Modules (scoped styles)
