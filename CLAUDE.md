@@ -34,6 +34,29 @@ This is a **monorepo** using npm workspaces with three packages:
 - Comprehensive design checklist in `context/DESIGN-PRINCIPLES.md`
 - When making visual (front-end, UI,UX) changes, always refer to that file for guidance.
 
+## Available Tools
+
+### Playwright MCP (Browser Automation)
+This project has Playwright configured as an MCP (Model Context Protocol) server, providing browser automation capabilities:
+
+**Use cases:**
+- **Design mockup creation**: The `ux-design-researcher` agent uses Playwright to create, iterate on, and validate HTML/CSS mockups
+- **Visual testing**: Take screenshots at different viewport sizes to verify responsive design
+- **Accessibility testing**: Check accessibility tree snapshots and validate WCAG compliance
+- **UI validation**: Compare implemented features against approved design mockups
+
+**Available through MCP tools:**
+- `mcp__playwright__browser_navigate` - Open local HTML files or URLs
+- `mcp__playwright__browser_resize` - Test at mobile (375×667px), tablet, and desktop viewports
+- `mcp__playwright__browser_take_screenshot` - Capture full page or specific elements
+- `mcp__playwright__browser_snapshot` - Get accessibility tree for WCAG validation
+- `mcp__playwright__browser_click`, `mcp__playwright__browser_type` - Simulate user interactions
+- `mcp__playwright__browser_evaluate` - Run JavaScript in the browser context
+
+**Workflow:**
+- Design mockups are created as HTML files in `/tmp/mockups/`
+- Screenshots are saved to `/tmp/mockups/screenshots/`
+- All designs must be validated against `context/DESIGN-PRINCIPLES.md` through iterative Playwright testing
 
 ## Development Commands
 
