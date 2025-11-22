@@ -884,12 +884,6 @@ The following features are explicitly **NOT** included in the initial release:
 - **Decision Dependency:** Database seeding script
 - **Recommendation:** Competitive analysis of top 5 fitness apps + user survey
 
-**WARNING - RESEARCH NEEDED: OAuth Provider Selection**
-- **Question:** Should we support Google OAuth only, or add GitHub/Auth0?
-- **Why:** Affects authentication complexity and user accessibility
-- **Decision Dependency:** Backend authentication implementation
-- **Recommendation:** Analyze target user preferences (developer audience?)
-
 **WARNING - RESEARCH NEEDED: Mobile Performance Benchmarks**
 - **Question:** What are realistic Lighthouse scores for React SPAs on mobile?
 - **Why:** Ensures our >90% target is achievable
@@ -953,6 +947,12 @@ The following features are explicitly **NOT** included in the initial release:
 - **Why:** Ensures proper build ordering in monorepo
 - **Decision Dependency:** Build scripts and CI/CD pipeline
 - **Recommendation:** Reference official TypeScript docs and test build times
+
+**WARNING - ARCHITECTURE REVIEW: OAuth Provider Selection**
+- **Question:** Should we support Google OAuth only, or add GitHub/Auth0?
+- **Why:** Affects authentication complexity and user accessibility
+- **Decision Dependency:** Backend authentication implementation
+- **Recommendation:** Analyze complexity of supporting other OAuth providers
 
 ---
 
