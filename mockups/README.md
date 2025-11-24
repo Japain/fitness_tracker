@@ -277,8 +277,8 @@ Dashboard → History (bottom nav) → Select Workout → View Details → Back 
 
 ## Resources
 
-- **Design Principles**: `/home/ripl/code/fitness_tracker/context/DESIGN-PRINCIPLES.md`
-- **Project Requirements**: `/home/ripl/code/fitness_tracker/PROJECT_REQUIREMENTS.md`
+- **Design Principles**: `fitness_tracker/context/DESIGN-PRINCIPLES.md`
+- **Project Requirements**: `fitness_tracker/PROJECT_REQUIREMENTS.md`
 - **Chakra UI Documentation**: https://chakra-ui.com/docs
 - **WCAG 2.1 Guidelines**: https://www.w3.org/WAI/WCAG21/quickref/
 
