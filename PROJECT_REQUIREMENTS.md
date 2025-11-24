@@ -1,8 +1,8 @@
 # Fitness Tracking App - Product Requirements Document
 
-**Version:** 2.0
-**Last Updated:** 2025-11-21
-**Status:** Active Development
+**Version:** 2.1
+**Last Updated:** 2025-11-24
+**Status:** Architecture Decisions Complete - Ready for Implementation
 
 ---
 
@@ -85,15 +85,12 @@ A web-based fitness tracking application built with TypeScript (frontend + backe
 - Zero unauthorized data access incidents
 - < 5 second authentication flow completion
 
-**WARNING - ARCHITECTURE REVIEW:**
-- Which OAuth library for our backend? (passport.js vs others)
-- Token refresh strategy for long-lived sessions
-- CSRF protection implementation approach
-
-**WARNING - ARCHITECTURE REVIEW:**
-- Session storage mechanism (in-memory, Redis, database?)
-- Token validation performance at scale
-- OAuth callback URL configuration for deployment
+**ARCHITECTURE DECISION:**
+- **OAuth Library**: Passport.js with passport-google-oauth20 (industry standard, excellent Express integration)
+- **Token Strategy**: Session-based authentication with 7-day expiration (simpler than JWT refresh tokens)
+- **CSRF Protection**: Express csurf middleware with Double Submit Cookie pattern
+- **Session Storage**: PostgreSQL-backed via connect-pg-simple (no Redis required, ACID guarantees)
+- **OAuth Callback**: Environment-based configuration (localhost for dev, production domain for prod)
 
 ---
 
@@ -147,10 +144,11 @@ A web-based fitness tracking application built with TypeScript (frontend + backe
 - Zero session creation failures
 - 100% session recovery after browser closure
 
-**WARNING - ARCHITECTURE REVIEW:**
-- How to handle "active workout" state across multiple devices/browsers?
-- Should users be limited to one active workout at a time?
-- Conflict resolution if user starts workout on mobile and desktop simultaneously
+**ARCHITECTURE DECISION:**
+- **Multi-Device Handling**: Single active workout per user (database-enforced), last-write-wins with conflict detection
+- **Active Workout Limit**: Yes - one active workout per user at a time (natural constraint)
+- **Conflict Resolution**: If user opens app on second device, show prompt "You have an active workout on another device. Continue here?"
+- **Detection**: Backend endpoint `/api/workouts/active` returns in-progress workout on app load
 
 ---
 
@@ -243,10 +241,10 @@ A web-based fitness tracking application built with TypeScript (frontend + backe
 - Zero invalid data submissions
 - 95% user satisfaction with input speed
 
-**WARNING - ARCHITECTURE REVIEW:**
-- How to handle mixed exercise types (strength + cardio in same workout)?
-- Should sets/reps be stored as separate records or aggregated?
-- Unit conversion strategy (lbs <-> kg)?
+**ARCHITECTURE DECISION:**
+- **Mixed Exercise Types**: Single WorkoutExercise/WorkoutSet model with nullable fields (reps/weight for strength, duration/distance for cardio)
+- **Sets/Reps Storage**: Store each set as separate WorkoutSet record (not aggregated) for granular tracking and flexibility
+- **Unit Conversion**: Store user's preferred unit, display in that unit, provide conversion utility functions for on-demand display
 
 ---
 
@@ -518,10 +516,12 @@ The library should include the most common compound and isolation exercises acro
 - < 5 seconds to detect and resume in-progress workout
 - Zero data loss in offline scenarios (after reconnection)
 
-**WARNING - ARCHITECTURE REVIEW:**
-- Offline-first architecture approach (Service Workers, IndexedDB?)
-- Conflict resolution strategy for concurrent edits across devices
-- How long to retain "abandoned" in-progress workouts?
+**ARCHITECTURE DECISION:**
+- **Offline Strategy**: Optimistic UI + Request Queue for MVP (no Service Workers initially)
+- **Rationale**: Balance complexity vs. value - most users have connectivity in gym, handle intermittent disconnections
+- **Conflict Resolution**: Last-write-wins with conflict detection (show prompt on device conflict)
+- **Abandoned Workouts**: Keep indefinitely, flag as "incomplete" in UI if endTime is null and startTime > 24 hours ago
+- **Phase 2**: Can add Service Workers + IndexedDB if user testing reveals need for extended offline support
 
 ---
 
@@ -747,11 +747,11 @@ The library should include the most common compound and isolation exercises acro
 - Styling: CSS Modules or Tailwind CSS (mobile-first)
 - Testing: Jest + React Testing Library + Supertest
 
-**WARNING - RESEARCH NEEDED:**
-- Backend: Express or an alternative
-- Database selection: PostgreSQL (production-ready) vs. SQLite (simpler setup)
-- State management: React Context vs. Redux vs. Zustand
-- CSS approach: Tailwind (utility-first) vs. CSS Modules (scoped styles)
+**ARCHITECTURE DECISIONS:**
+- **Backend**: Express (proven, extensive ecosystem, excellent TypeScript support)
+- **Database**: PostgreSQL 15+ with Prisma ORM (production-ready, ACID compliance, better than SQLite for scale)
+- **State Management**: Zustand (3KB) for global state + SWR for server state (better than Redux for this scale)
+- **CSS Framework**: Chakra UI (47KB bundle, built-in accessibility, mobile-first utilities) - confirmed from UX research
 
 ---
 
@@ -835,10 +835,11 @@ export interface WorkoutExercise {
 }
 ```
 
-**WARNING - ARCHITECTURE REVIEW:**
-- Should WorkoutExercise support multiple sets as separate records or aggregated?
-- How to handle "supersets" or circuit training (exercises grouped together)?
-- Should we track rest time between sets?
+**ARCHITECTURE DECISION:**
+- **Sets Storage**: Each set as separate WorkoutSet record (relational model provides flexibility for future features)
+- **Data Model**: WorkoutExercise → one-to-many → WorkoutSet (see ARCHITECTURE_DECISIONS.md for complete schema)
+- **Supersets/Circuits**: Not in MVP - can be added via WorkoutSet.groupId field in future
+- **Rest Time**: Not tracked initially - can add WorkoutSet.restTime field in Phase 2 if needed
 
 ---
 
@@ -922,10 +923,11 @@ export interface WorkoutExercise {
 - Display sync status indicator
 - Implement request debouncing for rapid edits
 
-**WARNING - ARCHITECTURE REVIEW:**
-- Should we use Service Workers for offline support?
-- Should we use IndexedDB for local caching?
-- How to handle merge conflicts if user edits across devices?
+**ARCHITECTURE DECISION:**
+- **Service Workers**: Not in MVP - adds complexity without clear value for target users
+- **Local Caching**: Use SWR for API response caching + localStorage for active workout ID backup
+- **IndexedDB**: Not initially - consider in Phase 2 if user testing shows need for extended offline use
+- **Merge Conflicts**: Last-write-wins with conflict detection prompt (see Active Workout State Management above)
 
 ---
 
@@ -1162,59 +1164,64 @@ The following features are explicitly **NOT** included in the initial release:
 
 ### Architecture Agent Tasks
 
-**WARNING - ARCHITECTURE REVIEW: Database Selection**
-- **Question:** PostgreSQL vs. SQLite for initial deployment?
-- **Why:** PostgreSQL is production-ready but more complex; SQLite is simpler but may limit scaling
-- **Decision Dependency:** Backend database setup, ORM selection
-- **Recommendation:** Define evaluation criteria (ease of deployment, performance, scalability)
+**ARCHITECTURE DECISION: Database Selection**
+- **Decision:** PostgreSQL 15+ with Prisma ORM
+- **Rationale:** Production-ready with ACID compliance, excellent TypeScript support via Prisma, JSON support for flexibility, full-text search, concurrent write performance, supported by all major platforms
+- **Performance:** Easily handles 1,000 users (~500 concurrent sessions), can scale to 10,000+ users without rewrite
+- **Development:** Local PostgreSQL via Docker or PostgreSQL.app, production via Railway/Supabase/AWS RDS
 
-**WARNING - ARCHITECTURE REVIEW: Session Storage**
-- **Question:** How should we store session tokens? (in-memory, Redis, database)
-- **Why:** Affects session persistence across server restarts and horizontal scaling
-- **Decision Dependency:** Backend authentication middleware
-- **Recommendation:** Prototype and load test each approach
+**ARCHITECTURE DECISION: Session Storage**
+- **Decision:** PostgreSQL-backed sessions via connect-pg-simple
+- **Rationale:** No additional infrastructure (Redis) required, ACID guarantees, automatic cleanup, survives server restarts, sufficient performance for <1000 users
+- **Performance:** PostgreSQL handles 10,000+ concurrent connections; <1000 active sessions easily managed
+- **Upgrade Path:** Can add Redis later without API changes if scaling beyond 10,000 users
 
-**WARNING - ARCHITECTURE REVIEW: Offline Support Strategy**
-- **Question:** Should we implement Service Workers + IndexedDB for offline-first architecture?
-- **Why:** Affects complexity and reliability of state persistence
-- **Decision Dependency:** Frontend state management, sync logic
-- **Recommendation:** Define offline scenarios (intermittent connection vs. full offline) and evaluate approaches
+**ARCHITECTURE DECISION: Offline Support Strategy**
+- **Decision:** Optimistic UI + Request Queue for MVP (no Service Workers/IndexedDB initially)
+- **Rationale:** Balance complexity vs. value - most users have connectivity in gym, handle intermittent disconnections gracefully
+- **Implementation:** Request queue in localStorage, auto-retry on reconnection, optimistic UI updates with rollback on failure
+- **Phase 2:** Add Service Workers + IndexedDB if user testing reveals need for extended offline functionality
 
-**WARNING - ARCHITECTURE REVIEW: Active Workout State Management**
-- **Question:** How to handle "active workout" across multiple devices/browsers?
-- **Why:** User may start workout on phone, continue on desktop
-- **Decision Dependency:** WorkoutSession state logic
-- **Recommendation:** Define expected behavior (single active workout? device-specific? sync on conflict?)
+**ARCHITECTURE DECISION: Active Workout State Management**
+- **Decision:** Single active workout per user (database-enforced), last-write-wins on conflict
+- **Multi-Device:** If user opens app on second device, show prompt "You have an active workout on another device. Continue here?"
+- **Detection:** Backend endpoint `/api/workouts/active` checks for WorkoutSession with endTime = null
+- **User Flow:** User can choose to continue on new device or return to dashboard
 
-**WARNING - ARCHITECTURE REVIEW: Sets/Reps Data Model**
-- **Question:** Should each set be a separate WorkoutExercise record, or aggregate in single record?
-- **Why:** Affects data granularity and query complexity
-- **Decision Dependency:** Database schema design
-- **Recommendation:** Prototype both approaches with sample queries
+**ARCHITECTURE DECISION: Sets/Reps Data Model**
+- **Decision:** Separate WorkoutSet records (not aggregated in WorkoutExercise)
+- **Schema:** WorkoutExercise (1) → (many) WorkoutSet with fields: setNumber, reps, weight, duration, distance, completed
+- **Rationale:** Granular data tracking for progressive overload, easier queries for "best set" or "total volume", supports future features (rest timer, drop sets)
+- **API:** POST /api/workouts/:id/exercises/:exerciseId/sets for adding individual sets
 
-**WARNING - ARCHITECTURE REVIEW: API Rate Limiting**
-- **Question:** What rate limits should we enforce on API endpoints?
-- **Why:** Prevents abuse and ensures fair usage
-- **Decision Dependency:** Backend middleware implementation
-- **Recommendation:** Define limits based on expected usage patterns (e.g., 100 requests/minute)
+**ARCHITECTURE DECISION: API Rate Limiting**
+- **Decision:** express-rate-limit with in-memory store (upgrade to Redis if needed)
+- **Rate Limits:**
+  - `/api/auth/*`: 5 requests per 15 minutes (prevent brute-force)
+  - `/api/workouts` (read): 100 requests per minute
+  - `/api/workouts/:id/exercises` (write): 200 requests per minute (rapid set logging)
+  - `/api/exercises`: 100 requests per minute
+- **Rationale:** Simple setup, sufficient for <1000 users, prevents abuse while allowing rapid workout logging
 
-**WARNING - ARCHITECTURE REVIEW: Frontend State Management**
-- **Question:** React Context vs. Redux vs. Zustand for global state?
-- **Why:** Affects code complexity and performance
-- **Decision Dependency:** Frontend architecture
-- **Recommendation:** Evaluate based on state complexity (authentication, active workout, exercise library)
+**ARCHITECTURE DECISION: Frontend State Management**
+- **Decision:** Zustand for global state (auth, UI) + SWR (React Query) for server state
+- **Rationale:** Zustand is lightweight (3KB vs Redux 47KB), simpler API, excellent TypeScript support, sufficient for app complexity
+- **State Organization:**
+  - Zustand stores: Auth state, UI state (modals, toasts)
+  - SWR: All server data (workouts, exercises, history) with automatic caching and revalidation
+  - Component state: Form inputs, local UI state
 
-**WARNING - ARCHITECTURE REVIEW: TypeScript Project References**
-- **Question:** How to configure TypeScript project references for optimal build performance?
-- **Why:** Ensures proper build ordering in monorepo
-- **Decision Dependency:** Build scripts and CI/CD pipeline
-- **Recommendation:** Reference official TypeScript docs and test build times
+**ARCHITECTURE DECISION: TypeScript Project References**
+- **Decision:** Enable strict mode with project references for monorepo incremental builds
+- **Configuration:** Root tsconfig.json with references to shared/backend/frontend packages, each with composite: true
+- **Benefits:** Only rebuild changed packages, proper type checking across workspace, shared types in @fitness-tracker/shared
+- **Build Order:** shared → backend/frontend (parallel), enforced by TypeScript compiler
 
-**WARNING - ARCHITECTURE REVIEW: OAuth Provider Selection**
-- **Question:** Should we support Google OAuth only, or add GitHub/Auth0?
-- **Why:** Affects authentication complexity and user accessibility
-- **Decision Dependency:** Backend authentication implementation
-- **Recommendation:** Analyze complexity of supporting other OAuth providers
+**ARCHITECTURE DECISION: OAuth Provider Selection**
+- **Decision:** Google OAuth only for MVP (can add GitHub/Auth0 in Phase 2)
+- **Rationale:** Google has highest adoption rate, Passport.js strategy pattern makes adding providers easy later
+- **Phase 2 Enhancement:** Add GitHub OAuth (popular among developers) if user feedback requests it
+- **Implementation:** Passport.js supports multiple strategies - can add new providers with ~50 lines of code
 
 ---
 
@@ -1348,10 +1355,12 @@ The following features are explicitly **NOT** included in the initial release:
 | Custom exercises created | N/A | Weekly |
 | Authentication failures | 0 | Continuous (logs) |
 
-**WARNING - ARCHITECTURE REVIEW:**
-- Should we implement analytics tracking (e.g., Google Analytics, Mixpanel)?
-- Privacy implications of user behavior tracking
-- Self-hosted vs. third-party analytics platform
+**ARCHITECTURE DECISION: Analytics Implementation**
+- **Decision:** Self-hosted PostHog for privacy-focused analytics + Sentry for error tracking
+- **Rationale:** Privacy-focused app should avoid third-party data sharing, self-hosted analytics respects user privacy and doesn't require cookie consent
+- **Key Metrics:** Workout logging time, feature usage, error rates, user retention, performance metrics
+- **Privacy:** Allow user opt-out, no third-party data sharing, GDPR/CCPA compliant
+- **Cost:** PostHog open source (free, self-hostable), Sentry free tier sufficient for <1000 users
 
 ---
 
@@ -1359,6 +1368,7 @@ The following features are explicitly **NOT** included in the initial release:
 
 | Date | Version | Changes | Author |
 |------|---------|---------|--------|
+| 2025-11-24 | 2.1 | Added architecture decisions for all open questions (database, auth, state management, offline support, analytics, etc.) | Technical Architect Agent |
 | 2025-11-21 | 2.0 | Complete rewrite with detailed requirements, user flows, technical constraints, and investigation areas | Product Agent |
 | Initial | 1.0 | Basic project requirements | Unknown |
 
