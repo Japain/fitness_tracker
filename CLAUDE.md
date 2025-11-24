@@ -34,6 +34,33 @@ This is a **monorepo** using npm workspaces with three packages:
 - Comprehensive design checklist in `context/DESIGN-PRINCIPLES.md`
 - When making visual (front-end, UI,UX) changes, always refer to that file for guidance.
 
+### Design Mockups
+The `mockups/` folder contains approved UI designs for implementation:
+
+- **`mockups/html/`**: Interactive HTML/CSS mockups for all key screens
+  - 01-dashboard-home.html - Dashboard/Home screen
+  - 02-active-workout.html - Active workout logging screen
+  - 03-exercise-selection.html - Exercise selection modal
+  - 04-workout-history.html - Workout history list
+  - 05-workout-detail.html - Workout detail view
+  - 06-authentication.html - Authentication/login screen
+
+- **`mockups/screenshots/`**: PNG screenshots of mockups at mobile viewport (375×667px)
+
+- **`mockups/DESIGN-DOCUMENTATION.md`**: Complete design system specification
+  - Design tokens (colors, typography, spacing)
+  - Component library specifications
+  - Accessibility requirements
+  - Implementation guidelines
+
+- **`mockups/README.md`**: Quick reference guide
+
+**When implementing features:**
+1. Always reference the corresponding mockup for visual requirements
+2. Use the design tokens specified in DESIGN-DOCUMENTATION.md
+3. Validate implementation against the mockup screenshots
+4. Ensure accessibility requirements from the mockups are met
+
 ## Available Tools
 
 ### Playwright MCP (Browser Automation)
@@ -54,8 +81,8 @@ This project has Playwright configured as an MCP (Model Context Protocol) server
 - `mcp__playwright__browser_evaluate` - Run JavaScript in the browser context
 
 **Workflow:**
-- Design mockups are created as HTML files in `/tmp/mockups/`
-- Screenshots are saved to `/tmp/mockups/screenshots/`
+- Design mockups are created as HTML files in `mockups/html/`
+- Screenshots are saved to `mockups/screenshots/`
 - All designs must be validated against `context/DESIGN-PRINCIPLES.md` through iterative Playwright testing
 
 ## Development Commands

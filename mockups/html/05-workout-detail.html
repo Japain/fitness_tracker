@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Detail - Fitness Tracker</title>
+    <style>
+        :root {
+            --primary-brand: #3B82F6;
+            --neutral-900: #0F172A;
+            --neutral-700: #334155;
+            --neutral-600: #475569;
+            --neutral-500: #64748B;
+            --neutral-400: #94A3B8;
+            --neutral-300: #CBD5E1;
+            --neutral-200: #E2E8F0;
+            --neutral-100: #F1F5F9;
+            --neutral-50: #F8FAFC;
+            --success: #10B981;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+            --font-size-h1: 28px;
+            --font-size-h3: 20px;
+            --font-size-body: 16px;
+            --font-size-body-small: 14px;
+            --font-size-caption: 12px;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 12px;
+            --spacing-lg: 16px;
+            --spacing-xl: 24px;
+            --spacing-2xl: 32px;
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-family);
+            font-size: var(--font-size-body);
+            color: var(--neutral-900);
+            background-color: var(--neutral-50);
+            -webkit-font-smoothing: antialiased;
+        }
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .top-nav {
+            background: white;
+            border-bottom: 1px solid var(--neutral-200);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .back-button {
+            background: none;
+            border: none;
+            padding: var(--spacing-sm);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            min-height: 44px;
+            color: var(--primary-brand);
+            font-weight: var(--font-weight-semibold);
+        }
+        .menu-button {
+            background: none;
+            border: none;
+            padding: var(--spacing-sm);
+            cursor: pointer;
+            min-height: 44px;
+            min-width: 44px;
+        }
+        .main-content {
+            flex: 1;
+            padding: var(--spacing-xl) var(--spacing-lg);
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .workout-header-card {
+            background: white;
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--neutral-200);
+            margin-bottom: var(--spacing-xl);
+            box-shadow: var(--shadow-sm);
+        }
+        .workout-date {
+            font-size: var(--font-size-h1);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--spacing-md);
+        }
+        .workout-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-lg);
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid var(--neutral-200);
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: var(--font-size-h3);
+            font-weight: var(--font-weight-bold);
+            color: var(--primary-brand);
+            margin-bottom: var(--spacing-xs);
+        }
+        .stat-label {
+            font-size: var(--font-size-caption);
+            color: var(--neutral-600);
+        }
+        .section-title {
+            font-size: var(--font-size-body-small);
+            font-weight: var(--font-weight-semibold);
+            color: var(--neutral-600);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--spacing-lg);
+        }
+        .exercise-card {
+            background: white;
+            border: 1px solid var(--neutral-200);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+        }
+        .exercise-name {
+            font-size: var(--font-size-body);
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--spacing-md);
+        }
+        .sets-table {
+            width: 100%;
+        }
+        .table-header {
+            display: grid;
+            grid-template-columns: 40px 1fr 1fr 1fr;
+            gap: var(--spacing-md);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 1px solid var(--neutral-200);
+            margin-bottom: var(--spacing-sm);
+        }
+        .table-header-cell {
+            font-size: var(--font-size-caption);
+            font-weight: var(--font-weight-semibold);
+            color: var(--neutral-600);
+            text-align: center;
+        }
+        .table-row {
+            display: grid;
+            grid-template-columns: 40px 1fr 1fr 1fr;
+            gap: var(--spacing-md);
+            padding: var(--spacing-sm) 0;
+            font-size: var(--font-size-body-small);
+        }
+        .table-cell {
+            text-align: center;
+            color: var(--neutral-700);
+        }
+        .set-number {
+            font-weight: var(--font-weight-semibold);
+            color: var(--neutral-900);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="top-nav">
+            <button class="back-button">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                </svg>
+                Back
+            </button>
+            <button class="menu-button">
+                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                </svg>
+            </button>
+        </header>
+
+        <main class="main-content">
+            <div class="workout-header-card">
+                <div class="workout-date">Today, 9:30 AM</div>
+                <div class="workout-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">45</div>
+                        <div class="stat-label">Minutes</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">6</div>
+                        <div class="stat-label">Exercises</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">18</div>
+                        <div class="stat-label">Sets</div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">Exercises</h2>
+
+            <div class="exercise-card">
+                <h3 class="exercise-name">Barbell Bench Press</h3>
+                <div class="sets-table">
+                    <div class="table-header">
+                        <div class="table-header-cell">Set</div>
+                        <div class="table-header-cell">Weight</div>
+                        <div class="table-header-cell">Reps</div>
+                        <div class="table-header-cell">Sets</div>
+                    </div>
+                    <div class="table-row">
+                        <div class="table-cell set-number">1</div>
+                        <div class="table-cell">135 lbs</div>
+                        <div class="table-cell">10</div>
+                        <div class="table-cell">3</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercise-card">
+                <h3 class="exercise-name">Barbell Row</h3>
+                <div class="sets-table">
+                    <div class="table-header">
+                        <div class="table-header-cell">Set</div>
+                        <div class="table-header-cell">Weight</div>
+                        <div class="table-header-cell">Reps</div>
+                        <div class="table-header-cell">Sets</div>
+                    </div>
+                    <div class="table-row">
+                        <div class="table-cell set-number">1</div>
+                        <div class="table-cell">115 lbs</div>
+                        <div class="table-cell">8</div>
+                        <div class="table-cell">3</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercise-card">
+                <h3 class="exercise-name">Dumbbell Bicep Curl</h3>
+                <div class="sets-table">
+                    <div class="table-header">
+                        <div class="table-header-cell">Set</div>
+                        <div class="table-header-cell">Weight</div>
+                        <div class="table-header-cell">Reps</div>
+                        <div class="table-header-cell">Sets</div>
+                    </div>
+                    <div class="table-row">
+                        <div class="table-cell set-number">1</div>
+                        <div class="table-cell">25 lbs</div>
+                        <div class="table-cell">12</div>
+                        <div class="table-cell">3</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercise-card">
+                <h3 class="exercise-name">Overhead Press</h3>
+                <div class="sets-table">
+                    <div class="table-header">
+                        <div class="table-header-cell">Set</div>
+                        <div class="table-header-cell">Weight</div>
+                        <div class="table-header-cell">Reps</div>
+                        <div class="table-header-cell">Sets</div>
+                    </div>
+                    <div class="table-row">
+                        <div class="table-cell set-number">1</div>
+                        <div class="table-cell">95 lbs</div>
+                        <div class="table-cell">8</div>
+                        <div class="table-cell">3</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercise-card">
+                <h3 class="exercise-name">Lateral Raise</h3>
+                <div class="sets-table">
+                    <div class="table-header">
+                        <div class="table-header-cell">Set</div>
+                        <div class="table-header-cell">Weight</div>
+                        <div class="table-header-cell">Reps</div>
+                        <div class="table-header-cell">Sets</div>
+                    </div>
+                    <div class="table-row">
+                        <div class="table-cell set-number">1</div>
+                        <div class="table-cell">15 lbs</div>
+                        <div class="table-cell">15</div>
+                        <div class="table-cell">3</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercise-card">
+                <h3 class="exercise-name">Tricep Pushdown</h3>
+                <div class="sets-table">
+                    <div class="table-header">
+                        <div class="table-header-cell">Set</div>
+                        <div class="table-header-cell">Weight</div>
+                        <div class="table-header-cell">Reps</div>
+                        <div class="table-header-cell">Sets</div>
+                    </div>
+                    <div class="table-row">
+                        <div class="table-cell set-number">1</div>
+                        <div class="table-cell">50 lbs</div>
+                        <div class="table-cell">12</div>
+                        <div class="table-cell">3</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout History - Fitness Tracker</title>
+    <style>
+        :root {
+            --primary-brand: #3B82F6;
+            --neutral-900: #0F172A;
+            --neutral-800: #1E293B;
+            --neutral-700: #334155;
+            --neutral-600: #475569;
+            --neutral-500: #64748B;
+            --neutral-400: #94A3B8;
+            --neutral-300: #CBD5E1;
+            --neutral-200: #E2E8F0;
+            --neutral-100: #F1F5F9;
+            --neutral-50: #F8FAFC;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+            --font-size-h1: 28px;
+            --font-size-h3: 20px;
+            --font-size-body-large: 18px;
+            --font-size-body: 16px;
+            --font-size-body-small: 14px;
+            --font-size-caption: 12px;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 12px;
+            --spacing-lg: 16px;
+            --spacing-xl: 24px;
+            --spacing-2xl: 32px;
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-full: 9999px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-family);
+            font-size: var(--font-size-body);
+            color: var(--neutral-900);
+            background-color: var(--neutral-50);
+            -webkit-font-smoothing: antialiased;
+        }
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .top-nav {
+            background: white;
+            border-bottom: 1px solid var(--neutral-200);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .page-title {
+            font-size: var(--font-size-h1);
+            font-weight: var(--font-weight-bold);
+        }
+        .filter-button {
+            background: none;
+            border: 1px solid var(--neutral-300);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            min-height: 44px;
+            min-width: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .main-content {
+            flex: 1;
+            padding: var(--spacing-xl) var(--spacing-lg);
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .stats-summary {
+            background: white;
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--neutral-200);
+            margin-bottom: var(--spacing-xl);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-lg);
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: var(--font-size-h3);
+            font-weight: var(--font-weight-bold);
+            color: var(--primary-brand);
+            margin-bottom: var(--spacing-xs);
+        }
+        .stat-label {
+            font-size: var(--font-size-caption);
+            color: var(--neutral-600);
+        }
+        .section-title {
+            font-size: var(--font-size-body-small);
+            font-weight: var(--font-weight-semibold);
+            color: var(--neutral-600);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--spacing-lg);
+        }
+        .workout-card {
+            background: white;
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--neutral-200);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: var(--spacing-md);
+            cursor: pointer;
+            transition: all 150ms ease-in-out;
+        }
+        .workout-card:hover {
+            border-color: var(--primary-brand);
+            box-shadow: var(--shadow-md);
+        }
+        .workout-date {
+            font-size: var(--font-size-body-large);
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--spacing-xs);
+        }
+        .workout-meta {
+            display: flex;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            font-size: var(--font-size-body-small);
+            color: var(--neutral-600);
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+        .workout-exercises {
+            font-size: var(--font-size-body-small);
+            color: var(--neutral-700);
+            line-height: 1.6;
+        }
+        .exercise-pill {
+            display: inline-block;
+            padding: var(--spacing-xs) var(--spacing-md);
+            background: var(--neutral-100);
+            border-radius: var(--radius-full);
+            margin-right: var(--spacing-xs);
+            margin-bottom: var(--spacing-xs);
+        }
+        .bottom-nav {
+            background: white;
+            border-top: 1px solid var(--neutral-200);
+            padding: var(--spacing-md) var(--spacing-lg);
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--spacing-xs);
+            color: var(--neutral-600);
+            text-decoration: none;
+            font-size: var(--font-size-caption);
+            padding: var(--spacing-sm);
+            min-width: 60px;
+            min-height: 52px;
+        }
+        .nav-item.active {
+            color: var(--primary-brand);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="top-nav">
+            <div class="nav-content">
+                <h1 class="page-title">History</h1>
+                <button class="filter-button">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="stats-summary">
+                <div class="stat-item">
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">This Month</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">8.4h</div>
+                    <div class="stat-label">Total Time</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">96</div>
+                    <div class="stat-label">Exercises</div>
+                </div>
+            </div>
+
+            <h2 class="section-title">All Workouts</h2>
+
+            <div class="workout-card">
+                <div class="workout-date">Today, 9:30 AM</div>
+                <div class="workout-meta">
+                    <div class="meta-item">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                        </svg>
+                        45 min
+                    </div>
+                    <div class="meta-item">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/>
+                        </svg>
+                        6 exercises
+                    </div>
+                </div>
+                <div class="workout-exercises">
+                    <span class="exercise-pill">Bench Press</span>
+                    <span class="exercise-pill">Barbell Row</span>
+                    <span class="exercise-pill">Dumbbell Curls</span>
+                    <span class="exercise-pill">+3 more</span>
+                </div>
+            </div>
+
+            <div class="workout-card">
+                <div class="workout-date">Yesterday, 6:00 PM</div>
+                <div class="workout-meta">
+                    <div class="meta-item">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                        </svg>
+                        52 min
+                    </div>
+                    <div class="meta-item">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/>
+                        </svg>
+                        5 exercises
+                    </div>
+                </div>
+                <div class="workout-exercises">
+                    <span class="exercise-pill">Squat</span>
+                    <span class="exercise-pill">Deadlift</span>
+                    <span class="exercise-pill">Leg Press</span>
+                    <span class="exercise-pill">+2 more</span>
+                </div>
+            </div>
+
+            <div class="workout-card">
+                <div class="workout-date">Nov 22, 7:15 AM</div>
+                <div class="workout-meta">
+                    <div class="meta-item">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                        </svg>
+                        38 min
+                    </div>
+                    <div class="meta-item">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/>
+                        </svg>
+                        7 exercises
+                    </div>
+                </div>
+                <div class="workout-exercises">
+                    <span class="exercise-pill">Pull-ups</span>
+                    <span class="exercise-pill">Dumbbell Press</span>
+                    <span class="exercise-pill">Lateral Raise</span>
+                    <span class="exercise-pill">+4 more</span>
+                </div>
+            </div>
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item">
+                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+                <span>Home</span>
+            </a>
+            <a href="#" class="nav-item active">
+                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+                </svg>
+                <span>History</span>
+            </a>
+            <a href="#" class="nav-item">
+                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/>
+                </svg>
+                <span>Exercises</span>
+            </a>
+            <a href="#" class="nav-item">
+                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+                <span>Profile</span>
+            </a>
+        </nav>
+    </div>
+</body>
+</html>

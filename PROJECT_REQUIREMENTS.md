@@ -85,7 +85,7 @@ A web-based fitness tracking application built with TypeScript (frontend + backe
 - Zero unauthorized data access incidents
 - < 5 second authentication flow completion
 
-**WARNING - RCHITECTURE REVIEW:**
+**WARNING - ARCHITECTURE REVIEW:**
 - Which OAuth library for our backend? (passport.js vs others)
 - Token refresh strategy for long-lived sessions
 - CSRF protection implementation approach

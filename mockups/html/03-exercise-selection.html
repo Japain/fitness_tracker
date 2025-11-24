@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Exercise - Fitness Tracker</title>
+    <style>
+        :root {
+            --primary-brand: #3B82F6;
+            --primary-hover: #2563EB;
+            --primary-active: #1D4ED8;
+
+            --neutral-900: #0F172A;
+            --neutral-800: #1E293B;
+            --neutral-700: #334155;
+            --neutral-600: #475569;
+            --neutral-500: #64748B;
+            --neutral-400: #94A3B8;
+            --neutral-300: #CBD5E1;
+            --neutral-200: #E2E8F0;
+            --neutral-100: #F1F5F9;
+            --neutral-50: #F8FAFC;
+
+            --success: #10B981;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+
+            --font-size-h2: 24px;
+            --font-size-h3: 20px;
+            --font-size-body-large: 18px;
+            --font-size-body: 16px;
+            --font-size-body-small: 14px;
+            --font-size-caption: 12px;
+
+            --font-weight-regular: 400;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 12px;
+            --spacing-lg: 16px;
+            --spacing-xl: 24px;
+            --spacing-2xl: 32px;
+
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-full: 9999px;
+
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            font-size: var(--font-size-body);
+            color: var(--neutral-900);
+            background-color: var(--neutral-50);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: flex-end;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-height: 90vh;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 250ms ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        /* Modal Header */
+        .modal-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--neutral-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: var(--font-size-h2);
+            font-weight: var(--font-weight-bold);
+            color: var(--neutral-900);
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            color: var(--neutral-600);
+            padding: var(--spacing-sm);
+            cursor: pointer;
+            min-height: 44px;
+            min-width: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+        }
+
+        .close-button:hover {
+            background: var(--neutral-100);
+        }
+
+        /* Search Section */
+        .search-section {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--neutral-200);
+        }
+
+        .search-input-wrapper {
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: var(--spacing-lg);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--neutral-500);
+            width: 20px;
+            height: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-lg) 48px;
+            border: 2px solid var(--neutral-300);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-body);
+            font-family: var(--font-family);
+            min-height: 52px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-brand);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: var(--neutral-500);
+        }
+
+        /* Quick Access Section */
+        .quick-access-section {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--neutral-200);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .section-title {
+            font-size: var(--font-size-body-small);
+            font-weight: var(--font-weight-semibold);
+            color: var(--neutral-600);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .quick-exercise-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .exercise-item {
+            padding: var(--spacing-lg);
+            background: white;
+            border: 1px solid var(--neutral-200);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 150ms ease-in-out;
+            min-height: 56px;
+        }
+
+        .exercise-item:hover {
+            border-color: var(--primary-brand);
+            background: var(--primary-brand);
+            color: white;
+        }
+
+        .exercise-item:hover .exercise-category {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .exercise-info {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .exercise-name {
+            font-size: var(--font-size-body);
+            font-weight: var(--font-weight-semibold);
+        }
+
+        .exercise-category {
+            font-size: var(--font-size-body-small);
+            color: var(--neutral-600);
+        }
+
+        .exercise-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--neutral-400);
+        }
+
+        .exercise-item:hover .exercise-icon {
+            color: white;
+        }
+
+        /* Category Pills */
+        .category-section {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--neutral-200);
+        }
+
+        .category-pills {
+            display: flex;
+            gap: var(--spacing-sm);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .category-pills::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-pill {
+            flex-shrink: 0;
+            padding: var(--spacing-md) var(--spacing-xl);
+            background: white;
+            border: 2px solid var(--neutral-300);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-body);
+            font-weight: var(--font-weight-semibold);
+            color: var(--neutral-700);
+            cursor: pointer;
+            transition: all 150ms ease-in-out;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .category-pill:hover {
+            border-color: var(--primary-brand);
+            background: var(--primary-brand);
+            color: white;
+        }
+
+        .category-pill.active {
+            border-color: var(--primary-brand);
+            background: var(--primary-brand);
+            color: white;
+        }
+
+        /* Exercise List */
+        .exercise-list-section {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--spacing-lg);
+        }
+
+        .exercise-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        /* Create Custom Button */
+        .create-custom-section {
+            padding: var(--spacing-lg);
+            border-top: 1px solid var(--neutral-200);
+        }
+
+        .create-custom-button {
+            width: 100%;
+            padding: var(--spacing-lg);
+            background: var(--neutral-100);
+            border: 1px dashed var(--neutral-400);
+            border-radius: var(--radius-md);
+            color: var(--neutral-700);
+            font-size: var(--font-size-body);
+            font-weight: var(--font-weight-semibold);
+            cursor: pointer;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            transition: all 150ms ease-in-out;
+        }
+
+        .create-custom-button:hover {
+            background: var(--neutral-200);
+            border-color: var(--neutral-500);
+        }
+    </style>
+</head>
+<body>
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h2 class="modal-title">Add Exercise</h2>
+                <button class="close-button">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Search Section -->
+            <div class="search-section">
+                <div class="search-input-wrapper">
+                    <svg class="search-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                    </svg>
+                    <input
+                        type="text"
+                        class="search-input"
+                        placeholder="Search exercises..."
+                        inputmode="search"
+                    >
+                </div>
+            </div>
+
+            <!-- Quick Access (Recent Exercises) -->
+            <div class="quick-access-section">
+                <div class="section-header">
+                    <h3 class="section-title">Recent Exercises</h3>
+                </div>
+                <div class="quick-exercise-list">
+                    <div class="exercise-item">
+                        <div class="exercise-info">
+                            <div class="exercise-name">Bench Press</div>
+                            <div class="exercise-category">Push • Barbell</div>
+                        </div>
+                        <svg class="exercise-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                        </svg>
+                    </div>
+                    <div class="exercise-item">
+                        <div class="exercise-info">
+                            <div class="exercise-name">Squat</div>
+                            <div class="exercise-category">Legs • Barbell</div>
+                        </div>
+                        <svg class="exercise-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                        </svg>
+                    </div>
+                    <div class="exercise-item">
+                        <div class="exercise-info">
+                            <div class="exercise-name">Deadlift</div>
+                            <div class="exercise-category">Pull • Barbell</div>
+                        </div>
+                        <svg class="exercise-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Pills -->
+            <div class="category-section">
+                <div class="section-header">
+                    <h3 class="section-title">Browse by Category</h3>
+                </div>
+                <div class="category-pills">
+                    <button class="category-pill active">All</button>
+                    <button class="category-pill">Push</button>
+                    <button class="category-pill">Pull</button>
+                    <button class="category-pill">Legs</button>
+                    <button class="category-pill">Core</button>
+                    <button class="category-pill">Cardio</button>
+                </div>
+            </div>
+
+            <!-- Exercise List -->
+            <div class="exercise-list-section">
+                <div class="exercise-list">
+                    <div class="exercise-item">
+                        <div class="exercise-info">
+                            <div class="exercise-name">Barbell Back Squat</div>
+                            <div class="exercise-category">Legs • Barbell</div>
+                        </div>
+                        <svg class="exercise-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                        </svg>
+                    </div>
+                    <div class="exercise-item">
+                        <div class="exercise-info">
+                            <div class="exercise-name">Barbell Bench Press</div>
+                            <div class="exercise-category">Push • Barbell</div>
+                        </div>
+                        <svg class="exercise-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                        </svg>
+                    </div>
+                    <div class="exercise-item">
+                        <div class="exercise-info">
+                            <div class="exercise-name">Barbell Row</div>
+                            <div class="exercise-category">Pull • Barbell</div>
+                        </div>
+                        <svg class="exercise-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                        </svg>
+                    </div>
+                    <div class="exercise-item">
+                        <div class="exercise-info">
+                            <div class="exercise-name">Deadlift</div>
+                            <div class="exercise-category">Pull • Barbell</div>
+                        </div>
+                        <svg class="exercise-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                        </svg>
+                    </div>
+                    <div class="exercise-item">
+                        <div class="exercise-info">
+                            <div class="exercise-name">Dumbbell Bicep Curl</div>
+                            <div class="exercise-category">Pull • Dumbbell</div>
+                        </div>
+                        <svg class="exercise-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                        </svg>
+                    </div>
+                    <div class="exercise-item">
+                        <div class="exercise-info">
+                            <div class="exercise-name">Dumbbell Shoulder Press</div>
+                            <div class="exercise-category">Push • Dumbbell</div>
+                        </div>
+                        <svg class="exercise-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                        </svg>
+                    </div>
+                    <div class="exercise-item">
+                        <div class="exercise-info">
+                            <div class="exercise-name">Leg Press</div>
+                            <div class="exercise-category">Legs • Machine</div>
+                        </div>
+                        <svg class="exercise-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                        </svg>
+                    </div>
+                    <div class="exercise-item">
+                        <div class="exercise-info">
+                            <div class="exercise-name">Pull-ups</div>
+                            <div class="exercise-category">Pull • Bodyweight</div>
+                        </div>
+                        <svg class="exercise-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                        </svg>
+                    </div>
+                    <div class="exercise-item">
+                        <div class="exercise-info">
+                            <div class="exercise-name">Push-ups</div>
+                            <div class="exercise-category">Push • Bodyweight</div>
+                        </div>
+                        <svg class="exercise-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                        </svg>
+                    </div>
+                    <div class="exercise-item">
+                        <div class="exercise-info">
+                            <div class="exercise-name">Running</div>
+                            <div class="exercise-category">Cardio</div>
+                        </div>
+                        <svg class="exercise-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Custom Exercise -->
+            <div class="create-custom-section">
+                <button class="create-custom-button">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    </svg>
+                    Create Custom Exercise
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

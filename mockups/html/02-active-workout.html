@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Workout - Fitness Tracker</title>
+    <style>
+        /* Design System Tokens (same as dashboard) */
+        :root {
+            --primary-brand: #3B82F6;
+            --primary-hover: #2563EB;
+            --primary-active: #1D4ED8;
+
+            --neutral-900: #0F172A;
+            --neutral-800: #1E293B;
+            --neutral-700: #334155;
+            --neutral-600: #475569;
+            --neutral-500: #64748B;
+            --neutral-400: #94A3B8;
+            --neutral-300: #CBD5E1;
+            --neutral-200: #E2E8F0;
+            --neutral-100: #F1F5F9;
+            --neutral-50: #F8FAFC;
+
+            --success: #10B981;
+            --success-bg: #D1FAE5;
+            --error: #EF4444;
+            --error-bg: #FEE2E2;
+            --warning: #F59E0B;
+
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+            --font-size-h1: 28px;
+            --font-size-h2: 24px;
+            --font-size-h3: 20px;
+            --font-size-body-large: 18px;
+            --font-size-body: 16px;
+            --font-size-body-small: 14px;
+            --font-size-caption: 12px;
+
+            --font-weight-regular: 400;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+
+            --line-height-normal: 1.5;
+
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 12px;
+            --spacing-lg: 16px;
+            --spacing-xl: 24px;
+            --spacing-2xl: 32px;
+
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-full: 9999px;
+
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            font-size: var(--font-size-body);
+            line-height: var(--line-height-normal);
+            color: var(--neutral-900);
+            background-color: var(--neutral-50);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 80px; /* Space for fixed button */
+        }
+
+        /* Top Header with Timer */
+        .workout-header {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: white;
+            padding: var(--spacing-sm);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            font-size: var(--font-size-body);
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        .menu-button {
+            background: none;
+            border: none;
+            color: white;
+            padding: var(--spacing-sm);
+            cursor: pointer;
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        .workout-title {
+            font-size: var(--font-size-h2);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .workout-timer {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: var(--font-size-body-large);
+            font-weight: var(--font-weight-semibold);
+        }
+
+        .pulse-dot {
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: var(--spacing-xl) var(--spacing-lg);
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Exercise List */
+        .exercises-section {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .section-title {
+            font-size: var(--font-size-body-small);
+            font-weight: var(--font-weight-semibold);
+            color: var(--neutral-600);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .exercise-card {
+            background: white;
+            border: 1px solid var(--neutral-200);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .exercise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .exercise-name {
+            font-size: var(--font-size-body-large);
+            font-weight: var(--font-weight-semibold);
+            color: var(--neutral-900);
+        }
+
+        .exercise-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .icon-button {
+            background: none;
+            border: none;
+            color: var(--neutral-500);
+            padding: var(--spacing-sm);
+            cursor: pointer;
+            min-height: 44px;
+            min-width: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            transition: all 150ms ease-in-out;
+        }
+
+        .icon-button:hover {
+            background: var(--neutral-100);
+            color: var(--neutral-700);
+        }
+
+        .icon-button.delete:hover {
+            background: var(--error-bg);
+            color: var(--error);
+        }
+
+        /* Set Row */
+        .set-row {
+            display: grid;
+            grid-template-columns: 40px 1fr 1fr 1fr 44px;
+            gap: var(--spacing-md);
+            align-items: center;
+            padding: var(--spacing-md) 0;
+            border-bottom: 1px solid var(--neutral-100);
+        }
+
+        .set-row:last-child {
+            border-bottom: none;
+        }
+
+        .set-number {
+            font-size: var(--font-size-body-small);
+            font-weight: var(--font-weight-semibold);
+            color: var(--neutral-600);
+            text-align: center;
+        }
+
+        .set-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .input-label {
+            font-size: var(--font-size-caption);
+            color: var(--neutral-600);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .set-input {
+            width: 100%;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--neutral-300);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-body);
+            font-weight: var(--font-weight-semibold);
+            text-align: center;
+            min-height: 44px;
+            font-family: var(--font-family);
+        }
+
+        .set-input:focus {
+            outline: none;
+            border-color: var(--primary-brand);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .set-complete {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--neutral-300);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .set-complete.checked {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .set-complete.checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Add Set Button */
+        .add-set-button {
+            width: 100%;
+            padding: var(--spacing-md);
+            background: var(--neutral-100);
+            border: 1px dashed var(--neutral-300);
+            border-radius: var(--radius-sm);
+            color: var(--neutral-700);
+            font-size: var(--font-size-body-small);
+            font-weight: var(--font-weight-semibold);
+            cursor: pointer;
+            margin-top: var(--spacing-md);
+            min-height: 44px;
+            transition: all 150ms ease-in-out;
+        }
+
+        .add-set-button:hover {
+            background: var(--neutral-200);
+            border-color: var(--neutral-400);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-3xl) var(--spacing-lg);
+        }
+
+        .empty-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto var(--spacing-lg);
+            opacity: 0.3;
+        }
+
+        .empty-title {
+            font-size: var(--font-size-h3);
+            font-weight: var(--font-weight-semibold);
+            color: var(--neutral-900);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .empty-description {
+            font-size: var(--font-size-body);
+            color: var(--neutral-600);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        /* Fixed Bottom Actions */
+        .bottom-actions {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: var(--spacing-lg);
+            border-top: 1px solid var(--neutral-200);
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        .action-button {
+            flex: 1;
+            padding: var(--spacing-lg);
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-body-large);
+            font-weight: var(--font-weight-semibold);
+            cursor: pointer;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            transition: all 150ms ease-in-out;
+        }
+
+        .action-button.primary {
+            background: var(--primary-brand);
+            color: white;
+        }
+
+        .action-button.primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .action-button.secondary {
+            background: var(--neutral-100);
+            color: var(--neutral-700);
+            border: 1px solid var(--neutral-300);
+        }
+
+        .action-button.secondary:hover {
+            background: var(--neutral-200);
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Workout Header -->
+        <header class="workout-header">
+            <div class="header-top">
+                <button class="back-button">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                    </svg>
+                </button>
+                <button class="menu-button">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                    </svg>
+                </button>
+            </div>
+            <h1 class="workout-title">Morning Workout</h1>
+            <div class="workout-timer">
+                <span class="pulse-dot"></span>
+                <span>23:45</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Exercises Section -->
+            <section class="exercises-section">
+                <h2 class="section-title">Exercises (3)</h2>
+
+                <!-- Exercise 1 -->
+                <div class="exercise-card">
+                    <div class="exercise-header">
+                        <h3 class="exercise-name">Barbell Bench Press</h3>
+                        <div class="exercise-actions">
+                            <button class="icon-button">
+                                <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button class="icon-button delete">
+                                <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Set 1 -->
+                    <div class="set-row">
+                        <div class="set-number">1</div>
+                        <div class="set-input-group">
+                            <label class="input-label">Weight (lbs)</label>
+                            <input type="number" class="set-input" value="135" inputmode="decimal">
+                        </div>
+                        <div class="set-input-group">
+                            <label class="input-label">Reps</label>
+                            <input type="number" class="set-input" value="10" inputmode="numeric">
+                        </div>
+                        <div class="set-input-group">
+                            <label class="input-label">Sets</label>
+                            <input type="number" class="set-input" value="3" inputmode="numeric">
+                        </div>
+                        <div class="set-complete checked"></div>
+                    </div>
+
+                    <button class="add-set-button">+ Add Another Set</button>
+                </div>
+
+                <!-- Exercise 2 -->
+                <div class="exercise-card">
+                    <div class="exercise-header">
+                        <h3 class="exercise-name">Barbell Row</h3>
+                        <div class="exercise-actions">
+                            <button class="icon-button">
+                                <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button class="icon-button delete">
+                                <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Set 1 -->
+                    <div class="set-row">
+                        <div class="set-number">1</div>
+                        <div class="set-input-group">
+                            <label class="input-label">Weight (lbs)</label>
+                            <input type="number" class="set-input" value="115" inputmode="decimal">
+                        </div>
+                        <div class="set-input-group">
+                            <label class="input-label">Reps</label>
+                            <input type="number" class="set-input" value="8" inputmode="numeric">
+                        </div>
+                        <div class="set-input-group">
+                            <label class="input-label">Sets</label>
+                            <input type="number" class="set-input" value="3" inputmode="numeric">
+                        </div>
+                        <div class="set-complete checked"></div>
+                    </div>
+
+                    <button class="add-set-button">+ Add Another Set</button>
+                </div>
+
+                <!-- Exercise 3 -->
+                <div class="exercise-card">
+                    <div class="exercise-header">
+                        <h3 class="exercise-name">Dumbbell Bicep Curl</h3>
+                        <div class="exercise-actions">
+                            <button class="icon-button">
+                                <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button class="icon-button delete">
+                                <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Set 1 -->
+                    <div class="set-row">
+                        <div class="set-number">1</div>
+                        <div class="set-input-group">
+                            <label class="input-label">Weight (lbs)</label>
+                            <input type="number" class="set-input" value="25" inputmode="decimal">
+                        </div>
+                        <div class="set-input-group">
+                            <label class="input-label">Reps</label>
+                            <input type="number" class="set-input" value="12" inputmode="numeric">
+                        </div>
+                        <div class="set-input-group">
+                            <label class="input-label">Sets</label>
+                            <input type="number" class="set-input" value="3" inputmode="numeric">
+                        </div>
+                        <div class="set-complete"></div>
+                    </div>
+
+                    <button class="add-set-button">+ Add Another Set</button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Fixed Bottom Actions -->
+        <div class="bottom-actions">
+            <button class="action-button primary">
+                <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                </svg>
+                Add Exercise
+            </button>
+            <button class="action-button secondary">
+                <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+                </svg>
+                Finish
+            </button>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Fitness Tracker</title>
+    <style>
+        :root {
+            --primary-brand: #3B82F6;
+            --primary-hover: #2563EB;
+            --neutral-900: #0F172A;
+            --neutral-700: #334155;
+            --neutral-600: #475569;
+            --neutral-50: #F8FAFC;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+            --font-size-h1: 36px;
+            --font-size-h2: 28px;
+            --font-size-body: 16px;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+            --spacing-md: 12px;
+            --spacing-lg: 16px;
+            --spacing-xl: 24px;
+            --spacing-2xl: 32px;
+            --spacing-3xl: 48px;
+            --radius-md: 12px;
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-family);
+            font-size: var(--font-size-body);
+            color: var(--neutral-900);
+            background: linear-gradient(135deg, var(--primary-brand), #7C3AED);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-xl);
+            -webkit-font-smoothing: antialiased;
+        }
+        .auth-container {
+            background: white;
+            padding: var(--spacing-3xl) var(--spacing-xl);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        .logo {
+            font-size: var(--font-size-h1);
+            font-weight: var(--font-weight-bold);
+            color: var(--primary-brand);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-md);
+        }
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+        }
+        .auth-title {
+            font-size: var(--font-size-h2);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--spacing-md);
+        }
+        .auth-subtitle {
+            color: var(--neutral-600);
+            margin-bottom: var(--spacing-3xl);
+            line-height: 1.6;
+        }
+        .google-button {
+            width: 100%;
+            padding: var(--spacing-lg) var(--spacing-xl);
+            background: white;
+            border: 2px solid var(--neutral-700);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-body);
+            font-weight: var(--font-weight-semibold);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-md);
+            transition: all 150ms ease-in-out;
+            min-height: 56px;
+        }
+        .google-button:hover {
+            background: var(--neutral-50);
+            box-shadow: var(--shadow-lg);
+        }
+        .google-icon {
+            width: 24px;
+            height: 24px;
+        }
+        .divider {
+            margin: var(--spacing-2xl) 0;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            color: var(--neutral-600);
+            font-size: 14px;
+        }
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--neutral-600);
+            opacity: 0.2;
+        }
+        .features-list {
+            text-align: left;
+            margin-top: var(--spacing-2xl);
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            color: var(--neutral-700);
+        }
+        .check-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--primary-brand);
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="logo">
+            <svg class="logo-icon" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/>
+            </svg>
+            FitTrack
+        </div>
+
+        <h1 class="auth-title">Welcome Back!</h1>
+        <p class="auth-subtitle">Log your workouts in under 30 seconds and track your fitness journey.</p>
+
+        <button class="google-button">
+            <svg class="google-icon" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Continue with Google
+        </button>
+
+        <div class="divider">or</div>
+
+        <div class="features-list">
+            <div class="feature-item">
+                <svg class="check-icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+                </svg>
+                <span>Quick 30-second workout logging</span>
+            </div>
+            <div class="feature-item">
+                <svg class="check-icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+                </svg>
+                <span>Track progress over time</span>
+            </div>
+            <div class="feature-item">
+                <svg class="check-icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+                </svg>
+                <span>60+ pre-loaded exercises</span>
+            </div>
+            <div class="feature-item">
+                <svg class="check-icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+                </svg>
+                <span>Your data stays private & secure</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
