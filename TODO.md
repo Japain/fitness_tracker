@@ -1,0 +1,864 @@
+# Fitness Tracker - Implementation TODO
+
+**Version:** 1.0
+**Date:** 2025-11-25
+**Status:** Ready for Implementation
+
+---
+
+## Table of Contents
+
+1. [Phase 0: Environment Setup & Prerequisites](#phase-0-environment-setup--prerequisites)
+2. [Phase 1: Foundation (Weeks 1-2)](#phase-1-foundation-weeks-1-2)
+3. [Phase 2: Authentication & User Management](#phase-2-authentication--user-management)
+4. [Phase 3: Core Workout Features](#phase-3-core-workout-features)
+5. [Phase 4: Exercise Management](#phase-4-exercise-management)
+6. [Phase 5: State Persistence & Offline Support](#phase-5-state-persistence--offline-support)
+7. [Phase 6: Polish & Testing](#phase-6-polish--testing)
+8. [Phase 7: Deployment & Production](#phase-7-deployment--production)
+9. [Phase 8: Post-MVP Enhancements](#phase-8-post-mvp-enhancements-optional)
+
+---
+
+## Phase 0: Environment Setup & Prerequisites
+
+**Goal:** Prepare development environment and external services before implementation begins.
+
+### Database Setup
+- [ ] **Create PostgreSQL database** [@user]
+  - Install PostgreSQL 15+ locally or use Docker
+  - Create database: `fitness_tracker_dev`
+  - Note connection string for .env file
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` Section 4.1
+
+- [ ] **Create PostgreSQL production database** [@user]
+  - Set up managed PostgreSQL on Railway, Supabase, or AWS RDS
+  - Note production connection string
+  - Configure SSL certificate if required
+  - **Depends on:** Local database setup
+
+### OAuth Configuration
+- [ ] **Register Google OAuth application** [@user]
+  - Create project in Google Cloud Console
+  - Enable Google OAuth 2.0 API
+  - Add authorized redirect URIs:
+    - Development: `http://localhost:3000/api/auth/google/callback`
+    - Production: `https://yourdomain.com/api/auth/google/callback`
+  - Save Client ID and Client Secret
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` Section 1.1
+
+### Environment Variables
+- [ ] **Create backend .env files** [@user]
+  - Copy `packages/backend/.env.example` to `.env.development`
+  - Fill in all required values:
+    - `DATABASE_URL` (from PostgreSQL setup)
+    - `GOOGLE_CLIENT_ID` (from OAuth setup)
+    - `GOOGLE_CLIENT_SECRET` (from OAuth setup)
+    - `SESSION_SECRET` (generate random 32-character string)
+    - `GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback`
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` Section 4.3
+
+- [ ] **Create frontend .env files** [@user]
+  - Copy `packages/frontend/.env.example` to `.env.development`
+  - Set `VITE_API_URL=http://localhost:3000`
+
+### Node Version
+- [ ] **Verify Node.js version** [@user]
+  - Run `nvm use` in project root (should use Node 22.18.0 from .nvmrc)
+  - Run `node --version` to confirm
+  - Install dependencies: `npm install` (in project root)
+
+---
+
+## Phase 1: Foundation (Weeks 1-2)
+
+**Goal:** Set up monorepo structure, TypeScript configuration, and database schema.
+
+### Shared Types Package
+- [ ] **Define core data types in packages/shared** [@backend-typescript-dev]
+  - Create `packages/shared/types/index.ts`
+  - Implement `User` interface (see `PROJECT_REQUIREMENTS.md` Section TC-3)
+  - Implement `Exercise` interface with `type` field ('strength' | 'cardio')
+  - Implement `WorkoutSession` interface
+  - Implement `WorkoutExercise` interface
+  - Implement `WorkoutSet` interface (separate model per `ARCHITECTURE_DECISIONS.md` Section 3.1)
+  - Export all types
+  - **Priority:** P0 (blocks all other work)
+  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 792-835
+
+### Database Schema & Migrations
+- [ ] **Create Prisma schema** [@backend-typescript-dev]
+  - Create `packages/backend/prisma/schema.prisma`
+  - Define `User` model with fields from shared types
+  - Define `Exercise` model with `isCustom`, `userId`, `category`, `type` fields
+  - Define `WorkoutSession` model with `userId`, `startTime`, `endTime` (nullable)
+  - Define `WorkoutExercise` model with foreign keys
+  - Define `WorkoutSet` model with nullable fields for strength/cardio
+  - Add indexes: `userId + startTime`, `userId + endTime WHERE endTime IS NULL`
+  - **Depends on:** Shared types
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 894-985
+
+- [ ] **Run initial Prisma migration** [@backend-typescript-dev]
+  - Run `npx prisma migrate dev --name init`
+  - Verify migration created successfully
+  - Generate Prisma Client: `npx prisma generate`
+  - **Depends on:** Prisma schema, Database setup
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` Section 4.1
+
+- [ ] **Seed exercise library (60 exercises)** [@backend-typescript-dev]
+  - Create `packages/backend/prisma/seed.ts`
+  - Add 60 pre-defined exercises from research
+  - Categorize: Push, Pull, Legs, Core, Cardio
+  - Mark all as `isCustom: false`, `userId: null`
+  - Run seed: `npx prisma db seed`
+  - **Depends on:** Prisma migration
+  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 310-399
+
+### Backend Setup
+- [ ] **Initialize Express server** [@backend-typescript-dev]
+  - Create `packages/backend/src/index.ts`
+  - Set up Express app on port 3000
+  - Add CORS middleware (allow localhost:5173)
+  - Add body-parser middleware (JSON)
+  - Add Helmet security middleware
+  - Create health check endpoint: `GET /api/health`
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` Section 8.1
+
+- [ ] **Set up Prisma Client** [@backend-typescript-dev]
+  - Create `packages/backend/src/lib/prisma.ts`
+  - Initialize PrismaClient singleton
+  - Export client for use in routes
+  - **Depends on:** Prisma migration
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` Section 4.1
+
+- [ ] **Configure environment variables** [@backend-typescript-dev]
+  - Create `packages/backend/src/config/env.ts`
+  - Load dotenv based on NODE_ENV
+  - Validate required env vars on startup
+  - Export typed config object
+  - **Depends on:** User environment setup
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1112-1159
+
+### Frontend Setup
+- [ ] **Initialize Vite + React + TypeScript** [@frontend-typescript-dev]
+  - Verify `packages/frontend/vite.config.ts` has proxy to backend port 3000
+  - Create `packages/frontend/src/main.tsx` entry point
+  - Create `packages/frontend/src/App.tsx` root component
+  - Test hot reload works
+
+- [ ] **Install and configure Chakra UI** [@frontend-typescript-dev]
+  - Install: `npm install @chakra-ui/react @emotion/react @emotion/styled framer-motion`
+  - Create `packages/frontend/src/theme/index.ts`
+  - Map design tokens from `mockups/DESIGN-DOCUMENTATION.md`
+  - Configure ChakraProvider in `main.tsx`
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1441-1601, `mockups/DESIGN-DOCUMENTATION.md` lines 42-154
+
+- [ ] **Set up React Router** [@frontend-typescript-dev]
+  - Install: `npm install react-router-dom`
+  - Create `packages/frontend/src/router/index.tsx`
+  - Define routes: `/`, `/login`, `/workout/:id`, `/history`, `/history/:id`
+  - Create ProtectedRoute component
+  - Implement lazy loading for route components
+  - **Depends on:** Authentication store (can stub initially)
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1609-1708
+
+- [ ] **Set up Zustand for state management** [@frontend-typescript-dev]
+  - Install: `npm install zustand`
+  - Create `packages/frontend/src/stores/authStore.ts`
+  - Implement auth state (user, isAuthenticated, isLoading)
+  - Implement auth actions (login, logout, checkAuth)
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1213-1253
+
+- [ ] **Set up SWR for server state** [@frontend-typescript-dev]
+  - Install: `npm install swr`
+  - Create `packages/frontend/src/hooks/useActiveWorkout.ts`
+  - Create `packages/frontend/src/api/client.ts` with fetch wrapper
+  - Configure SWR defaults (revalidateOnFocus, dedupingInterval)
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1256-1280
+
+### TypeScript Configuration
+- [ ] **Configure TypeScript project references** [@backend-typescript-dev] [@frontend-typescript-dev]
+  - Verify root `tsconfig.json` has references to all packages
+  - Verify `packages/shared/tsconfig.json` has `composite: true`
+  - Verify backend/frontend can import from `@fitness-tracker/shared`
+  - Test build: `npm run build`
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1301-1426
+
+---
+
+## Phase 2: Authentication & User Management
+
+**Goal:** Implement secure Google OAuth authentication with session management.
+
+### Backend Authentication
+- [ ] **Install authentication dependencies** [@backend-typescript-dev]
+  - Install: `npm install passport passport-google-oauth20 express-session connect-pg-simple`
+  - Install types: `npm install -D @types/passport @types/passport-google-oauth20 @types/express-session`
+
+- [ ] **Configure Passport.js** [@backend-typescript-dev]
+  - Create `packages/backend/src/middleware/auth.ts`
+  - Configure GoogleStrategy with client ID/secret from env
+  - Implement user upsert logic (find or create user)
+  - Configure session serialization/deserialization
+  - **Depends on:** Prisma Client, OAuth credentials
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 64-102
+
+- [ ] **Configure express-session with PostgreSQL** [@backend-typescript-dev]
+  - Create session middleware in `packages/backend/src/index.ts`
+  - Use `connect-pg-simple` for session store
+  - Configure session cookies (httpOnly, secure in prod, sameSite: lax)
+  - Set maxAge to 7 days (604800000ms)
+  - **Depends on:** Database setup
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 122-146
+
+- [ ] **Implement CSRF protection** [@backend-typescript-dev]
+  - Install: `npm install csurf`
+  - Create `packages/backend/src/middleware/csrf.ts`
+  - Apply to all POST/PATCH/DELETE routes
+  - Create endpoint: `GET /api/csrf-token`
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 155-210
+
+- [ ] **Create authentication routes** [@backend-typescript-dev]
+  - Create `packages/backend/src/routes/auth.ts`
+  - Implement `GET /api/auth/google` (initiate OAuth)
+  - Implement `GET /api/auth/google/callback` (OAuth callback)
+  - Implement `POST /api/auth/logout` (end session)
+  - Implement `GET /api/auth/me` (get current user)
+  - **Depends on:** Passport configuration
+  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 851-854, `ARCHITECTURE_DECISIONS.md` Section 1
+
+- [ ] **Create requireAuth middleware** [@backend-typescript-dev]
+  - Create `packages/backend/src/middleware/requireAuth.ts`
+  - Check if user is authenticated (req.isAuthenticated())
+  - Return 401 if not authenticated
+  - Add userId to request for downstream use
+  - Apply to all protected routes
+
+### Frontend Authentication
+- [ ] **Create authentication page** [@frontend-typescript-dev]
+  - Create `packages/frontend/src/pages/AuthPage.tsx`
+  - Implement UI per `mockups/06-authentication.html`
+  - Add "Continue with Google" button
+  - Link to `GET /api/auth/google`
+  - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 658-748
+
+- [ ] **Implement authentication flow** [@frontend-typescript-dev]
+  - Update `packages/frontend/src/stores/authStore.ts`
+  - Implement `checkAuth()` to call `GET /api/auth/me` on mount
+  - Store user data in Zustand on successful auth
+  - Redirect to dashboard after successful login
+  - **Depends on:** Backend auth routes
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1213-1253
+
+- [ ] **Create ProtectedRoute component** [@frontend-typescript-dev]
+  - Update `packages/frontend/src/router/ProtectedRoute.tsx`
+  - Check `isAuthenticated` from auth store
+  - Show loading spinner while checking auth
+  - Redirect to `/login` if not authenticated
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1676-1694
+
+- [ ] **Implement CSRF token handling** [@frontend-typescript-dev]
+  - Update `packages/frontend/src/api/client.ts`
+  - Fetch CSRF token on app init
+  - Include CSRF token in all POST/PATCH/DELETE request headers
+  - **Depends on:** Backend CSRF endpoint
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 189-210
+
+### User Data Segregation
+- [ ] **Implement userId filtering middleware** [@backend-typescript-dev]
+  - Update all workout/exercise routes to filter by `req.user.id`
+  - Add database queries with `WHERE userId = req.user.id`
+  - Verify no cross-user data leakage in tests
+  - **Priority:** P0 (security requirement)
+  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 98-115
+
+---
+
+## Phase 3: Core Workout Features
+
+**Goal:** Implement workout session creation, exercise logging, and completion.
+
+### Backend Workout API
+- [ ] **Create workout routes** [@backend-typescript-dev]
+  - Create `packages/backend/src/routes/workouts.ts`
+  - Implement `POST /api/workouts` (create new workout session)
+  - Implement `GET /api/workouts` (list user's workouts, paginated)
+  - Implement `GET /api/workouts/:id` (get workout details with exercises/sets)
+  - Implement `GET /api/workouts/active` (get in-progress workout)
+  - Implement `PATCH /api/workouts/:id` (update workout, set endTime)
+  - Implement `DELETE /api/workouts/:id` (delete workout)
+  - **Depends on:** Authentication, requireAuth middleware
+  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 856-862, `ARCHITECTURE_DECISIONS.md` Section 2
+
+- [ ] **Implement active workout detection** [@backend-typescript-dev]
+  - Update `GET /api/workouts/active` endpoint
+  - Query: `WHERE userId = req.user.id AND endTime IS NULL`
+  - Return workout with exercises/sets included
+  - Return 204 No Content if no active workout
+  - Add database index on (userId, endTime) WHERE endTime IS NULL
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 380-439
+
+- [ ] **Implement workout conflict detection** [@backend-typescript-dev]
+  - In `POST /api/workouts`, check for existing active workout
+  - Return 409 Conflict if active workout exists
+  - Include `activeWorkoutId` in error response
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 316-342
+
+- [ ] **Create workout exercise routes** [@backend-typescript-dev]
+  - Create `packages/backend/src/routes/workoutExercises.ts`
+  - Implement `POST /api/workouts/:id/exercises` (add exercise to workout)
+  - Implement `GET /api/workouts/:id/exercises` (list exercises in workout)
+  - Implement `PATCH /api/workouts/:workoutId/exercises/:exerciseId` (update)
+  - Implement `DELETE /api/workouts/:workoutId/exercises/:exerciseId` (remove)
+  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 864-869
+
+- [ ] **Create workout set routes** [@backend-typescript-dev]
+  - Create `packages/backend/src/routes/workoutSets.ts`
+  - Implement `POST /api/workouts/:workoutId/exercises/:exerciseId/sets` (add set)
+  - Implement `PATCH /api/workouts/:workoutId/exercises/:exerciseId/sets/:setId` (update set)
+  - Implement `DELETE /api/workouts/:workoutId/exercises/:exerciseId/sets/:setId` (delete set)
+  - Validate strength vs. cardio fields based on exercise type
+  - **Depends on:** Exercise API (to look up exercise type)
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 539-565, 656-673
+
+### Backend Input Validation
+- [ ] **Install Zod validation library** [@backend-typescript-dev]
+  - Install: `npm install zod`
+  - Create `packages/shared/validators/workout.ts`
+
+- [ ] **Create Zod schemas for workout data** [@backend-typescript-dev]
+  - Create schema for `WorkoutSession` (startTime, endTime, notes)
+  - Create schema for `WorkoutExercise` (exerciseId, orderIndex)
+  - Create schema for `WorkoutSet` (setNumber, reps, weight, duration, distance)
+  - Export schemas for backend/frontend use
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 2169-2200
+
+- [ ] **Apply validation to all routes** [@backend-typescript-dev]
+  - Validate request bodies with Zod schemas
+  - Return 400 Bad Request with error details on validation failure
+  - **Depends on:** Zod schemas
+
+### Frontend Dashboard
+- [ ] **Create Dashboard page** [@frontend-typescript-dev]
+  - Create `packages/frontend/src/pages/Dashboard.tsx`
+  - Implement UI per `mockups/01-dashboard-home.html`
+  - Display welcome message with user's displayName
+  - Show "Start New Workout" button (prominent primary CTA)
+  - Display this week's stats (4 stat cards: workouts, exercises, total volume, avg duration)
+  - Show recent workouts (last 3 workouts as cards)
+  - Implement "View All" link to history page
+  - **Depends on:** Auth store, workout API
+  - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 156-247
+
+- [ ] **Implement workout creation** [@frontend-typescript-dev]
+  - Handle "Start New Workout" button click
+  - Call `POST /api/workouts` with startTime = now
+  - Handle 409 conflict (show modal: "Resume active workout?")
+  - Navigate to `/workout/:id` on success
+  - Show error toast on failure
+  - **Depends on:** Backend workout API
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 316-367
+
+### Frontend Active Workout Screen
+- [ ] **Create ActiveWorkout page** [@frontend-typescript-dev]
+  - Create `packages/frontend/src/pages/ActiveWorkout.tsx`
+  - Implement UI per `mockups/02-active-workout.html`
+  - Display workout header with timer, back button
+  - Show list of exercises with sets (table format per mockup)
+  - Add fixed bottom actions: "Add Exercise" + "Finish Workout"
+  - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 254-361
+
+- [ ] **Implement workout timer** [@frontend-typescript-dev]
+  - Calculate elapsed time from `startTime` to now
+  - Display timer in MM:SS format
+  - Update every second with setInterval
+  - Add pulsing dot animation per mockup
+
+- [ ] **Create ExerciseCard component** [@frontend-typescript-dev]
+  - Create `packages/frontend/src/components/ExerciseCard.tsx`
+  - Display exercise name, category
+  - Show sets in table format (Set# | Weight | Reps | Checkbox)
+  - Add "Add Another Set" button
+  - Include edit/delete icons per mockup
+  - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 291-341
+
+- [ ] **Implement set input fields** [@frontend-typescript-dev]
+  - Create number inputs for weight, reps
+  - Use `inputMode="numeric"` or `"decimal"` for mobile keyboard
+  - Center-align numbers per mockup
+  - Add checkbox for set completion
+  - Auto-save on blur or Enter key
+  - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 310-328, `PROJECT_REQUIREMENTS.md` lines 222-242
+
+- [ ] **Create ExerciseSelectionModal component** [@frontend-typescript-dev]
+  - Create `packages/frontend/src/components/ExerciseSelectionModal.tsx`
+  - Implement UI per `mockups/03-exercise-selection.html`
+  - Show bottom sheet modal (slide up animation)
+  - Display search input at top
+  - Show recent exercises (3 items)
+  - Show category pills (horizontal scroll: Push, Pull, Legs, Core, Cardio)
+  - Display exercise list (filtered by search/category)
+  - Add "Create Custom Exercise" button at bottom
+  - **Depends on:** Exercise API
+  - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 368-483, `PROJECT_REQUIREMENTS.md` lines 186-210
+
+- [ ] **Implement exercise selection logic** [@frontend-typescript-dev]
+  - Handle category filter (show only exercises in selected category)
+  - Implement search filter (fuzzy match on exercise name)
+  - Track recently used exercises in localStorage
+  - Call `POST /api/workouts/:id/exercises` on selection
+  - Close modal and add exercise to UI optimistically
+  - **Depends on:** Backend workout exercise API
+
+- [ ] **Implement finish workout** [@frontend-typescript-dev]
+  - Handle "Finish Workout" button click
+  - Call `PATCH /api/workouts/:id` with endTime = now
+  - Show workout summary (duration, exercise count, total sets)
+  - Navigate to workout detail view
+  - Clear active workout from state
+  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 260-277
+
+### Frontend Workout History
+- [ ] **Create WorkoutHistory page** [@frontend-typescript-dev]
+  - Create `packages/frontend/src/pages/WorkoutHistory.tsx`
+  - Implement UI per `mockups/04-workout-history.html`
+  - Display stats summary card (total workouts, total exercises, avg duration)
+  - Show workout list in reverse chronological order
+  - Implement pagination or infinite scroll (20 workouts per page)
+  - Each workout card shows: date, duration, exercise count, exercise pills
+  - **Depends on:** Backend workout API
+  - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 489-572
+
+- [ ] **Create WorkoutDetail page** [@frontend-typescript-dev]
+  - Create `packages/frontend/src/pages/WorkoutDetail.tsx`
+  - Implement UI per `mockups/05-workout-detail.html`
+  - Display workout date, duration, total sets
+  - Show each exercise with sets in table format
+  - Include back button to history
+  - Add menu button for future actions (duplicate, edit, delete)
+  - **Depends on:** Backend workout API
+  - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 579-654
+
+---
+
+## Phase 4: Exercise Management
+
+**Goal:** Implement exercise library browsing and custom exercise creation.
+
+### Backend Exercise API
+- [ ] **Create exercise routes** [@backend-typescript-dev]
+  - Create `packages/backend/src/routes/exercises.ts`
+  - Implement `GET /api/exercises` (list exercises with filters)
+  - Support query params: `?category=Push&search=bench&isCustom=false`
+  - Return library exercises (isCustom=false) + user's custom exercises
+  - Implement `POST /api/exercises` (create custom exercise)
+  - Implement `PATCH /api/exercises/:id` (update custom exercise, user-owned only)
+  - Implement `DELETE /api/exercises/:id` (delete custom exercise, user-owned only)
+  - **Depends on:** Authentication, requireAuth
+  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 870-876, `ARCHITECTURE_DECISIONS.md` lines 830-855
+
+- [ ] **Implement exercise ownership checks** [@backend-typescript-dev]
+  - In PATCH/DELETE routes, verify `exercise.userId === req.user.id`
+  - Return 403 Forbidden if user doesn't own custom exercise
+  - Prevent editing/deleting library exercises (isCustom=false)
+
+### Frontend Exercise Management
+- [ ] **Implement custom exercise creation** [@frontend-typescript-dev]
+  - Update ExerciseSelectionModal with "Create Custom Exercise" flow
+  - Show inline form: exercise name, category, type (strength/cardio)
+  - Call `POST /api/exercises` on submit
+  - Add new exercise to active workout immediately
+  - Update exercise list with new custom exercise
+  - **Depends on:** Backend exercise API
+  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 402-428
+
+- [ ] **Implement exercise library loading strategy** [@frontend-typescript-dev]
+  - Fetch all exercises on app load (cache in memory)
+  - Store in Zustand or SWR cache
+  - Use cached data for instant search/filter
+  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 196-201
+
+---
+
+## Phase 5: State Persistence & Offline Support
+
+**Goal:** Ensure workout data survives browser closure and handle intermittent connectivity.
+
+### Frontend State Persistence
+- [ ] **Implement active workout resumption** [@frontend-typescript-dev]
+  - On app mount, call `GET /api/workouts/active`
+  - If active workout found, show "Resume Workout?" prompt
+  - Navigate to `/workout/:id` on resume
+  - Store active workout ID in localStorage as backup
+  - **Depends on:** Backend active workout endpoint
+  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 490-526
+
+- [ ] **Create request queue for offline support** [@frontend-typescript-dev]
+  - Create `packages/frontend/src/api/requestQueue.ts`
+  - Implement RequestQueue class with localStorage persistence
+  - Queue failed requests for retry
+  - Process queue on `window.addEventListener('online')`
+  - Implement exponential backoff (max 3 retries)
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1723-1832
+
+- [ ] **Implement optimistic UI updates** [@frontend-typescript-dev]
+  - Create `packages/frontend/src/hooks/useAddExercise.ts`
+  - Update UI immediately with temporary ID
+  - Send request to backend
+  - Replace temporary data with real data on success
+  - Rollback on failure (if online) or queue (if offline)
+  - Show "Syncing..." badge on pending items
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1836-1905
+
+- [ ] **Add network status indicator** [@frontend-typescript-dev]
+  - Listen to `window.addEventListener('online')` / `'offline'`
+  - Show alert banner when offline: "You're offline. Changes will sync when reconnected."
+  - Update UI when back online
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1908-1926
+
+### Backend Data Persistence
+- [ ] **Implement abandoned workout handling** [@backend-typescript-dev]
+  - Update `GET /api/workouts` to categorize workouts:
+    - Active: endTime = null, startTime < 24 hours ago
+    - Incomplete: endTime = null, startTime > 24 hours ago
+    - Completed: endTime != null
+  - Don't auto-delete abandoned workouts
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 442-487
+
+---
+
+## Phase 6: Polish & Testing
+
+**Goal:** Ensure production-ready quality with comprehensive testing and accessibility.
+
+### UI Polish
+- [ ] **Implement loading states** [@frontend-typescript-dev]
+  - Add skeleton screens for dashboard, history, workout detail
+  - Show spinners for button actions (save, delete)
+  - Disable buttons during async operations
+  - **Reference:** `context/DESIGN-PRINCIPLES.md` Section IV
+
+- [ ] **Implement error states** [@frontend-typescript-dev]
+  - Create Toast notification component
+  - Show error messages for failed API calls
+  - Add retry buttons where appropriate
+  - Display empty states for zero workouts/exercises
+  - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 1136-1140
+
+- [ ] **Add micro-animations** [@frontend-typescript-dev]
+  - Button hover effects (translateY, shadow)
+  - Modal slide-up animation (250ms ease-out)
+  - Checkbox check animation
+  - Card hover effects (border color, shadow)
+  - Keep animations quick (150-300ms)
+  - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` Section IV, `context/DESIGN-PRINCIPLES.md` Section IV
+
+- [ ] **Implement bottom navigation** [@frontend-typescript-dev]
+  - Create `packages/frontend/src/components/BottomNav.tsx`
+  - Add 4 navigation items: Dashboard, History, Exercises (future), Settings (future)
+  - Highlight active route
+  - Position sticky at bottom
+  - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 236-246
+
+### Accessibility Audit
+- [ ] **Run axe DevTools audit** [@frontend-typescript-dev]
+  - Install axe DevTools browser extension
+  - Test all pages for WCAG violations
+  - Fix all critical and serious issues
+  - Verify color contrast ratios meet AA (4.5:1 for normal text)
+  - **Reference:** `PROJECT_REQUIREMENTS.md` Section NFR-2, `mockups/DESIGN-DOCUMENTATION.md` lines 1046-1093
+
+- [ ] **Test keyboard navigation** [@frontend-typescript-dev]
+  - Tab through entire app, verify logical order
+  - Ensure all interactive elements are focusable
+  - Verify focus indicators are visible (3px primary-brand outline)
+  - Test modal focus trap (focus stays in modal when open)
+  - Add keyboard shortcuts for power users (optional)
+
+- [ ] **Add ARIA labels** [@frontend-typescript-dev]
+  - Add aria-label to icon-only buttons (edit, delete, menu)
+  - Add aria-labelledby to modals
+  - Add aria-live regions for toast notifications
+  - Ensure form inputs have associated labels
+  - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 1086-1094
+
+- [ ] **Test with screen readers** [@frontend-typescript-dev] [@user]
+  - Test with VoiceOver (macOS/iOS)
+  - Test with TalkBack (Android) or NVDA (Windows)
+  - Verify all content is announced correctly
+  - Fix any screen reader issues
+
+### Performance Testing
+- [ ] **Run Lighthouse mobile audit** [@frontend-typescript-dev] [@user]
+  - Test at mobile viewport (375×667px)
+  - Target: >90% mobile usability, >80% performance
+  - Address any critical performance issues
+  - Optimize bundle size if needed (code splitting, tree shaking)
+  - **Reference:** `PROJECT_REQUIREMENTS.md` Section NFR-2
+
+- [ ] **Test on real mobile devices** [@frontend-typescript-dev] [@user]
+  - Test on iPhone (iOS Safari)
+  - Test on Android (Chrome Android)
+  - Verify touch targets meet 44×44px minimum
+  - Test form inputs trigger correct mobile keyboard
+  - Verify workout logging can be completed in <30 seconds
+
+### Backend Testing
+- [ ] **Write integration tests for API endpoints** [@backend-typescript-dev]
+  - Install: `npm install -D jest supertest @types/jest @types/supertest`
+  - Create test database
+  - Test authentication routes (Google OAuth mock)
+  - Test workout CRUD operations
+  - Test exercise CRUD operations
+  - Test user data segregation (critical security test)
+  - Verify no cross-user data leakage
+  - **Priority:** P0 for data segregation tests
+
+- [ ] **Test active workout state management** [@backend-typescript-dev]
+  - Test creating workout when one already active (should return 409)
+  - Test resuming active workout
+  - Test finishing workout
+  - Test abandoned workout detection
+
+### End-to-End Testing
+- [ ] **Write E2E tests with Playwright** [@frontend-typescript-dev] [@backend-typescript-dev]
+  - Install: `npm install -D @playwright/test`
+  - Test full workout flow: login → start workout → add exercise → add sets → finish
+  - Test workout history viewing
+  - Test custom exercise creation
+  - Test browser closure and resumption
+  - Run in CI/CD pipeline
+
+### Security Testing
+- [ ] **Implement rate limiting** [@backend-typescript-dev]
+  - Install: `npm install express-rate-limit`
+  - Apply rate limits per `ARCHITECTURE_DECISIONS.md` Section 4.2:
+    - Auth endpoints: 5 requests per 15 minutes
+    - Workout endpoints: 200 requests per minute (lenient for set logging)
+    - Exercise endpoints: 100 requests per minute
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1009-1087
+
+- [ ] **Add security headers with Helmet** [@backend-typescript-dev]
+  - Configure Content Security Policy
+  - Set HSTS headers (max-age 1 year)
+  - Enable X-Frame-Options: DENY
+  - **Depends on:** Helmet middleware (should already be added in Phase 1)
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 2130-2159
+
+- [ ] **Test authentication security** [@backend-typescript-dev] [@user]
+  - Verify session cookies are httpOnly, secure (in prod), sameSite
+  - Test CSRF protection on state-changing endpoints
+  - Verify OAuth token validation
+  - Test session expiration (7 days)
+  - Attempt cross-user data access (should fail with 403)
+
+---
+
+## Phase 7: Deployment & Production
+
+**Goal:** Deploy application to production and configure monitoring.
+
+### Production Database
+- [ ] **Set up production PostgreSQL database** [@user]
+  - Provision managed PostgreSQL (Railway, Supabase, or AWS RDS)
+  - Note production connection string
+  - Configure SSL/TLS connection
+  - **Depends on:** Phase 0 database setup
+
+- [ ] **Run production migrations** [@backend-typescript-dev] [@user]
+  - Set `DATABASE_URL` env var to production database
+  - Run: `npx prisma migrate deploy`
+  - Run seed script: `npx prisma db seed`
+  - Verify all tables and indexes created
+
+### Backend Deployment
+- [ ] **Choose hosting platform** [@user]
+  - Options: Railway, Heroku, Vercel (serverless), AWS EC2/ECS
+  - Set up account and project
+  - Note deployment URL
+
+- [ ] **Configure production environment variables** [@user]
+  - Set all required env vars in hosting platform:
+    - `NODE_ENV=production`
+    - `DATABASE_URL` (production)
+    - `GOOGLE_CLIENT_ID`
+    - `GOOGLE_CLIENT_SECRET`
+    - `SESSION_SECRET` (new random string for production)
+    - `GOOGLE_CALLBACK_URL` (production domain)
+    - `CORS_ORIGIN` (production frontend domain)
+    - `PORT` (if required by platform)
+
+- [ ] **Deploy backend** [@backend-typescript-dev] [@user]
+  - Build backend: `npm run build --workspace=packages/backend`
+  - Deploy to chosen platform
+  - Verify health check endpoint: `GET /api/health`
+  - Test authentication flow
+
+### Frontend Deployment
+- [ ] **Choose hosting platform** [@user]
+  - Options: Vercel, Netlify, AWS S3+CloudFront
+  - Set up account and project
+
+- [ ] **Configure production environment variables** [@user]
+  - Set `VITE_API_URL` to production backend URL
+  - Set other frontend env vars if needed
+
+- [ ] **Build and deploy frontend** [@frontend-typescript-dev] [@user]
+  - Build frontend: `npm run build --workspace=packages/frontend`
+  - Deploy to chosen platform
+  - Verify site loads at production domain
+
+### SSL/HTTPS Configuration
+- [ ] **Configure SSL certificates** [@user]
+  - If using Vercel/Netlify: Automatic (done)
+  - If using custom domain: Obtain SSL cert (Let's Encrypt or platform-provided)
+  - Ensure both frontend and backend use HTTPS
+  - Update OAuth redirect URIs to use https://
+
+### Post-Deployment Testing
+- [ ] **Smoke test production deployment** [@frontend-typescript-dev] [@backend-typescript-dev] [@user]
+  - Test authentication flow (Google OAuth)
+  - Create a test workout
+  - Add exercises and sets
+  - Finish workout
+  - View workout history
+  - Test on mobile device
+  - Verify all API calls succeed
+
+- [ ] **Monitor error logs** [@backend-typescript-dev] [@user]
+  - Check backend logs for errors
+  - Check frontend console for errors
+  - Verify no authentication failures
+  - Check database connection
+
+### Monitoring & Analytics
+- [ ] **Set up error tracking with Sentry** [@backend-typescript-dev] [@frontend-typescript-dev] [@user]
+  - Create Sentry account (free tier)
+  - Install: `npm install @sentry/react @sentry/node`
+  - Configure Sentry DSN in frontend and backend
+  - Test error reporting
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 2073-2120
+
+- [ ] **Set up analytics with PostHog** [@frontend-typescript-dev] [@user]
+  - Set up self-hosted PostHog or use cloud (optional)
+  - Install: `npm install posthog-js`
+  - Configure PostHog in frontend
+  - Track key events: workout_started, workout_completed, exercise_added
+  - Implement opt-out for users
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1963-2070
+
+- [ ] **Configure Lighthouse CI** [@frontend-typescript-dev]
+  - Create `.github/workflows/lighthouse.yml`
+  - Configure Lighthouse CI to run on PRs
+  - Set assertions: performance >80%, accessibility >90%
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 2205-2258
+
+---
+
+## Phase 8: Post-MVP Enhancements (Optional)
+
+**Goal:** Add stretch goal features after MVP is stable and deployed.
+
+### Personal Records (PRs)
+- [ ] **Implement PR detection** [@backend-typescript-dev]
+  - Create algorithm to find max weight for each exercise
+  - Add `GET /api/exercises/:id/pr` endpoint
+  - Return best set (highest weight) for user
+  - **Reference:** `PROJECT_REQUIREMENTS.md` Phase 2 Enhancements
+
+- [ ] **Display PRs in UI** [@frontend-typescript-dev]
+  - Highlight PR sets in workout detail view (gold badge)
+  - Show PR history on dashboard
+  - Show PR notification when new PR achieved
+
+### Workout Statistics
+- [ ] **Create statistics endpoints** [@backend-typescript-dev]
+  - Add `GET /api/stats/summary` (total workouts, exercises, volume)
+  - Add `GET /api/stats/trends` (workouts per week/month)
+  - Calculate total volume (sum of weight × reps × sets)
+
+- [ ] **Create statistics dashboard page** [@frontend-typescript-dev]
+  - Display weekly/monthly workout trends (charts)
+  - Show most frequent exercises
+  - Display total volume lifted
+  - Show workout consistency (streak)
+
+### Workout Templates
+- [ ] **Implement workout templates** [@backend-typescript-dev]
+  - Add `WorkoutTemplate` table in Prisma schema
+  - Add endpoints: `POST /api/templates`, `GET /api/templates`, `DELETE /api/templates/:id`
+  - Allow creating template from existing workout
+
+- [ ] **Add template UI** [@frontend-typescript-dev]
+  - Add "Save as Template" option to workout detail
+  - Show template library on dashboard
+  - Add "Start from Template" option
+
+### Service Worker for Extended Offline
+- [ ] **Implement Service Worker** [@frontend-typescript-dev]
+  - Create `packages/frontend/public/service-worker.js`
+  - Cache static assets (HTML, CSS, JS)
+  - Implement offline page fallback
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1934-1942
+
+- [ ] **Use IndexedDB for local storage** [@frontend-typescript-dev]
+  - Install: `npm install idb`
+  - Store workouts locally in IndexedDB
+  - Sync to backend when online
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1944-1956
+
+### Additional OAuth Providers
+- [ ] **Add GitHub OAuth** [@backend-typescript-dev] [@user]
+  - Register OAuth app in GitHub
+  - Install: `npm install passport-github2`
+  - Configure GitHub strategy in Passport
+  - Add `GET /api/auth/github` route
+  - Update authentication page with GitHub button
+
+### Data Export
+- [ ] **Implement CSV export** [@backend-typescript-dev]
+  - Add `GET /api/workouts/export?format=csv` endpoint
+  - Generate CSV with all workout data
+  - Return as downloadable file
+
+- [ ] **Implement JSON export** [@backend-typescript-dev]
+  - Add `GET /api/workouts/export?format=json` endpoint
+  - Return all workouts in JSON format
+
+---
+
+## Quick Reference
+
+### Priority Levels
+- **P0 (Critical):** Must be completed before launch; blocks other work
+- **P1 (High):** Essential for MVP; should be completed before nice-to-haves
+- **P2 (Medium):** Nice-to-have; can be deferred to post-MVP
+
+### Agent Assignments
+- **@backend-typescript-dev:** All backend/API/database tasks
+- **@frontend-typescript-dev:** All frontend/UI/React tasks
+- **@user:** Environment setup, OAuth registration, deployment configuration
+
+### Key Documentation References
+- **PROJECT_REQUIREMENTS.md:** Functional requirements, user stories, acceptance criteria
+- **ARCHITECTURE_DECISIONS.md:** Technical decisions, implementation patterns, code examples
+- **mockups/DESIGN-DOCUMENTATION.md:** UI specifications, design system, component details
+- **context/DESIGN-PRINCIPLES.md:** Design philosophy, accessibility checklist
+- **CLAUDE.md:** Project overview, commands, architecture summary
+
+### Estimated Timeline
+- **Phase 0:** 1 day (user setup)
+- **Phase 1:** 1-2 weeks (foundation)
+- **Phase 2:** 1 week (authentication)
+- **Phase 3:** 2 weeks (core workout features)
+- **Phase 4:** 1 week (exercise management)
+- **Phase 5:** 1 week (state persistence)
+- **Phase 6:** 1 week (polish & testing)
+- **Phase 7:** 3-5 days (deployment)
+- **Total MVP:** ~6-7 weeks
+
+---
+
+**Document Status:** Ready for Implementation
+**Next Action:** Begin Phase 0 - Environment Setup
+**Questions?** Refer to PROJECT_REQUIREMENTS.md or ARCHITECTURE_DECISIONS.md for technical details.
