@@ -9,6 +9,9 @@ fitness_tracker/
 ├── packages/
 │   ├── frontend/          # React + TypeScript frontend (Vite)
 │   ├── backend/           # Express + TypeScript API
+│   │   └── src/
+│   │       └── config/
+│   │           └── env.ts # Environment configuration loader
 │   └── shared/            # Shared TypeScript types
 ├── mockups/               # UI design mockups and specifications
 │   ├── html/              # Interactive HTML/CSS mockups
@@ -25,7 +28,12 @@ fitness_tracker/
 │   └── product-requirements-manager.md
 ├── PROJECT_REQUIREMENTS.md       # Complete product specification
 ├── ARCHITECTURE_DECISIONS.md    # Technical architecture documentation
+├── TODO.md                       # Implementation roadmap
 ├── CLAUDE.md              # AI assistant context and guidelines
+├── docker-compose.yml     # PostgreSQL database container
+├── .env.development       # Local development environment variables
+├── .env.production        # Production environment variables
+├── .env.example           # Environment variables template
 ├── package.json           # Root workspace configuration
 └── tsconfig.json          # Root TypeScript configuration
 ```
@@ -33,14 +41,46 @@ fitness_tracker/
 ## Getting Started
 
 ### Prerequisites
-- Node.js (v22 or higher)
+- Node.js v22.18.0 (managed via nvm - see `.nvmrc`)
+- Docker and Docker Compose (for local PostgreSQL)
 - npm or yarn
 
 ### Installation
 
-```bash
-npm install
-```
+1. **Install Node.js version**
+   ```bash
+   nvm use  # Uses Node.js 22.18.0 from .nvmrc
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Start PostgreSQL database (Docker)**
+   ```bash
+   docker-compose up -d
+   ```
+
+   This starts a PostgreSQL 15 container with:
+   - Database: `fitness_tracker_dev`
+   - Port: `5432`
+   - User: `fitness_tracker`
+   - Password: `dev_password_change_in_production`
+
+4. **Configure environment variables**
+
+   Environment variables are managed at the root level:
+   - `.env.development` - Local development (already configured for Docker PostgreSQL)
+   - `.env.production` - Production deployment (configure with Railway/production DB)
+   - `.env.example` - Template for new developers
+
+   The `.env.development` file is already configured with:
+   - Local Docker PostgreSQL connection
+   - Development CORS settings
+   - Backend/frontend URLs
+
+   You'll need to add OAuth credentials when you reach Phase 2 (Authentication).
 
 ### Development
 
@@ -60,6 +100,38 @@ cd packages/frontend
 npm run dev
 ```
 
+### Database Management
+
+**View database logs:**
+```bash
+docker-compose logs -f postgres
+```
+
+**Stop database:**
+```bash
+docker-compose stop
+```
+
+**Restart database:**
+```bash
+docker-compose start
+```
+
+**Remove database (keeps data):**
+```bash
+docker-compose down
+```
+
+**Remove database and all data:**
+```bash
+docker-compose down -v  # ⚠️ This deletes all data!
+```
+
+**Access PostgreSQL CLI:**
+```bash
+docker exec -it fitness_tracker_postgres psql -U fitness_tracker -d fitness_tracker_dev
+```
+
 ### Building
 
 Build all packages:
@@ -70,10 +142,11 @@ npm run build
 ## Tech Stack
 
 - **Frontend**: React, TypeScript, Vite
-- **Backend**: Express, TypeScript, Node.js (v22)
+- **Backend**: Express, TypeScript, Node.js v22.18.0
+- **Database**: PostgreSQL 15 (Docker for local, Railway for production)
 - **Shared**: TypeScript types and interfaces
 - **Design Tools**: Playwright MCP for browser automation and mockup validation
-- **Development**: npm workspaces, TypeScript project references
+- **Development**: npm workspaces, TypeScript project references, Docker Compose
 
 ## Project Documentation
 
@@ -116,9 +189,21 @@ This project uses specialized Claude Code agents for different aspects of develo
 
 ## Next Steps
 
-1. Install dependencies: `npm install`
-2. Review project requirements: `PROJECT_REQUIREMENTS.md`
-3. Check design mockups: `mockups/`
-4. Set up database (PostgreSQL recommended)
-5. Configure authentication (OAuth provider)
-6. Implement features following architecture documentation
+1. **Complete environment setup** (see Getting Started above)
+   - ✅ Install Node.js v22.18.0
+   - ✅ Install dependencies
+   - ✅ Start PostgreSQL with Docker
+   - ⏳ Configure Google OAuth credentials (Phase 2)
+
+2. **Review project documentation**
+   - Review `PROJECT_REQUIREMENTS.md` for functional requirements
+   - Check `ARCHITECTURE_DECISIONS.md` for technical implementation
+   - Browse `mockups/` for UI designs
+   - Follow `TODO.md` for implementation phases
+
+3. **Start development**
+   - Phase 1: Foundation (database schema, shared types, basic setup)
+   - Phase 2: Authentication (Google OAuth)
+   - Phase 3+: Core features (workout tracking, exercise library, etc.)
+
+For detailed implementation steps, see `TODO.md`.
