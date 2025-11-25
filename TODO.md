@@ -25,13 +25,13 @@
 **Goal:** Prepare development environment and external services before implementation begins.
 
 ### Database Setup
-- [ ] **Create PostgreSQL database** [@user]
+- [x] **Create PostgreSQL database** [@user]
   - Install PostgreSQL 15+ locally or use Docker
   - Create database: `fitness_tracker_dev`
   - Note connection string for .env file
   - **Reference:** `ARCHITECTURE_DECISIONS.md` Section 4.1
 
-- [ ] **Create PostgreSQL production database** [@user]
+- [x] **Create PostgreSQL production database** [@user]
   - Set up managed PostgreSQL on Railway, Supabase, or AWS RDS
   - Note production connection string
   - Configure SSL certificate if required
