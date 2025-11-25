@@ -2,7 +2,7 @@
 
 **Version:** 1.0
 **Date:** 2025-11-25
-**Status:** Ready for Implementation
+**Status:** Implementation Started - Phase 0 Complete
 
 ---
 
@@ -38,7 +38,7 @@
   - **Depends on:** Local database setup
 
 ### OAuth Configuration
-- [ ] **Register Google OAuth application** [@user]
+- [x] **Register Google OAuth application** [@user]
   - Create project in Google Cloud Console
   - Enable Google OAuth 2.0 API
   - Add authorized redirect URIs:
@@ -48,7 +48,7 @@
   - **Reference:** `ARCHITECTURE_DECISIONS.md` Section 1.1
 
 ### Environment Variables
-- [ ] **Create backend .env files** [@user]
+- [x] **Create backend .env files** [@user]
   - Copy `packages/backend/.env.example` to `.env.development`
   - Fill in all required values:
     - `DATABASE_URL` (from PostgreSQL setup)
@@ -58,12 +58,12 @@
     - `GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback`
   - **Reference:** `ARCHITECTURE_DECISIONS.md` Section 4.3
 
-- [ ] **Create frontend .env files** [@user]
+- [x] **Create frontend .env files** [@user]
   - Copy `packages/frontend/.env.example` to `.env.development`
   - Set `VITE_API_URL=http://localhost:3000`
 
 ### Node Version
-- [ ] **Verify Node.js version** [@user]
+- [x] **Verify Node.js version** [@user]
   - Run `nvm use` in project root (should use Node 22.18.0 from .nvmrc)
   - Run `node --version` to confirm
   - Install dependencies: `npm install` (in project root)
