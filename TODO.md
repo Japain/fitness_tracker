@@ -75,16 +75,22 @@
 **Goal:** Set up monorepo structure, TypeScript configuration, and database schema.
 
 ### Shared Types Package
-- [ ] **Define core data types in packages/shared** [@backend-typescript-dev]
-  - Create `packages/shared/types/index.ts`
-  - Implement `User` interface (see `PROJECT_REQUIREMENTS.md` Section TC-3)
-  - Implement `Exercise` interface with `type` field ('strength' | 'cardio')
-  - Implement `WorkoutSession` interface
-  - Implement `WorkoutExercise` interface
-  - Implement `WorkoutSet` interface (separate model per `ARCHITECTURE_DECISIONS.md` Section 3.1)
-  - Export all types
+- [x] **Define core data types in packages/shared** [@backend-typescript-dev]
+  - Created domain-separated type files:
+    - `packages/shared/types/user.ts` - User interface
+    - `packages/shared/types/exercise.ts` - Exercise interface with `type` field ('strength' | 'cardio')
+    - `packages/shared/types/workout.ts` - WorkoutSession, WorkoutExercise, WorkoutSet interfaces
+    - `packages/shared/types/index.ts` - Barrel export (re-exports all types)
+  - Implemented `User` interface with profilePictureUrl, createdAt, updatedAt
+  - Implemented `Exercise` interface with required `type` field ('strength' | 'cardio')
+  - Implemented `WorkoutSession` interface with userId, startTime, endTime, notes
+  - Implemented `WorkoutExercise` interface (pure join entity with orderIndex)
+  - Implemented `WorkoutSet` interface (separate model per `ARCHITECTURE_DECISIONS.md` Section 3.1)
+    - Supports both strength fields (reps, weight) and cardio fields (duration, distance)
+  - All types exported via barrel pattern for backward compatibility
   - **Priority:** P0 (blocks all other work)
   - **Reference:** `PROJECT_REQUIREMENTS.md` lines 792-835
+  - **Completed:** 2025-11-25
 
 ### Database Schema & Migrations
 - [ ] **Create Prisma schema** [@backend-typescript-dev]
