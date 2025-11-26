@@ -71,6 +71,13 @@ export async function fetcher<T>(url: string): Promise<T> {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+
+    // Handle 401 Unauthorized - throw UnauthorizedError
+    // Components should catch this and navigate to /login using React Router
+    if (response.status === 401) {
+      throw new UnauthorizedError();
+    }
+
     throw new ApiError(
       errorData.message || `API error: ${response.status}`,
       response.status,
