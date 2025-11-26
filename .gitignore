@@ -35,3 +35,6 @@ npm-debug.log*
 # Testing
 coverage/
 .nyc_output/
+
+# Local session notes (don't commit)
+FRONTEND_SESSION_NOTES.md
