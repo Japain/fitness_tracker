@@ -1,8 +1,8 @@
 # Fitness Tracker - Implementation TODO
 
 **Version:** 1.0
-**Date:** 2025-11-26
-**Status:** Phase 1 Frontend Setup Complete - Backend Setup In Progress
+**Date:** 2025-11-25
+**Status:** Phase 1 Complete (Backend and Frontend)
 
 ---
 
@@ -93,32 +93,35 @@
   - **Completed:** 2025-11-25
 
 ### Database Schema & Migrations
-- [ ] **Create Prisma schema** [@backend-typescript-dev]
-  - Create `packages/backend/prisma/schema.prisma`
-  - Define `User` model with fields from shared types
-  - Define `Exercise` model with `isCustom`, `userId`, `category`, `type` fields
-  - Define `WorkoutSession` model with `userId`, `startTime`, `endTime` (nullable)
-  - Define `WorkoutExercise` model with foreign keys
-  - Define `WorkoutSet` model with nullable fields for strength/cardio
-  - Add indexes: `userId + startTime`, `userId + endTime WHERE endTime IS NULL`
-  - **Depends on:** Shared types
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 894-985
+- [x] **Create Prisma schema** [@backend-typescript-dev]
+  - Created `packages/backend/prisma/schema.prisma` with complete database schema
+  - Implemented `User` model (id, googleId, email, displayName, profilePictureUrl, timestamps)
+  - Implemented `Exercise` model with `isCustom`, `userId` (nullable), `category`, `type` fields
+  - Implemented `WorkoutSession` model with `userId`, `startTime`, `endTime` (nullable for active workouts)
+  - Implemented `WorkoutExercise` join model with `orderIndex` for exercise ordering
+  - Implemented `WorkoutSet` model with nullable fields supporting both strength (reps, weight) and cardio (duration, distance)
+  - Added indexes: `userId + startTime`, `userId + endTime`, `workoutSessionId + orderIndex`
+  - Added `googleId` field to User shared type for OAuth integration
+  - **Technical Decision:** Using Prisma 5.22.0 (downgraded from 7.x per technical-architect recommendation for MVP stability)
+  - **Completed:** 2025-11-26
 
-- [ ] **Run initial Prisma migration** [@backend-typescript-dev]
-  - Run `npx prisma migrate dev --name init`
-  - Verify migration created successfully
-  - Generate Prisma Client: `npx prisma generate`
-  - **Depends on:** Prisma schema, Database setup
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` Section 4.1
+- [x] **Run initial Prisma migration** [@backend-typescript-dev]
+  - Ran `npx prisma migrate dev --name init` successfully
+  - Created migration: `packages/backend/prisma/migrations/20251126151451_init/migration.sql`
+  - Generated Prisma Client at `node_modules/.prisma/client`
+  - Verified all 5 tables created: User, Exercise, WorkoutSession, WorkoutExercise, WorkoutSet
+  - Verified all 9 indexes created for query performance
+  - Database connection to Docker PostgreSQL confirmed working
+  - **Completed:** 2025-11-26
 
-- [ ] **Seed exercise library (60 exercises)** [@backend-typescript-dev]
-  - Create `packages/backend/prisma/seed.ts`
-  - Add 60 pre-defined exercises from research
-  - Categorize: Push, Pull, Legs, Core, Cardio
-  - Mark all as `isCustom: false`, `userId: null`
-  - Run seed: `npx prisma db seed`
-  - **Depends on:** Prisma migration
-  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 310-399
+- [x] **Seed exercise library (60 exercises)** [@backend-typescript-dev]
+  - Created `packages/backend/prisma/seed.ts` with comprehensive exercise library
+  - Seeded 60 pre-defined exercises: Push (21), Pull (18), Legs (15), Core (2), Cardio (4)
+  - All exercises marked as `isCustom: false`, `userId: null` (library exercises)
+  - Configured package.json with seed script using tsx
+  - Successfully ran seed: `npx prisma db seed`
+  - Verified all exercises inserted into database
+  - **Completed:** 2025-11-26
 
 ### Backend Setup
 - [ ] **Initialize Express server** [@backend-typescript-dev]

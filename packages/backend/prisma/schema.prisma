@@ -1,0 +1,126 @@
+// Prisma Schema for Fitness Tracker Application
+// This schema defines all database models and their relationships
+// Reference: ARCHITECTURE_DECISIONS.md lines 894-985
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+// ============================================================================
+// User Model
+// ============================================================================
+
+model User {
+  id                 String   @id @default(uuid())
+  googleId           String   @unique // OAuth provider ID
+  email              String   @unique
+  displayName        String
+  profilePictureUrl  String?
+  preferredWeightUnit String  @default("lbs") // "lbs" | "kg"
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // Relationships
+  workoutSessions    WorkoutSession[]
+  customExercises    Exercise[]
+
+  @@index([email])
+  @@index([googleId])
+}
+
+// ============================================================================
+// Exercise Model
+// ============================================================================
+
+model Exercise {
+  id          String   @id @default(uuid())
+  name        String
+  category    String?  // "Push", "Pull", "Legs", "Core", "Cardio"
+  type        String   // "strength" | "cardio"
+  isCustom    Boolean  @default(false)
+  userId      String?  // Set if custom exercise (foreign key to User)
+  createdAt   DateTime @default(now())
+
+  // Relationships
+  user               User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutExercises   WorkoutExercise[]
+
+  @@index([userId, isCustom])
+  @@index([name]) // For search queries
+}
+
+// ============================================================================
+// WorkoutSession Model
+// ============================================================================
+
+model WorkoutSession {
+  id        String   @id @default(uuid())
+  userId    String
+  startTime DateTime @default(now())
+  endTime   DateTime? // null = active workout
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercises WorkoutExercise[]
+
+  @@index([userId, startTime])
+  @@index([userId, endTime]) // For active workout queries (WHERE endTime IS NULL)
+}
+
+// ============================================================================
+// WorkoutExercise Model (Join Entity)
+// ============================================================================
+
+model WorkoutExercise {
+  id               String   @id @default(uuid())
+  workoutSessionId String
+  exerciseId       String
+  orderIndex       Int      // Order in workout (0, 1, 2...)
+  notes            String?
+  createdAt        DateTime @default(now())
+
+  // Relationships
+  workoutSession   WorkoutSession @relation(fields: [workoutSessionId], references: [id], onDelete: Cascade)
+  exercise         Exercise       @relation(fields: [exerciseId], references: [id])
+  sets             WorkoutSet[]
+
+  @@index([workoutSessionId, orderIndex])
+}
+
+// ============================================================================
+// WorkoutSet Model (Granular Set Storage)
+// ============================================================================
+
+model WorkoutSet {
+  id                String   @id @default(uuid())
+  workoutExerciseId String
+  setNumber         Int      // 1, 2, 3...
+
+  // Strength exercise fields (nullable)
+  reps              Int?
+  weight            Float?
+  weightUnit        String?  // "lbs" | "kg" | "bodyweight"
+
+  // Cardio exercise fields (nullable)
+  duration          Int?     // seconds
+  distance          Float?
+  distanceUnit      String?  // "miles" | "km"
+
+  // Common fields
+  completed         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+
+  // Relationships
+  workoutExercise   WorkoutExercise @relation(fields: [workoutExerciseId], references: [id], onDelete: Cascade)
+
+  @@index([workoutExerciseId, setNumber])
+}

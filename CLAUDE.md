@@ -18,6 +18,8 @@ This is a **monorepo** using npm workspaces with three packages:
   - TypeScript with Node.js v22.18.0
   - Entry point: `packages/backend/src/index.ts`
   - Configuration: `packages/backend/src/config/env.ts` (loads root `.env` files)
+  - Database: Prisma 5.22.0 ORM with PostgreSQL 15
+  - Schema: `packages/backend/prisma/schema.prisma` (5 models: User, Exercise, WorkoutSession, WorkoutExercise, WorkoutSet)
 
 - **`packages/frontend`**: React SPA with Vite (port 5173)
   - TypeScript + React + Vite
@@ -34,6 +36,11 @@ This is a **monorepo** using npm workspaces with three packages:
 - **Docker Compose**: Local PostgreSQL 15 database (`docker-compose.yml`)
 - **Environment Files**: Root-level `.env.development` and `.env.production`
 - **Database**: PostgreSQL 15 (Docker locally, Railway for production)
+- **ORM**: Prisma 5.22.0 (type-safe database client, migrations, schema management)
+  - Schema location: `packages/backend/prisma/schema.prisma`
+  - Migrations: `packages/backend/prisma/migrations/`
+  - Seed script: `packages/backend/prisma/seed.ts`
+  - **Technical Decision**: Using Prisma 5.22.0 (not v7) for MVP stability and documentation consistency
 
 ### Key Design Decisions
 
@@ -138,6 +145,38 @@ All environment variables are managed at the **project root** (not in individual
 
 ### Database Setup
 
+**Database Schema (Prisma 5.22.0):**
+
+The database schema is complete with 5 models:
+
+1. **User** - User accounts with Google OAuth integration
+   - Fields: `id`, `googleId`, `email`, `displayName`, `profilePictureUrl`, `preferredWeightUnit`, timestamps
+   - Indexes: `email`, `googleId`
+
+2. **Exercise** - Exercise library (60 pre-defined + custom exercises)
+   - Fields: `id`, `name`, `category` (Push/Pull/Legs/Core/Cardio), `type` (strength/cardio), `isCustom`, `userId` (nullable)
+   - Library exercises: `isCustom = false`, `userId = null`
+   - Custom exercises: `isCustom = true`, `userId` set to owner
+
+3. **WorkoutSession** - Workout tracking with active/completed states
+   - Fields: `id`, `userId`, `startTime`, `endTime` (nullable for active workouts), `notes`, timestamps
+   - Key indexes: `userId + startTime`, `userId + endTime`
+   - Active workout query: `WHERE userId = ? AND endTime IS NULL`
+
+4. **WorkoutExercise** - Exercise-to-workout relationships (join table)
+   - Fields: `id`, `workoutSessionId`, `exerciseId`, `orderIndex`, `notes`, timestamp
+   - Index: `workoutSessionId + orderIndex` (for exercise ordering)
+
+5. **WorkoutSet** - Individual set data (granular tracking)
+   - Fields: `id`, `workoutExerciseId`, `setNumber`, `reps`, `weight`, `weightUnit`, `duration`, `distance`, `distanceUnit`, `completed`, timestamp
+   - Supports both strength (reps, weight) and cardio (duration, distance) exercises
+   - Index: `workoutExerciseId + setNumber`
+
+**Exercise Library:**
+- 60 pre-seeded exercises across 5 categories
+- Categories: Push (21), Pull (18), Legs (15), Core (2), Cardio (4)
+- Includes compound lifts, isolation exercises, bodyweight movements, and cardio options
+
 **Local Development (Docker):**
 ```bash
 # Start PostgreSQL container
@@ -154,6 +193,24 @@ docker-compose stop
 
 # Access PostgreSQL CLI
 docker exec -it fitness_tracker_postgres psql -U fitness_tracker -d fitness_tracker_dev
+```
+
+**Prisma Commands (run from `packages/backend/`):**
+```bash
+# Generate Prisma Client (after schema changes)
+npx prisma generate
+
+# Create and apply migrations
+npx prisma migrate dev --name description_of_changes
+
+# Seed the exercise library
+npx prisma db seed
+
+# Open Prisma Studio (database GUI)
+npx prisma studio
+
+# Reset database (⚠️ deletes all data)
+npx prisma migrate reset
 ```
 
 **Local database credentials:**
@@ -193,13 +250,86 @@ npm run build                     # Builds all packages
 cd packages/backend && npm run build  # Build backend only (tsc)
 cd packages/frontend && npm run build # Build frontend only (tsc + vite build)
 
-# Database management
+# Database management (Docker)
 docker-compose down               # Stop and remove containers (keeps data)
 docker-compose down -v            # Stop and remove containers + data
+
+# Prisma commands (from packages/backend)
+npx prisma generate               # Generate Prisma Client
+npx prisma migrate dev            # Create and apply migrations
+npx prisma db seed                # Seed exercise library
+npx prisma studio                 # Open database GUI
 
 # Other
 npm run test                      # Run tests across all packages
 npm run lint                      # Lint all packages
+```
+
+## Database Usage Patterns
+
+### Prisma Client Usage
+
+Import and use Prisma Client in your backend code:
+
+```typescript
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+// Example: Get all exercises for user (library + custom)
+const exercises = await prisma.exercise.findMany({
+  where: {
+    OR: [
+      { isCustom: false },           // Library exercises
+      { userId: req.user.id }        // User's custom exercises
+    ]
+  },
+  orderBy: { name: 'asc' }
+});
+
+// Example: Get active workout for user
+const activeWorkout = await prisma.workoutSession.findFirst({
+  where: {
+    userId: req.user.id,
+    endTime: null                     // Active = no end time
+  },
+  include: {
+    exercises: {
+      include: {
+        exercise: true,
+        sets: true
+      },
+      orderBy: { orderIndex: 'asc' }
+    }
+  }
+});
+```
+
+### Critical Security Pattern
+
+**ALL database queries MUST filter by `userId`** to ensure user data segregation:
+
+```typescript
+// ✅ CORRECT - Filters by userId
+const workouts = await prisma.workoutSession.findMany({
+  where: { userId: req.user.id }
+});
+
+// ❌ WRONG - No userId filter (security vulnerability!)
+const workouts = await prisma.workoutSession.findMany();
+```
+
+### Active Workout Detection
+
+Query for active workouts using `endTime: null`:
+
+```typescript
+const activeWorkout = await prisma.workoutSession.findFirst({
+  where: {
+    userId: req.user.id,
+    endTime: null
+  }
+});
 ```
 
 ## Important Requirements
