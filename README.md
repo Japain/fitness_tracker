@@ -68,7 +68,21 @@ fitness_tracker/
    - User: `fitness_tracker`
    - Password: `dev_password_change_in_production`
 
-4. **Configure environment variables**
+4. **Run database migrations** (first time setup)
+   ```bash
+   cd packages/backend
+   npx prisma migrate dev  # Applies the initial database schema
+   npx prisma db seed      # Seeds the exercise library with 60 exercises
+   ```
+
+   This creates all database tables:
+   - `User` - User accounts with Google OAuth integration
+   - `Exercise` - Exercise library (60 pre-defined + custom exercises)
+   - `WorkoutSession` - Workout tracking with active/completed states
+   - `WorkoutExercise` - Exercise-to-workout relationships
+   - `WorkoutSet` - Individual set data (reps, weight, duration, distance)
+
+5. **Configure environment variables**
 
    Environment variables are managed at the root level:
    - `.env.development` - Local development (already configured for Docker PostgreSQL)
@@ -102,33 +116,51 @@ npm run dev
 
 ### Database Management
 
-**View database logs:**
+**Prisma commands (run from `packages/backend/`):**
 ```bash
+# Generate Prisma Client (after schema changes)
+npx prisma generate
+
+# Create a new migration (after schema changes)
+npx prisma migrate dev --name description_of_changes
+
+# Apply migrations
+npx prisma migrate dev
+
+# Reset database and re-apply all migrations
+npx prisma migrate reset  # ⚠️ Deletes all data!
+
+# Seed the database
+npx prisma db seed
+
+# Open Prisma Studio (database GUI)
+npx prisma studio
+
+# Validate schema
+npx prisma validate
+
+# View migration status
+npx prisma migrate status
+```
+
+**Docker PostgreSQL commands:**
+```bash
+# View database logs
 docker-compose logs -f postgres
-```
 
-**Stop database:**
-```bash
+# Stop database
 docker-compose stop
-```
 
-**Restart database:**
-```bash
+# Restart database
 docker-compose start
-```
 
-**Remove database (keeps data):**
-```bash
+# Remove database (keeps data)
 docker-compose down
-```
 
-**Remove database and all data:**
-```bash
+# Remove database and all data
 docker-compose down -v  # ⚠️ This deletes all data!
-```
 
-**Access PostgreSQL CLI:**
-```bash
+# Access PostgreSQL CLI
 docker exec -it fitness_tracker_postgres psql -U fitness_tracker -d fitness_tracker_dev
 ```
 
@@ -148,6 +180,7 @@ npm run build
   - **API Client**: Custom fetch wrapper with CSRF token support
 - **Backend**: Express, TypeScript, Node.js v22.18.0
 - **Database**: PostgreSQL 15 (Docker for local, Railway for production)
+- **ORM**: Prisma 5.22.0 (schema, migrations, and type-safe database client)
 - **Shared**: TypeScript types and interfaces
 - **Design Tools**: Playwright MCP for browser automation and mockup validation
 - **Development**: npm workspaces, TypeScript project references, Docker Compose
@@ -191,34 +224,42 @@ This project uses specialized Claude Code agents for different aspects of develo
 - **Workout history** with detailed progress tracking
 - **User data segregation** - complete privacy per user
 
-## Current Status
+## Project Status
 
-- ✅ **Phase 0 Complete**: Environment setup, PostgreSQL, OAuth registration
-- ✅ **Phase 1 Frontend Setup Complete**:
-  - React + TypeScript + Vite configured
-  - Chakra UI theme system with all design tokens
-  - React Router with lazy-loaded routes
-  - Zustand auth store + SWR data fetching
-  - API client with CSRF token management
-  - TypeScript project references verified
-- ⏳ **Phase 1 Backend Setup**: In Progress
-  - Prisma schema and migrations
-  - Express server setup
-  - Backend API routes
-- 🔜 **Phase 2**: Authentication (Google OAuth)
-- 🔜 **Phase 3+**: Core workout features
+### Completed
+- ✅ **Phase 0**: Environment setup and prerequisites
+  - Node.js v22.18.0 installed
+  - npm dependencies installed
+  - PostgreSQL 15 running in Docker
+  - Development environment variables configured
 
-## Next Steps
+- ✅ **Phase 1 - Database Foundation** (Completed 2025-11-26)
+  - Shared TypeScript types package created
+  - Prisma 5.22.0 configured (downgraded from v7 for MVP stability)
+  - Complete database schema with 5 models (User, Exercise, WorkoutSession, WorkoutExercise, WorkoutSet)
+  - Initial migration applied to PostgreSQL
+  - Exercise library seeded with 60 exercises (Push, Pull, Legs, Core, Cardio)
 
-1. **Complete Phase 1 Backend Setup** (see `TODO.md`)
+-  ✅ **Phase 1 - Backend Setup** (see `TODO.md`)
    - Create Prisma schema and run migrations
    - Set up Express server with middleware
    - Seed exercise library (60 exercises)
 
-2. **Review project documentation**
-   - Review `PROJECT_REQUIREMENTS.md` for functional requirements
-   - Check `ARCHITECTURE_DECISIONS.md` for technical implementation
-   - Browse `mockups/` for UI designs
-   - Follow `TODO.md` for implementation phases
+### Next Steps
 
-For detailed implementation steps, see `TODO.md`.
+1. **Continue Phase 1 implementation**
+   - Complete backend Express server setup
+   - Complete frontend React + Vite setup
+   - Configure TypeScript project references
+
+2. **Phase 2: Authentication**
+   - Configure Google OAuth credentials
+   - Implement Passport.js authentication
+   - Create authentication routes and middleware
+
+3. **Phase 3+: Core features**
+   - Workout tracking and logging
+   - Exercise library browsing and custom exercises
+   - Workout history and detail views
+
+For detailed implementation steps and progress tracking, see `TODO.md`.
