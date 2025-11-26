@@ -16,7 +16,7 @@ interface ExerciseData {
 
 const exercises: ExerciseData[] = [
   // ============================================================================
-  // PUSH CATEGORY (Chest, Shoulders, Triceps) - 22 exercises
+  // PUSH CATEGORY (Chest, Shoulders, Triceps) - 21 exercises
   // ============================================================================
 
   // Compound Push Exercises
@@ -49,7 +49,7 @@ const exercises: ExerciseData[] = [
   { name: 'Pike Push-ups', category: 'Push', type: 'strength' },
 
   // ============================================================================
-  // PULL CATEGORY (Back, Biceps) - 17 exercises
+  // PULL CATEGORY (Back, Biceps) - 18 exercises
   // ============================================================================
 
   // Compound Pull Exercises
@@ -77,7 +77,7 @@ const exercises: ExerciseData[] = [
   { name: 'Rear Delt Fly', category: 'Pull', type: 'strength' },
 
   // ============================================================================
-  // LEGS CATEGORY (Quads, Hamstrings, Glutes, Calves) - 16 exercises
+  // LEGS CATEGORY (Quads, Hamstrings, Glutes, Calves) - 15 exercises
   // ============================================================================
 
   // Compound Leg Exercises
