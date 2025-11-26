@@ -1,16 +1,8 @@
-import React from 'react';
+import { RouterProvider } from 'react-router-dom';
+import router from './router';
 
 function App() {
-  return (
-    <div className="app">
-      <header>
-        <h1>Fitness Tracker</h1>
-      </header>
-      <main>
-        <p>Welcome to your fitness tracking app!</p>
-      </main>
-    </div>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;

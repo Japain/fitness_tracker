@@ -142,6 +142,10 @@ npm run build
 ## Tech Stack
 
 - **Frontend**: React, TypeScript, Vite
+  - **UI Library**: Chakra UI with custom theme (design tokens from mockups)
+  - **Routing**: React Router v6 with lazy loading
+  - **State Management**: Zustand (global auth state) + SWR (server state)
+  - **API Client**: Custom fetch wrapper with CSRF token support
 - **Backend**: Express, TypeScript, Node.js v22.18.0
 - **Database**: PostgreSQL 15 (Docker for local, Railway for production)
 - **Shared**: TypeScript types and interfaces
@@ -187,23 +191,34 @@ This project uses specialized Claude Code agents for different aspects of develo
 - **Workout history** with detailed progress tracking
 - **User data segregation** - complete privacy per user
 
+## Current Status
+
+- ✅ **Phase 0 Complete**: Environment setup, PostgreSQL, OAuth registration
+- ✅ **Phase 1 Frontend Setup Complete**:
+  - React + TypeScript + Vite configured
+  - Chakra UI theme system with all design tokens
+  - React Router with lazy-loaded routes
+  - Zustand auth store + SWR data fetching
+  - API client with CSRF token management
+  - TypeScript project references verified
+- ⏳ **Phase 1 Backend Setup**: In Progress
+  - Prisma schema and migrations
+  - Express server setup
+  - Backend API routes
+- 🔜 **Phase 2**: Authentication (Google OAuth)
+- 🔜 **Phase 3+**: Core workout features
+
 ## Next Steps
 
-1. **Complete environment setup** (see Getting Started above)
-   - ✅ Install Node.js v22.18.0
-   - ✅ Install dependencies
-   - ✅ Start PostgreSQL with Docker
-   - ⏳ Configure Google OAuth credentials (Phase 2)
+1. **Complete Phase 1 Backend Setup** (see `TODO.md`)
+   - Create Prisma schema and run migrations
+   - Set up Express server with middleware
+   - Seed exercise library (60 exercises)
 
 2. **Review project documentation**
    - Review `PROJECT_REQUIREMENTS.md` for functional requirements
    - Check `ARCHITECTURE_DECISIONS.md` for technical implementation
    - Browse `mockups/` for UI designs
    - Follow `TODO.md` for implementation phases
-
-3. **Start development**
-   - Phase 1: Foundation (database schema, shared types, basic setup)
-   - Phase 2: Authentication (Google OAuth)
-   - Phase 3+: Core features (workout tracking, exercise library, etc.)
 
 For detailed implementation steps, see `TODO.md`.

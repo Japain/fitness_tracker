@@ -23,6 +23,12 @@ This is a **monorepo** using npm workspaces with three packages:
   - TypeScript + React + Vite
   - Entry point: `packages/frontend/src/main.tsx`
   - Vite proxy configured to forward `/api` requests to backend
+  - **UI Library**: Chakra UI v2 with custom theme at `src/theme/index.ts`
+  - **Routing**: React Router v6 with lazy loading (`src/router/index.tsx`)
+  - **State Management**:
+    - Zustand for global auth state (`src/stores/authStore.ts`)
+    - SWR for server state caching and revalidation
+  - **API Client**: `src/api/client.ts` with CSRF token management and session cookies
 
 ### Infrastructure
 - **Docker Compose**: Local PostgreSQL 15 database (`docker-compose.yml`)
@@ -33,6 +39,13 @@ This is a **monorepo** using npm workspaces with three packages:
 
 - **Shared Types**: All data models are defined once in `packages/shared` and imported by both frontend and backend to ensure type safety across the stack
 - **TypeScript References**: Packages use TypeScript project references (`tsconfig.json` includes `references` field) for proper build ordering
+- **Design System**: Chakra UI theme implements all design tokens from `mockups/DESIGN-DOCUMENTATION.md` (colors, typography, spacing, components)
+- **State Architecture**:
+  - Zustand for global client state (authentication, user session)
+  - SWR for server state (automatic caching, revalidation, deduplication)
+  - Local component state for UI-only concerns
+- **Code Splitting**: React Router lazy loading splits each page into separate chunks for optimal performance
+- **Security**: CSRF token fetched on app init and included in all mutating requests
 - **State Persistence**: Application must preserve workout state if user closes browser mid-workout
 - **User Data Segregation**: Authentication required; users can only access their own data
 
