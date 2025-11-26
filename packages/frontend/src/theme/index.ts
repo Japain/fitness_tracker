@@ -253,11 +253,6 @@ const styles = {
       fontSize: 'md',
       lineHeight: 'normal',
     },
-    // Ensure minimum touch targets on mobile
-    'button, a': {
-      minHeight: '44px',
-      minWidth: '44px',
-    },
   },
 };
 

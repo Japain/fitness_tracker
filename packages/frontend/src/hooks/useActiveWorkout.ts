@@ -1,6 +1,6 @@
 import useSWR from 'swr';
 import type { WorkoutSession } from '@fitness-tracker/shared';
-import { fetcher } from '../api/client';
+import { fetcher, ApiError } from '../api/client';
 
 /**
  * Hook to fetch the active workout session
@@ -14,12 +14,9 @@ export function useActiveWorkout() {
     '/api/workouts/active',
     fetcher,
     {
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-      dedupingInterval: 5000,
       // Don't retry if we get a 404 (no active workout)
       shouldRetryOnError: (err) => {
-        if (err.status === 404) return false;
+        if (err instanceof ApiError && err.status === 404) return false;
         return true;
       },
     }

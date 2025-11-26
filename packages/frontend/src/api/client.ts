@@ -50,6 +50,17 @@ export class ApiError extends Error {
 }
 
 /**
+ * Unauthorized Error class
+ * Components should catch this error and navigate to /login using React Router
+ */
+export class UnauthorizedError extends ApiError {
+  constructor() {
+    super('Unauthorized', 401);
+    this.name = 'UnauthorizedError';
+  }
+}
+
+/**
  * Generic fetcher function for SWR
  * Automatically includes credentials and handles common errors
  */
@@ -74,7 +85,7 @@ export async function fetcher<T>(url: string): Promise<T> {
  * API request options
  */
 interface ApiRequestOptions {
-  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
   headers?: Record<string, string>;
 }
@@ -90,7 +101,7 @@ export async function apiRequest<T>(
   const { method = 'GET', body, headers = {} } = options;
 
   // Include CSRF token for state-changing requests
-  if (['POST', 'PATCH', 'DELETE'].includes(method) && csrfToken) {
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) && csrfToken) {
     headers['X-CSRF-Token'] = csrfToken;
   }
 
@@ -109,9 +120,10 @@ export async function apiRequest<T>(
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
 
-    // Handle 401 Unauthorized - redirect to login
+    // Handle 401 Unauthorized - throw UnauthorizedError
+    // Components should catch this and navigate to /login using React Router
     if (response.status === 401) {
-      window.location.href = '/login';
+      throw new UnauthorizedError();
     }
 
     throw new ApiError(

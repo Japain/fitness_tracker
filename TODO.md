@@ -210,7 +210,7 @@
     - revalidateOnFocus: false
     - dedupingInterval: 5000ms
     - shouldRetryOnError: false
-    - errorRetryCount: 2
+    - errorRetryCount: 3
   - Integrated CSRF token initialization in `main.tsx`
   - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1256-1280
   - **Completed:** 2025-11-26
