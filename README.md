@@ -240,7 +240,7 @@ This project uses specialized Claude Code agents for different aspects of develo
   - Initial migration applied to PostgreSQL
   - Exercise library seeded with 60 exercises (Push, Pull, Legs, Core, Cardio)
 
-1. ✅ **Complete Phase 1 Backend Setup** (see `TODO.md`)
+-  ✅ **Phase 1-  Backend Setup** (see `TODO.md`)
    - Create Prisma schema and run migrations
    - Set up Express server with middleware
    - Seed exercise library (60 exercises)
