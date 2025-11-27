@@ -248,7 +248,7 @@ This project uses specialized Claude Code agents for different aspects of develo
   - Prisma Client singleton configured (hot-reload safe)
   - Environment configuration loader (`src/config/env.ts`)
   - CORS middleware configured for frontend (localhost:5173)
-  - Helmet security middleware (11+ security headers)
+  - Helmet security middleware (comprehensive security headers)
   - Health check endpoint: `GET /api/health` (tests DB connectivity)
 
   **Frontend Setup:**

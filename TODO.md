@@ -129,7 +129,7 @@
   - Set up Express app on port 3000
   - Added CORS middleware (allow localhost:5173 with credentials)
   - Added body-parser middleware (Express.json())
-  - Added Helmet security middleware (11+ security headers)
+  - Added Helmet security middleware (comprehensive security headers)
   - Created health check endpoint: `GET /api/health` (tests DB connectivity)
   - Server successfully running and verified
   - **Reference:** `ARCHITECTURE_DECISIONS.md` Section 8.1
@@ -281,6 +281,25 @@
   - Return 401 if not authenticated
   - Add userId to request for downstream use
   - Apply to all protected routes
+
+- [ ] **Implement graceful shutdown handling** [@backend-typescript-dev]
+  - Add SIGTERM and SIGINT signal handlers to `packages/backend/src/index.ts`
+  - Implement Prisma disconnect on shutdown
+  - Implement HTTP server close with proper timeout
+  - Test with production deployment scenarios
+  - **Priority:** P1 (production readiness)
+  - **Reference:** PR #3 Comment 4
+  - **Note:** Deferred from Phase 1 - addresses connection leak prevention
+
+- [ ] **Implement production error logging** [@backend-typescript-dev]
+  - Create `packages/backend/src/utils/errorLogger.ts`
+  - Implement environment-based error logging (full details in dev, sanitized in prod)
+  - Install and configure Sentry for production error tracking
+  - Audit all error logging points across codebase
+  - Update health check endpoint to use secure logging
+  - **Priority:** P1 (security hardening)
+  - **Reference:** PR #3 Comment 6, `ARCHITECTURE_DECISIONS.md` lines 2073-2120
+  - **Note:** Deferred from Phase 1 - prevents sensitive data exposure in production logs
 
 ### Frontend Authentication
 - [ ] **Create authentication page** [@frontend-typescript-dev]
