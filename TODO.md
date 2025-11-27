@@ -1,8 +1,8 @@
 # Fitness Tracker - Implementation TODO
 
 **Version:** 1.0
-**Date:** 2025-11-26
-**Status:** Phase 1 Frontend Setup Complete - Backend Setup In Progress
+**Date:** 2025-11-27
+**Status:** Phase 1 Complete - Ready for Phase 2 (Authentication & User Management)
 
 ---
 
@@ -124,29 +124,32 @@
   - **Completed:** 2025-11-26
 
 ### Backend Setup
-- [ ] **Initialize Express server** [@backend-typescript-dev]
-  - Create `packages/backend/src/index.ts`
+- [x] **Initialize Express server** [@backend-typescript-dev]
+  - Created `packages/backend/src/index.ts`
   - Set up Express app on port 3000
-  - Add CORS middleware (allow localhost:5173)
-  - Add body-parser middleware (JSON)
-  - Add Helmet security middleware
-  - Create health check endpoint: `GET /api/health`
+  - Added CORS middleware (allow localhost:5173 with credentials)
+  - Added body-parser middleware (Express.json())
+  - Added Helmet security middleware (11+ security headers)
+  - Created health check endpoint: `GET /api/health` (tests DB connectivity)
+  - Server successfully running and verified
   - **Reference:** `ARCHITECTURE_DECISIONS.md` Section 8.1
+  - **Completed:** 2025-11-27
 
-- [ ] **Set up Prisma Client** [@backend-typescript-dev]
-  - Create `packages/backend/src/lib/prisma.ts`
-  - Initialize PrismaClient singleton
-  - Export client for use in routes
-  - **Depends on:** Prisma migration
+- [x] **Set up Prisma Client** [@backend-typescript-dev]
+  - Created `packages/backend/src/lib/prisma.ts`
+  - Initialized PrismaClient singleton (hot-reload safe)
+  - Configured environment-based logging (verbose in dev, errors in prod)
+  - Exported client for use in routes
   - **Reference:** `ARCHITECTURE_DECISIONS.md` Section 4.1
+  - **Completed:** 2025-11-27
 
-- [ ] **Configure environment variables** [@backend-typescript-dev]
-  - Create `packages/backend/src/config/env.ts`
-  - Load dotenv based on NODE_ENV
-  - Validate required env vars on startup
-  - Export typed config object
-  - **Depends on:** User environment setup
+- [x] **Configure environment variables** [@backend-typescript-dev]
+  - Verified `packages/backend/src/config/env.ts` properly configured
+  - Loads dotenv based on NODE_ENV from project root
+  - Validates required env vars on startup
+  - Exports typed config object
   - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1112-1159
+  - **Completed:** 2025-11-27
 
 ### Frontend Setup
 - [x] **Initialize Vite + React + TypeScript** [@frontend-typescript-dev]

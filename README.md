@@ -227,39 +227,53 @@ This project uses specialized Claude Code agents for different aspects of develo
 ## Project Status
 
 ### Completed
-- ✅ **Phase 0**: Environment setup and prerequisites
-  - Node.js v22.18.0 installed
-  - npm dependencies installed
-  - PostgreSQL 15 running in Docker
-  - Development environment variables configured
 
-- ✅ **Phase 1 - Database Foundation** (Completed 2025-11-26)
-  - Shared TypeScript types package created
+- ✅ **Phase 0: Environment Setup & Prerequisites** (Completed 2025-11-26)
+  - Node.js v22.18.0 installed via nvm
+  - npm dependencies installed across all packages
+  - PostgreSQL 15 running in Docker
+  - Development environment variables configured at project root
+
+- ✅ **Phase 1: Foundation** (Completed 2025-11-27)
+
+  **Database Foundation:**
+  - Shared TypeScript types package created (`packages/shared`)
   - Prisma 5.22.0 configured (downgraded from v7 for MVP stability)
   - Complete database schema with 5 models (User, Exercise, WorkoutSession, WorkoutExercise, WorkoutSet)
   - Initial migration applied to PostgreSQL
-  - Exercise library seeded with 60 exercises (Push, Pull, Legs, Core, Cardio)
+  - Exercise library seeded with 60 exercises (Push: 21, Pull: 18, Legs: 15, Core: 2, Cardio: 4)
 
--  ✅ **Phase 1 - Backend Setup** (see `TODO.md`)
-   - Create Prisma schema and run migrations
-   - Set up Express server with middleware
-   - Seed exercise library (60 exercises)
+  **Backend Setup:**
+  - Express server initialized on port 3000
+  - Prisma Client singleton configured (hot-reload safe)
+  - Environment configuration loader (`src/config/env.ts`)
+  - CORS middleware configured for frontend (localhost:5173)
+  - Helmet security middleware (11+ security headers)
+  - Health check endpoint: `GET /api/health` (tests DB connectivity)
+
+  **Frontend Setup:**
+  - Vite + React + TypeScript configured
+  - Chakra UI v2 with custom theme (design tokens from mockups)
+  - React Router v6 with lazy loading and code splitting
+  - Zustand for global auth state
+  - SWR for server state management
+  - API client with CSRF token support
+  - TypeScript project references configured across all packages
 
 ### Next Steps
 
-1. **Continue Phase 1 implementation**
-   - Complete backend Express server setup
-   - Complete frontend React + Vite setup
-   - Configure TypeScript project references
+**Phase 2: Authentication & User Management** (In Progress)
+- Install authentication dependencies (Passport.js, express-session)
+- Configure Google OAuth with Passport.js
+- Implement session management with PostgreSQL backing
+- Create CSRF protection middleware
+- Implement authentication routes and requireAuth middleware
+- Build authentication UI (login page per mockup 06-authentication.html)
 
-2. **Phase 2: Authentication**
-   - Configure Google OAuth credentials
-   - Implement Passport.js authentication
-   - Create authentication routes and middleware
+**Phase 3: Core Workout Features**
+- Implement workout session creation and management
+- Build active workout screen (mockup 02-active-workout.html)
+- Create exercise selection modal (mockup 03-exercise-selection.html)
+- Implement workout history and detail views
 
-3. **Phase 3+: Core features**
-   - Workout tracking and logging
-   - Exercise library browsing and custom exercises
-   - Workout history and detail views
-
-For detailed implementation steps and progress tracking, see `TODO.md`.
+For detailed implementation steps and progress tracking, see [`TODO.md`](./TODO.md).
