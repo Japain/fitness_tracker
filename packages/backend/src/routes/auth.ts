@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import passport from '../middleware/auth';
 import { setCsrfToken } from '../middleware/csrf';
+import { config } from '../config/env';
 import type { User } from '@fitness-tracker/shared';
 
 const router = Router();
@@ -26,11 +27,11 @@ router.get(
   passport.authenticate('google', {
     failureRedirect: '/login?error=auth_failed',
   }),
+  setCsrfToken,
   (req, res) => {
     // Successful authentication
     // Redirect to frontend dashboard
-    const frontendUrl = process.env.CORS_ORIGIN || 'http://localhost:5173';
-    res.redirect(`${frontendUrl}/`);
+    res.redirect(`${config.cors.origin}/`);
   }
 );
 
@@ -106,7 +107,7 @@ router.post('/logout', (req, res) => {
  * The token is also set as a httpOnly cookie
  */
 router.get('/csrf-token', setCsrfToken, (req, res) => {
-  const token = (req as any).csrfToken();
+  const token = req.csrfToken?.() || '';
 
   res.json({
     csrfToken: token,

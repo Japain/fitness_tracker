@@ -249,7 +249,7 @@
   - Created `packages/backend/src/middleware/auth.ts`
   - Configured GoogleStrategy with environment variables (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL)
   - Implemented user upsert logic (finds existing user by googleId or creates new user)
-  - Sets default `preferredWeightUnit: 'lb'` for new users
+  - Sets default `preferredWeightUnit: 'lbs'` for new users
   - Configured session serialization/deserialization with user lookup
   - Updates user profile data (email, displayName, profilePictureUrl) on each login
   - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 64-102

@@ -38,7 +38,7 @@ if (config.google.clientId && config.google.clientSecret && config.google.callba
                 email,
                 displayName,
                 profilePictureUrl,
-                preferredWeightUnit: 'lb', // Default to pounds
+                preferredWeightUnit: 'lbs', // Default to pounds
               },
             });
           } else {

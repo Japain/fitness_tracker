@@ -10,7 +10,7 @@ import cookieParser from 'cookie-parser';
  *
  * 1. Generating a random CSRF token
  * 2. Storing it in a cookie (httpOnly for defense in depth)
- * 3. Requiring the client to read the token and send it back in a header
+ * 3. Requiring the client to obtain the token from the API and send it back in a header
  * 4. Verifying that the cookie value matches the header value
  *
  * Since cookies are automatically sent by the browser but headers must be
@@ -56,7 +56,7 @@ export function setCsrfToken(req: Request, res: Response, next: NextFunction): v
   }
 
   // Attach token to request for use in getCsrfToken endpoint
-  (req as any).csrfToken = () => token;
+  req.csrfToken = () => token;
 
   next();
 }
@@ -69,19 +69,15 @@ export function verifyCsrfToken(req: Request, res: Response, next: NextFunction)
   const cookieToken = req.cookies?.[CSRF_COOKIE_NAME];
   const headerToken = req.headers[CSRF_HEADER_NAME] as string | undefined;
 
-  // Allow requests without CSRF token if no cookie is set (first request)
-  if (!cookieToken) {
-    next();
-    return;
-  }
-
-  // Verify that header token matches cookie token
-  if (!headerToken || headerToken !== cookieToken) {
-    res.status(403).json({
-      error: 'Invalid CSRF token',
-      message: 'CSRF token validation failed',
-    });
-    return;
+  // If user is authenticated, CSRF token is required for security
+  if (req.isAuthenticated && req.isAuthenticated()) {
+    if (!cookieToken || !headerToken || headerToken !== cookieToken) {
+      res.status(403).json({
+        error: 'Invalid CSRF token',
+        message: 'CSRF token is required for authenticated requests',
+      });
+      return;
+    }
   }
 
   next();
