@@ -1,8 +1,8 @@
 # Fitness Tracker - Implementation TODO
 
 **Version:** 1.0
-**Date:** 2025-11-26
-**Status:** Phase 1 Frontend Setup Complete - Backend Setup In Progress
+**Date:** 2025-11-27
+**Status:** Phase 1 Complete - Ready for Phase 2 (Authentication & User Management)
 
 ---
 
@@ -124,29 +124,32 @@
   - **Completed:** 2025-11-26
 
 ### Backend Setup
-- [ ] **Initialize Express server** [@backend-typescript-dev]
-  - Create `packages/backend/src/index.ts`
+- [x] **Initialize Express server** [@backend-typescript-dev]
+  - Created `packages/backend/src/index.ts`
   - Set up Express app on port 3000
-  - Add CORS middleware (allow localhost:5173)
-  - Add body-parser middleware (JSON)
-  - Add Helmet security middleware
-  - Create health check endpoint: `GET /api/health`
+  - Added CORS middleware (allow localhost:5173 with credentials)
+  - Added body-parser middleware (Express.json())
+  - Added Helmet security middleware (comprehensive security headers)
+  - Created health check endpoint: `GET /api/health` (tests DB connectivity)
+  - Server successfully running and verified
   - **Reference:** `ARCHITECTURE_DECISIONS.md` Section 8.1
+  - **Completed:** 2025-11-27
 
-- [ ] **Set up Prisma Client** [@backend-typescript-dev]
-  - Create `packages/backend/src/lib/prisma.ts`
-  - Initialize PrismaClient singleton
-  - Export client for use in routes
-  - **Depends on:** Prisma migration
+- [x] **Set up Prisma Client** [@backend-typescript-dev]
+  - Created `packages/backend/src/lib/prisma.ts`
+  - Initialized PrismaClient singleton (hot-reload safe)
+  - Configured environment-based logging (verbose in dev, errors in prod)
+  - Exported client for use in routes
   - **Reference:** `ARCHITECTURE_DECISIONS.md` Section 4.1
+  - **Completed:** 2025-11-27
 
-- [ ] **Configure environment variables** [@backend-typescript-dev]
-  - Create `packages/backend/src/config/env.ts`
-  - Load dotenv based on NODE_ENV
-  - Validate required env vars on startup
-  - Export typed config object
-  - **Depends on:** User environment setup
+- [x] **Configure environment variables** [@backend-typescript-dev]
+  - Verified `packages/backend/src/config/env.ts` properly configured
+  - Loads dotenv based on NODE_ENV from project root
+  - Validates required env vars on startup
+  - Exports typed config object
   - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1112-1159
+  - **Completed:** 2025-11-27
 
 ### Frontend Setup
 - [x] **Initialize Vite + React + TypeScript** [@frontend-typescript-dev]
@@ -278,6 +281,25 @@
   - Return 401 if not authenticated
   - Add userId to request for downstream use
   - Apply to all protected routes
+
+- [ ] **Implement graceful shutdown handling** [@backend-typescript-dev]
+  - Add SIGTERM and SIGINT signal handlers to `packages/backend/src/index.ts`
+  - Implement Prisma disconnect on shutdown
+  - Implement HTTP server close with proper timeout
+  - Test with production deployment scenarios
+  - **Priority:** P1 (production readiness)
+  - **Reference:** PR #3 Comment 4
+  - **Note:** Deferred from Phase 1 - addresses connection leak prevention
+
+- [ ] **Implement production error logging** [@backend-typescript-dev]
+  - Create `packages/backend/src/utils/errorLogger.ts`
+  - Implement environment-based error logging (full details in dev, sanitized in prod)
+  - Install and configure Sentry for production error tracking
+  - Audit all error logging points across codebase
+  - Update health check endpoint to use secure logging
+  - **Priority:** P1 (security hardening)
+  - **Reference:** PR #3 Comment 6, `ARCHITECTURE_DECISIONS.md` lines 2073-2120
+  - **Note:** Deferred from Phase 1 - prevents sensitive data exposure in production logs
 
 ### Frontend Authentication
 - [ ] **Create authentication page** [@frontend-typescript-dev]
