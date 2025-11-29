@@ -61,15 +61,10 @@ router.get('/me', (req, res) => {
 
   const user = req.user as User;
 
-  res.json({
-    id: user.id,
-    email: user.email,
-    displayName: user.displayName,
-    profilePictureUrl: user.profilePictureUrl,
-    preferredWeightUnit: user.preferredWeightUnit,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-  });
+  // Exclude googleId from response for security (internal identifier only)
+  const { googleId, ...userResponse } = user;
+
+  res.json(userResponse);
 });
 
 /**
@@ -98,6 +93,12 @@ router.post('/logout', verifyCsrfToken, (req, res) => {
     req.session.destroy((sessionErr) => {
       if (sessionErr) {
         console.error('Error destroying session:', sessionErr);
+        // Return error if session destruction fails
+        // This ensures the client knows the logout may not be complete
+        return res.status(500).json({
+          error: 'Session destruction failed',
+          message: 'Logout succeeded but session cleanup failed. Please try again.',
+        });
       }
 
       // Clear session cookie and CSRF cookie

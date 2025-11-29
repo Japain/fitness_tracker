@@ -43,6 +43,8 @@ if (config.google.clientId && config.google.clientSecret && config.google.callba
             });
           } else {
             // Update existing user's profile information
+            // Note: We intentionally do NOT update preferredWeightUnit here to preserve
+            // the user's preference. This field should only be updated through the user settings API.
             user = await prisma.user.update({
               where: { id: user.id },
               data: {
