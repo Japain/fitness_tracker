@@ -30,7 +30,7 @@ function AuthPage() {
       >
         {/* Logo and Brand */}
         <HStack spacing="md" justify="center" mb="md">
-          <Icon viewBox="0 0 24 24" boxSize="48px" color="primary.500">
+          <Icon viewBox="0 0 24 24" boxSize="48px" color="primary.500" aria-label="FitTrack Logo">
             <path
               fill="currentColor"
               d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"
@@ -67,7 +67,7 @@ function AuthPage() {
           }}
           onClick={handleGoogleLogin}
           leftIcon={
-            <Icon viewBox="0 0 24 24" boxSize="24px">
+            <Icon viewBox="0 0 24 24" boxSize="24px" aria-hidden="true">
               <path
                 fill="#4285F4"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -118,7 +118,7 @@ interface FeatureItemProps {
 function FeatureItem({ text }: FeatureItemProps) {
   return (
     <HStack spacing="md" align="center">
-      <Icon viewBox="0 0 24 24" boxSize="20px" color="primary.500" flexShrink={0}>
+      <Icon viewBox="0 0 24 24" boxSize="20px" color="primary.500" flexShrink={0} aria-hidden="true">
         <path
           fill="currentColor"
           d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"

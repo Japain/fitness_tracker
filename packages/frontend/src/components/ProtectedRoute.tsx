@@ -22,7 +22,7 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
   if (isLoading) {
     return (
       <Center h="100vh">
-        <Spinner size="xl" color="primary.500" thickness="4px" />
+        <Spinner size="xl" color="primary.500" thickness="4px" aria-label="Checking authentication" />
       </Center>
     );
   }
