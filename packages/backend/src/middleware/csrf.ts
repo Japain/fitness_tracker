@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import cookieParser from 'cookie-parser';
+import { config } from '../config/env';
 
 /**
  * CSRF Protection Middleware using Double Submit Cookie pattern
@@ -49,7 +50,7 @@ export function setCsrfToken(req: Request, res: Response, next: NextFunction): v
     // Set cookie
     res.cookie(CSRF_COOKIE_NAME, token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: config.isProduction,
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days (match session duration)
     });

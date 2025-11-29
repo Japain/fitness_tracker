@@ -2,7 +2,7 @@
 
 **Version:** 1.1
 **Date:** 2025-11-29
-**Status:** Phase 2 Backend In Progress - Ready for Phase 2 Frontend (Authentication UI)
+**Status:** Phase 2 Backend Complete - Ready for Phase 2 Frontend (Authentication UI)
 
 ---
 
@@ -310,6 +310,14 @@
   - **Priority:** P2 (code clarity improvement)
   - **Reference:** PR #4 Comments 2, 6
   - **Note:** Deferred from Phase 2 - improves code maintainability but doesn't affect functionality
+
+- [ ] **Refactor user response using object destructuring** [@backend-typescript-dev]
+  - Update `GET /api/auth/me` endpoint in `packages/backend/src/routes/auth.ts` to use object destructuring instead of manual field listing
+  - Change from manually listing all fields to `const { googleId, ...userResponse } = user;` pattern
+  - Reduces maintenance burden when User type fields change
+  - **Priority:** P2 (code maintainability improvement)
+  - **Reference:** PR #4 Comment B (auth.ts:61)
+  - **Note:** Deferred from Phase 2 - improves maintainability but doesn't affect functionality
 
 - [ ] **Improve session destruction error handling** [@backend-typescript-dev]
   - Update logout endpoint in `packages/backend/src/routes/auth.ts` to either return error or document why success response is safe despite session destruction failure

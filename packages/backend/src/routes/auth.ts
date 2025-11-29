@@ -7,6 +7,17 @@ import type { User } from '@fitness-tracker/shared';
 const router = Router();
 
 /**
+ * Cookie clearing options
+ * Used when logging out to ensure cookies are properly removed
+ */
+const COOKIE_CLEAR_OPTIONS = {
+  httpOnly: true,
+  secure: config.isProduction,
+  sameSite: 'lax' as const,
+  path: '/',
+};
+
+/**
  * GET /api/auth/google
  * Initiates Google OAuth flow
  */
@@ -89,19 +100,9 @@ router.post('/logout', verifyCsrfToken, (req, res) => {
         console.error('Error destroying session:', sessionErr);
       }
 
-      // Clear session cookie with same options as when set
-      res.clearCookie('connect.sid', {
-        httpOnly: true,
-        secure: config.isProduction,
-        sameSite: 'lax',
-        path: '/',
-      });
-      res.clearCookie('_csrf', {
-        httpOnly: true,
-        secure: config.isProduction,
-        sameSite: 'lax',
-        path: '/',
-      });
+      // Clear session cookie and CSRF cookie
+      res.clearCookie('connect.sid', COOKIE_CLEAR_OPTIONS);
+      res.clearCookie('_csrf', COOKIE_CLEAR_OPTIONS);
 
       res.json({
         success: true,
