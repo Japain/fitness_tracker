@@ -65,6 +65,10 @@ export function setCsrfToken(req: Request, res: Response, next: NextFunction): v
 /**
  * Middleware to verify CSRF token on state-changing requests
  * Apply this to POST, PATCH, PUT, DELETE routes
+ *
+ * Note: CSRF protection is only enforced for authenticated users because all
+ * state-changing operations in our application require authentication. Unauthenticated
+ * endpoints (like /auth/csrf-token) don't modify server state and thus don't need CSRF protection.
  */
 export function verifyCsrfToken(req: Request, res: Response, next: NextFunction): void {
   const cookieToken = req.cookies?.[CSRF_COOKIE_NAME];

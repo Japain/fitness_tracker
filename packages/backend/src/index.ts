@@ -8,6 +8,7 @@ import { prisma } from './lib/prisma';
 import passport from './middleware/auth';
 import { csrfCookieParser, setCsrfToken } from './middleware/csrf';
 import authRoutes from './routes/auth';
+import { logError } from './utils/errorLogger';
 
 const app = express();
 
@@ -67,7 +68,9 @@ app.get('/api/health', async (req, res) => {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Health check failed:', error);
+    // Use secure error logging (sanitized in production)
+    logError('Health check failed - database connection error', error);
+
     res.status(503).json({
       status: 'error',
       message: 'Service unavailable',
@@ -79,9 +82,49 @@ app.get('/api/health', async (req, res) => {
 });
 
 // Start server
-app.listen(config.port, () => {
+const server = app.listen(config.port, () => {
   console.log(`🚀 Server running on port ${config.port} in ${config.nodeEnv} mode`);
   console.log(`📊 Database: ${config.database.url.split('@')[1]?.split('/')[0] || 'configured'}`);
   console.log(`🌐 CORS enabled for: ${config.cors.origin}`);
   console.log(`🔒 Security headers enabled via Helmet`);
 });
+
+/**
+ * Graceful shutdown handler
+ * Handles SIGTERM and SIGINT signals to clean up resources before exiting
+ */
+async function gracefulShutdown(signal: string): Promise<void> {
+  console.log(`\n${signal} received. Starting graceful shutdown...`);
+
+  // Stop accepting new connections
+  server.close(async (err) => {
+    if (err) {
+      console.error('Error closing HTTP server:', err);
+    } else {
+      console.log('HTTP server closed');
+    }
+
+    try {
+      // Disconnect Prisma Client to close database connections
+      await prisma.$disconnect();
+      console.log('Database connections closed');
+
+      // Exit successfully
+      process.exit(0);
+    } catch (error) {
+      console.error('Error during graceful shutdown:', error);
+      // Exit with error code
+      process.exit(1);
+    }
+  });
+
+  // Force shutdown after timeout (10 seconds)
+  setTimeout(() => {
+    console.error('Graceful shutdown timeout exceeded. Forcing shutdown...');
+    process.exit(1);
+  }, 10000);
+}
+
+// Register signal handlers
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
