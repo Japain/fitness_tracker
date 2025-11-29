@@ -56,6 +56,113 @@ This is a **monorepo** using npm workspaces with three packages:
 - **State Persistence**: Application must preserve workout state if user closes browser mid-workout
 - **User Data Segregation**: Authentication required; users can only access their own data
 
+### Authentication & Security
+
+**Authentication System (Phase 2 - Completed):**
+- **OAuth Provider**: Google OAuth 2.0 via Passport.js
+- **Session Management**: PostgreSQL-backed sessions using `connect-pg-simple`
+- **Session Duration**: 7 days (604800000ms)
+- **CSRF Protection**: Custom Double Submit Cookie pattern (replaced deprecated `csurf`)
+
+**Backend Authentication Files:**
+- `packages/backend/src/middleware/auth.ts` - Passport.js configuration with GoogleStrategy
+- `packages/backend/src/middleware/csrf.ts` - CSRF token generation and validation
+- `packages/backend/src/middleware/requireAuth.ts` - Authentication guard for protected routes
+- `packages/backend/src/routes/auth.ts` - Authentication endpoints
+
+**Authentication Endpoints:**
+- `GET /api/auth/google` - Initiates OAuth flow with Google
+- `GET /api/auth/google/callback` - OAuth callback handler (redirects to frontend)
+- `GET /api/auth/me` - Returns current authenticated user (or 401)
+- `POST /api/auth/logout` - Destroys session and clears cookies
+- `GET /api/auth/csrf-token` - Returns CSRF token for state-changing requests
+
+**Session Cookies:**
+- `httpOnly: true` - Prevents XSS attacks
+- `secure: true` (production only) - HTTPS only
+- `sameSite: 'lax'` - CSRF protection
+- Stored in PostgreSQL `session` table (auto-created)
+
+**CSRF Tokens:**
+- Cookie name: `_csrf` (httpOnly, 7-day expiration)
+- Header name: `x-csrf-token` (required for POST/PATCH/DELETE)
+- Uses cryptographically secure 32-byte tokens
+
+**User Authentication Flow:**
+1. User clicks "Continue with Google" → redirects to `GET /api/auth/google`
+2. Google OAuth consent screen
+3. Callback to `GET /api/auth/google/callback`
+4. User upsert: find existing user by `googleId` or create new user
+5. Session created in PostgreSQL with 7-day expiration
+6. Redirect to frontend dashboard with session cookie
+7. Frontend calls `GET /api/auth/me` to get user data
+8. All subsequent requests include session cookie automatically
+
+**Protected Routes Pattern:**
+```typescript
+import { requireAuth } from '../middleware/requireAuth';
+
+router.get('/api/workouts', requireAuth, async (req, res) => {
+  // req.user is guaranteed to exist and be typed
+  const workouts = await prisma.workoutSession.findMany({
+    where: { userId: req.user.id } // ALWAYS filter by userId
+  });
+  res.json(workouts);
+});
+```
+
+**Testing Backend Authentication:**
+
+*Health Check (no auth required):*
+```bash
+curl http://localhost:3000/api/health
+# Expected: {"status": "ok", "database": "connected", "timestamp": "..."}
+```
+
+*Get CSRF Token (no auth required):*
+```bash
+curl -c cookies.txt http://localhost:3000/api/auth/csrf-token
+# Expected: {"csrfToken": "abc123..."}
+# Note: CSRF cookie is also set in the response
+```
+
+*Check Current User (unauthenticated):*
+```bash
+curl -b cookies.txt http://localhost:3000/api/auth/me
+# Expected: {"message": "Not authenticated"}
+```
+
+*Google OAuth Flow (use browser):*
+1. Navigate to: `http://localhost:3000/api/auth/google`
+2. Complete Google OAuth flow
+3. Redirected to frontend with session cookie set
+4. Session persists for 7 days
+
+*Check Current User (authenticated):*
+After completing OAuth in browser:
+```bash
+curl -b cookies.txt http://localhost:3000/api/auth/me
+# Expected: {"id": "...", "email": "...", "displayName": "...", "preferredWeightUnit": "lbs", ...}
+```
+
+*Logout:*
+```bash
+curl -X POST -b cookies.txt http://localhost:3000/api/auth/logout
+# Expected: {"message": "Logged out successfully"}
+```
+
+*View Active Sessions:*
+Sessions are stored in PostgreSQL `session` table (auto-created by connect-pg-simple):
+```bash
+docker exec -it fitness_tracker_postgres psql -U fitness_tracker -d fitness_tracker_dev -c "SELECT * FROM session;"
+```
+
+Session details:
+- Expire after 7 days of inactivity
+- Stored with httpOnly cookies
+- secure flag enabled in production
+- sameSite: 'lax' for CSRF protection
+
 ### Visual Development
 - Comprehensive design checklist in `context/DESIGN-PRINCIPLES.md`
 - When making visual (front-end, UI,UX) changes, always refer to that file for guidance.
