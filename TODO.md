@@ -1,8 +1,8 @@
 # Fitness Tracker - Implementation TODO
 
-**Version:** 1.0
-**Date:** 2025-11-27
-**Status:** Phase 1 Complete - Ready for Phase 2 (Authentication & User Management)
+**Version:** 1.1
+**Date:** 2025-11-29
+**Status:** Phase 2 Backend In Progress - Ready for Phase 2 Frontend (Authentication UI)
 
 ---
 
@@ -77,11 +77,11 @@
 ### Shared Types Package
 - [x] **Define core data types in packages/shared** [@backend-typescript-dev]
   - Created domain-separated type files:
-    - `packages/shared/types/user.ts` - User interface
+    - `packages/shared/types/user.ts` - User interface with preferredWeightUnit
     - `packages/shared/types/exercise.ts` - Exercise interface with `type` field ('strength' | 'cardio')
     - `packages/shared/types/workout.ts` - WorkoutSession, WorkoutExercise, WorkoutSet interfaces
     - `packages/shared/types/index.ts` - Barrel export (re-exports all types)
-  - Implemented `User` interface with profilePictureUrl, createdAt, updatedAt
+  - Implemented `User` interface with profilePictureUrl, preferredWeightUnit, createdAt, updatedAt
   - Implemented `Exercise` interface with required `type` field ('strength' | 'cardio')
   - Implemented `WorkoutSession` interface with userId, startTime, endTime, notes
   - Implemented `WorkoutExercise` interface (pure join entity with orderIndex)
@@ -91,6 +91,7 @@
   - **Priority:** P0 (blocks all other work)
   - **Reference:** `PROJECT_REQUIREMENTS.md` lines 792-835
   - **Completed:** 2025-11-25
+  - **Updated:** 2025-11-29 (added preferredWeightUnit)
 
 ### Database Schema & Migrations
 - [x] **Create Prisma schema** [@backend-typescript-dev]
@@ -239,48 +240,69 @@
 **Goal:** Implement secure Google OAuth authentication with session management.
 
 ### Backend Authentication
-- [ ] **Install authentication dependencies** [@backend-typescript-dev]
-  - Install: `npm install passport passport-google-oauth20 express-session connect-pg-simple`
-  - Install types: `npm install -D @types/passport @types/passport-google-oauth20 @types/express-session`
+- [x] **Install authentication dependencies** [@backend-typescript-dev]
+  - Installed runtime: `passport`, `passport-google-oauth20`, `express-session`, `connect-pg-simple`, `cookie-parser`
+  - Installed types: `@types/passport`, `@types/passport-google-oauth20`, `@types/express-session`, `@types/cookie-parser`, `@types/connect-pg-simple`
+  - **Completed:** 2025-11-29
 
-- [ ] **Configure Passport.js** [@backend-typescript-dev]
-  - Create `packages/backend/src/middleware/auth.ts`
-  - Configure GoogleStrategy with client ID/secret from env
-  - Implement user upsert logic (find or create user)
-  - Configure session serialization/deserialization
-  - **Depends on:** Prisma Client, OAuth credentials
+- [x] **Configure Passport.js** [@backend-typescript-dev]
+  - Created `packages/backend/src/middleware/auth.ts`
+  - Configured GoogleStrategy with environment variables (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL)
+  - Implemented user upsert logic (finds existing user by googleId or creates new user)
+  - Sets default `preferredWeightUnit: 'lb'` for new users
+  - Configured session serialization/deserialization with user lookup
+  - Updates user profile data (email, displayName, profilePictureUrl) on each login
   - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 64-102
+  - **Completed:** 2025-11-29
 
-- [ ] **Configure express-session with PostgreSQL** [@backend-typescript-dev]
-  - Create session middleware in `packages/backend/src/index.ts`
-  - Use `connect-pg-simple` for session store
-  - Configure session cookies (httpOnly, secure in prod, sameSite: lax)
-  - Set maxAge to 7 days (604800000ms)
-  - **Depends on:** Database setup
+- [x] **Configure express-session with PostgreSQL** [@backend-typescript-dev]
+  - Created session middleware in `packages/backend/src/index.ts`
+  - Using `connect-pg-simple` for PostgreSQL-backed session store
+  - Session configuration:
+    - 7-day expiration (604800000ms)
+    - `httpOnly` cookies for XSS protection
+    - `secure: true` in production (HTTPS only)
+    - `sameSite: 'lax'` for CSRF protection
+    - Auto-creates `session` table in PostgreSQL
   - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 122-146
+  - **Completed:** 2025-11-29
 
-- [ ] **Implement CSRF protection** [@backend-typescript-dev]
-  - Install: `npm install csurf`
-  - Create `packages/backend/src/middleware/csrf.ts`
-  - Apply to all POST/PATCH/DELETE routes
-  - Create endpoint: `GET /api/csrf-token`
+- [x] **Implement CSRF protection** [@backend-typescript-dev]
+  - **Note:** Replaced deprecated `csurf` package with custom implementation
+  - Created `packages/backend/src/middleware/csrf.ts` using **Double Submit Cookie pattern**
+  - Generates cryptographically secure 32-byte tokens
+  - Cookie name: `_csrf` (httpOnly, sameSite, 7-day expiration)
+  - Header name: `x-csrf-token` (validated on state-changing requests)
+  - Exported middleware:
+    - `csrfCookieParser` - Cookie parser middleware
+    - `setCsrfToken` - Generates and sets CSRF cookie
+    - `verifyCsrfToken` - Validates token on POST/PATCH/DELETE requests
+    - `csrfProtection` - Combined middleware for convenience
+  - Created endpoint: `GET /api/auth/csrf-token`
+  - **Technical Decision:** Using Double Submit Cookie instead of deprecated `csurf` for modern security best practices
   - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 155-210
+  - **Completed:** 2025-11-29
 
-- [ ] **Create authentication routes** [@backend-typescript-dev]
-  - Create `packages/backend/src/routes/auth.ts`
-  - Implement `GET /api/auth/google` (initiate OAuth)
-  - Implement `GET /api/auth/google/callback` (OAuth callback)
-  - Implement `POST /api/auth/logout` (end session)
-  - Implement `GET /api/auth/me` (get current user)
-  - **Depends on:** Passport configuration
+- [x] **Create authentication routes** [@backend-typescript-dev]
+  - Created `packages/backend/src/routes/auth.ts`
+  - Implemented endpoints:
+    - `GET /api/auth/google` - Initiates OAuth flow with Google
+    - `GET /api/auth/google/callback` - OAuth callback, redirects to frontend dashboard
+    - `GET /api/auth/me` - Returns current user data (or 401 if not authenticated)
+    - `POST /api/auth/logout` - Destroys session and clears cookies
+    - `GET /api/auth/csrf-token` - Returns CSRF token for client-side requests
+  - All routes properly integrated with Passport.js
   - **Reference:** `PROJECT_REQUIREMENTS.md` lines 851-854, `ARCHITECTURE_DECISIONS.md` Section 1
+  - **Completed:** 2025-11-29
 
-- [ ] **Create requireAuth middleware** [@backend-typescript-dev]
-  - Create `packages/backend/src/middleware/requireAuth.ts`
-  - Check if user is authenticated (req.isAuthenticated())
-  - Return 401 if not authenticated
-  - Add userId to request for downstream use
-  - Apply to all protected routes
+- [x] **Create requireAuth middleware** [@backend-typescript-dev]
+  - Created `packages/backend/src/middleware/requireAuth.ts`
+  - Checks `req.isAuthenticated()` via Passport
+  - Returns 401 with clear error message if not authenticated
+  - Validates user data exists and is properly formed
+  - Includes `isAuthenticated()` type guard helper function
+  - Ready to apply to protected routes (workouts, exercises, etc.)
+  - **Completed:** 2025-11-29
 
 - [ ] **Implement graceful shutdown handling** [@backend-typescript-dev]
   - Add SIGTERM and SIGINT signal handlers to `packages/backend/src/index.ts`
