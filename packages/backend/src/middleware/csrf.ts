@@ -71,7 +71,22 @@ export function verifyCsrfToken(req: Request, res: Response, next: NextFunction)
 
   // If user is authenticated, CSRF token is required for security
   if (req.isAuthenticated && req.isAuthenticated()) {
-    if (!cookieToken || !headerToken || headerToken !== cookieToken) {
+    if (!cookieToken || !headerToken) {
+      res.status(403).json({
+        error: 'Invalid CSRF token',
+        message: 'CSRF token is required for authenticated requests',
+      });
+      return;
+    }
+
+    // Use constant-time comparison to prevent timing attacks
+    const cookieBuffer = Buffer.from(cookieToken);
+    const headerBuffer = Buffer.from(headerToken);
+
+    if (
+      cookieBuffer.length !== headerBuffer.length ||
+      !crypto.timingSafeEqual(cookieBuffer, headerBuffer)
+    ) {
       res.status(403).json({
         error: 'Invalid CSRF token',
         message: 'CSRF token is required for authenticated requests',

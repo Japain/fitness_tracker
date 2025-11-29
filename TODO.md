@@ -304,6 +304,20 @@
   - Ready to apply to protected routes (workouts, exercises, etc.)
   - **Completed:** 2025-11-29
 
+- [ ] **Add code documentation comments** [@backend-typescript-dev]
+  - Add comment in `packages/backend/src/middleware/auth.ts` explaining why `preferredWeightUnit` is not updated on login (to preserve user preference)
+  - Add comment in `packages/backend/src/middleware/csrf.ts` explaining CSRF is only enforced for authenticated users (all state-changing operations require auth)
+  - **Priority:** P2 (code clarity improvement)
+  - **Reference:** PR #4 Comments 2, 6
+  - **Note:** Deferred from Phase 2 - improves code maintainability but doesn't affect functionality
+
+- [ ] **Improve session destruction error handling** [@backend-typescript-dev]
+  - Update logout endpoint in `packages/backend/src/routes/auth.ts` to either return error or document why success response is safe despite session destruction failure
+  - Consider returning 500 error if session.destroy() fails, or add comment explaining Passport logout already succeeded
+  - **Priority:** P2 (error handling robustness)
+  - **Reference:** PR #4 Comment 7
+  - **Note:** Deferred from Phase 2 - current behavior is acceptable, improvement is nice-to-have
+
 - [ ] **Implement graceful shutdown handling** [@backend-typescript-dev]
   - Add SIGTERM and SIGINT signal handlers to `packages/backend/src/index.ts`
   - Implement Prisma disconnect on shutdown

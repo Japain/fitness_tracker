@@ -142,7 +142,7 @@ curl -b cookies.txt http://localhost:3000/api/auth/me
 After completing OAuth in browser:
 ```bash
 curl -b cookies.txt http://localhost:3000/api/auth/me
-# Expected: {"id": "...", "email": "...", "displayName": "...", "preferredWeightUnit": "lb", ...}
+# Expected: {"id": "...", "email": "...", "displayName": "...", "preferredWeightUnit": "lbs", ...}
 ```
 
 *Logout:*

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import passport from '../middleware/auth';
-import { setCsrfToken } from '../middleware/csrf';
+import { setCsrfToken, verifyCsrfToken } from '../middleware/csrf';
 import { config } from '../config/env';
 import type { User } from '@fitness-tracker/shared';
 
@@ -65,7 +65,7 @@ router.get('/me', (req, res) => {
  * POST /api/auth/logout
  * End user session and log out
  */
-router.post('/logout', (req, res) => {
+router.post('/logout', verifyCsrfToken, (req, res) => {
   if (!req.isAuthenticated()) {
     return res.status(401).json({
       error: 'Not authenticated',
@@ -89,9 +89,19 @@ router.post('/logout', (req, res) => {
         console.error('Error destroying session:', sessionErr);
       }
 
-      // Clear session cookie
-      res.clearCookie('connect.sid');
-      res.clearCookie('_csrf');
+      // Clear session cookie with same options as when set
+      res.clearCookie('connect.sid', {
+        httpOnly: true,
+        secure: config.isProduction,
+        sameSite: 'lax',
+        path: '/',
+      });
+      res.clearCookie('_csrf', {
+        httpOnly: true,
+        secure: config.isProduction,
+        sameSite: 'lax',
+        path: '/',
+      });
 
       res.json({
         success: true,
