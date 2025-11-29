@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Center, Spinner } from '@chakra-ui/react';
 import { useAuthStore } from '../stores/authStore';
@@ -11,15 +11,14 @@ interface ProtectedRouteProps {
  * ProtectedRoute component
  * Protects routes that require authentication
  * Redirects to /login if user is not authenticated
+ *
+ * Note: Auth check is performed by App.tsx on mount,
+ * so we only need to check the current state here.
  */
 function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
+  const { isAuthenticated, isLoading } = useAuthStore();
 
-  // Check authentication on mount
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
+  // Show loading spinner while initial auth check is in progress
   if (isLoading) {
     return (
       <Center h="100vh">
@@ -28,6 +27,7 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
+  // Redirect to login if not authenticated
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }

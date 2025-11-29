@@ -1,8 +1,8 @@
 # Fitness Tracker - Implementation TODO
 
-**Version:** 1.1
+**Version:** 1.2
 **Date:** 2025-11-29
-**Status:** Phase 2 Backend Complete - Ready for Phase 2 Frontend (Authentication UI)
+**Status:** Phase 2 Complete (Authentication) - Ready for Phase 3 (Core Workout Features)
 
 ---
 
@@ -346,34 +346,40 @@
   - **Note:** Deferred from Phase 1 - prevents sensitive data exposure in production logs
 
 ### Frontend Authentication
-- [ ] **Create authentication page** [@frontend-typescript-dev]
-  - Create `packages/frontend/src/pages/AuthPage.tsx`
-  - Implement UI per `mockups/06-authentication.html`
-  - Add "Continue with Google" button
-  - Link to `GET /api/auth/google`
+- [x] **Create authentication page** [@frontend-typescript-dev]
+  - Created `packages/frontend/src/pages/AuthPage.tsx`
+  - Implemented UI per `mockups/06-authentication.html`
+  - Added "Continue with Google" button
+  - Links to `GET /api/auth/google` via backend proxy
   - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 658-748
+  - **Completed:** 2025-11-29
 
-- [ ] **Implement authentication flow** [@frontend-typescript-dev]
-  - Update `packages/frontend/src/stores/authStore.ts`
-  - Implement `checkAuth()` to call `GET /api/auth/me` on mount
-  - Store user data in Zustand on successful auth
-  - Redirect to dashboard after successful login
-  - **Depends on:** Backend auth routes
+- [x] **Implement authentication flow** [@frontend-typescript-dev]
+  - Updated `packages/frontend/src/stores/authStore.ts`
+  - Implemented `checkAuth()` to call `GET /api/auth/me` on mount
+  - Stores user data in Zustand on successful auth
+  - Updated `logout()` to use `apiRequest()` helper for CSRF token inclusion
+  - Redirect to dashboard handled by React Router
   - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1213-1253
+  - **Completed:** 2025-11-29
 
-- [ ] **Create ProtectedRoute component** [@frontend-typescript-dev]
-  - Update `packages/frontend/src/router/ProtectedRoute.tsx`
-  - Check `isAuthenticated` from auth store
-  - Show loading spinner while checking auth
-  - Redirect to `/login` if not authenticated
+- [x] **Create ProtectedRoute component** [@frontend-typescript-dev]
+  - Updated `packages/frontend/src/router/ProtectedRoute.tsx`
+  - Checks `isAuthenticated` from auth store
+  - Shows loading spinner while `isLoading` is true
+  - Redirects to `/login` if not authenticated
+  - Optimized to prevent duplicate auth checks
   - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1676-1694
+  - **Completed:** 2025-11-29
 
-- [ ] **Implement CSRF token handling** [@frontend-typescript-dev]
-  - Update `packages/frontend/src/api/client.ts`
-  - Fetch CSRF token on app init
-  - Include CSRF token in all POST/PATCH/DELETE request headers
-  - **Depends on:** Backend CSRF endpoint
+- [x] **Implement CSRF token handling** [@frontend-typescript-dev]
+  - Updated `packages/frontend/src/api/client.ts`
+  - Fetches CSRF token on app init from `GET /api/auth/csrf-token`
+  - Includes CSRF token in all POST/PATCH/DELETE request headers as `x-csrf-token`
+  - Caches token in memory for reuse
+  - Generic `apiRequest()` helper automatically includes token
   - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 189-210
+  - **Completed:** 2025-11-29
 
 ### User Data Segregation
 - [ ] **Implement userId filtering middleware** [@backend-typescript-dev]

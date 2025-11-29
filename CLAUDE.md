@@ -333,6 +333,83 @@ npx prisma migrate reset
 - Connection string stored in `.env.production`
 - SSL/TLS enabled by default
 
+## Running the Application
+
+### Quick Start (All Services)
+
+Run all services together (database + backend + frontend):
+
+```bash
+# 1. Start PostgreSQL database
+docker-compose up -d
+
+# 2. Start both backend and frontend
+npm run dev
+```
+
+The application will be available at:
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:3000
+- **Database**: localhost:5432
+
+### Running Services Individually
+
+If you need to run backend and frontend separately:
+
+```bash
+# Terminal 1: Start PostgreSQL
+docker-compose up -d
+
+# Terminal 2: Start Backend (port 3000)
+cd packages/backend
+npm run dev
+
+# Terminal 3: Start Frontend (port 5173)
+cd packages/frontend
+npm run dev
+```
+
+**Backend will display:**
+```
+🚀 Server running on port 3000 in development mode
+📊 Database: localhost:5432
+🌐 CORS enabled for: http://localhost:5173
+🔒 Security headers enabled via Helmet
+```
+
+**Frontend will display:**
+```
+  VITE v5.x.x  ready in xxx ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help
+```
+
+### First Time Setup
+
+Before running the application for the first time:
+
+```bash
+# 1. Install Node.js version
+nvm use  # Uses Node.js 22.18.0 from .nvmrc
+
+# 2. Install dependencies
+npm install
+
+# 3. Start PostgreSQL
+docker-compose up -d
+
+# 4. Run database migrations
+cd packages/backend
+npx prisma migrate dev  # Creates all database tables
+npx prisma db seed      # Seeds 60 exercises
+
+# 5. Start the application
+cd ../..
+npm run dev
+```
+
 ## Development Commands
 
 ```bash
