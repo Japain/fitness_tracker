@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { User } from '@fitness-tracker/shared';
+import { apiRequest } from '../api/client';
 
 /**
  * Authentication State Interface
@@ -43,11 +44,10 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: async () => {
     try {
-      // TODO: Replace with actual API call when backend is ready
-      // await fetch('/api/auth/logout', {
-      //   method: 'POST',
-      //   credentials: 'include',
-      // });
+      // Use apiRequest to automatically include CSRF token
+      await apiRequest('/api/auth/logout', {
+        method: 'POST',
+      });
 
       set({
         user: null,
@@ -65,35 +65,26 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
 
     try {
-      // TODO: Replace with actual API call when backend is ready
-      // const response = await fetch('/api/auth/me', {
-      //   credentials: 'include',
-      // });
-
-      // if (response.ok) {
-      //   const user = await response.json();
-      //   set({
-      //     user,
-      //     isAuthenticated: true,
-      //     isLoading: false,
-      //     error: null,
-      //   });
-      // } else {
-      //   set({
-      //     user: null,
-      //     isAuthenticated: false,
-      //     isLoading: false,
-      //     error: null,
-      //   });
-      // }
-
-      // Stubbed for now - assume not authenticated
-      set({
-        user: null,
-        isAuthenticated: false,
-        isLoading: false,
-        error: null,
+      const response = await fetch('/api/auth/me', {
+        credentials: 'include',
       });
+
+      if (response.ok) {
+        const user = await response.json();
+        set({
+          user,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+        });
+      } else {
+        set({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+          error: null,
+        });
+      }
     } catch (error) {
       set({
         user: null,
