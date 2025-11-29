@@ -7,6 +7,7 @@ export interface User {
   email: string;               // From OAuth provider
   displayName: string;         // From OAuth provider
   profilePictureUrl?: string;  // From OAuth provider
+  preferredWeightUnit: 'lbs' | 'kg';  // User's preferred weight unit
   createdAt: Date;
   updatedAt: Date;
 }

@@ -1,8 +1,13 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import session from 'express-session';
+import connectPgSimple from 'connect-pg-simple';
 import { config } from './config/env';
 import { prisma } from './lib/prisma';
+import passport from './middleware/auth';
+import { csrfCookieParser, setCsrfToken } from './middleware/csrf';
+import authRoutes from './routes/auth';
 
 const app = express();
 
@@ -17,6 +22,36 @@ app.use(cors({
 
 // Body parser middleware - Parse JSON request bodies
 app.use(express.json());
+
+// Cookie parser middleware - Required for CSRF protection
+app.use(csrfCookieParser);
+
+// Session middleware - PostgreSQL-backed sessions
+const PgSession = connectPgSimple(session);
+
+app.use(session({
+  store: new PgSession({
+    conString: config.database.url,
+    tableName: 'session',
+    createTableIfMissing: true,
+  }),
+  secret: config.session.secret || 'dev-secret-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: config.isProduction, // HTTPS only in production
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  },
+}));
+
+// Initialize Passport and restore authentication state from session
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Mount authentication routes
+app.use('/api/auth', authRoutes);
 
 // Health check endpoint - Verifies server and database connectivity
 app.get('/api/health', async (req, res) => {
