@@ -99,7 +99,7 @@ async function gracefulShutdown(signal: string): Promise<void> {
   // Stop accepting new connections
   server.close(async (err) => {
     if (err) {
-      console.error('Error closing HTTP server:', err);
+      logError('Error closing HTTP server', err);
     } else {
       console.log('HTTP server closed');
     }
@@ -112,7 +112,7 @@ async function gracefulShutdown(signal: string): Promise<void> {
       // Exit successfully
       process.exit(0);
     } catch (error) {
-      console.error('Error during graceful shutdown:', error);
+      logError('Error during graceful shutdown', error);
       // Exit with error code
       process.exit(1);
     }
@@ -120,7 +120,7 @@ async function gracefulShutdown(signal: string): Promise<void> {
 
   // Force shutdown after timeout (10 seconds)
   setTimeout(() => {
-    console.error('Graceful shutdown timeout exceeded. Forcing shutdown...');
+    logError('Graceful shutdown timeout exceeded. Forcing shutdown...');
     process.exit(1);
   }, 10000);
 }

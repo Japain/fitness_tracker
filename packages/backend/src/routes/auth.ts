@@ -2,6 +2,7 @@ import { Router } from 'express';
 import passport from '../middleware/auth';
 import { setCsrfToken, verifyCsrfToken } from '../middleware/csrf';
 import { config } from '../config/env';
+import { logError } from '../utils/errorLogger';
 import type { User } from '@fitness-tracker/shared';
 
 const router = Router();
@@ -82,7 +83,7 @@ router.post('/logout', verifyCsrfToken, (req, res) => {
   // Use Passport's logout method (req.logout is added by Passport)
   req.logout((err) => {
     if (err) {
-      console.error('Error during logout:', err);
+      logError('Error during logout', err);
       return res.status(500).json({
         error: 'Logout failed',
         message: 'An error occurred while logging out',
@@ -92,7 +93,7 @@ router.post('/logout', verifyCsrfToken, (req, res) => {
     // Destroy session
     req.session.destroy((sessionErr) => {
       if (sessionErr) {
-        console.error('Error destroying session:', sessionErr);
+        logError('Error destroying session', sessionErr);
         // Return error if session destruction fails
         // This ensures the client knows the logout may not be complete
         return res.status(500).json({
