@@ -1,4 +1,5 @@
 import 'express';
+import type { User } from '@fitness-tracker/shared';
 
 declare global {
   namespace Express {
@@ -9,5 +10,11 @@ declare global {
        */
       csrfToken?: () => string;
     }
+
+    /**
+     * User type added by Passport.js authentication
+     * Available on req.user after successful authentication
+     */
+    interface User extends import('@fitness-tracker/shared').User {}
   }
 }

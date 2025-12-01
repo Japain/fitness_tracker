@@ -163,6 +163,79 @@ Session details:
 - secure flag enabled in production
 - sameSite: 'lax' for CSRF protection
 
+### Workout API
+
+**Testing Backend Workout API:**
+
+*Create New Workout (requires authentication):*
+```bash
+curl -X POST -b cookies.txt \
+  -H "Content-Type: application/json" \
+  -H "x-csrf-token: YOUR_CSRF_TOKEN" \
+  http://localhost:3000/api/workouts
+# Expected: 201 Created with workout object
+# Conflict: 409 if active workout already exists
+```
+
+*Get Active Workout:*
+```bash
+curl -b cookies.txt http://localhost:3000/api/workouts/active
+# Expected: 200 with workout object (includes exercises and sets)
+# OR: 204 No Content if no active workout
+```
+
+*List Workouts (with pagination):*
+```bash
+curl -b cookies.txt "http://localhost:3000/api/workouts?limit=10&offset=0"
+# Expected: 200 with array of workouts and pagination metadata
+```
+
+*Add Exercise to Workout:*
+```bash
+curl -X POST -b cookies.txt \
+  -H "Content-Type: application/json" \
+  -H "x-csrf-token: YOUR_CSRF_TOKEN" \
+  -d '{"exerciseId": "exercise-uuid", "orderIndex": 0}' \
+  http://localhost:3000/api/workouts/WORKOUT_ID/exercises
+# Expected: 201 Created with workout exercise object
+```
+
+*Add Set to Exercise (strength):*
+```bash
+curl -X POST -b cookies.txt \
+  -H "Content-Type: application/json" \
+  -H "x-csrf-token: YOUR_CSRF_TOKEN" \
+  -d '{"reps": 10, "weight": 135, "weightUnit": "lbs", "completed": true}' \
+  http://localhost:3000/api/workouts/WORKOUT_ID/exercises/EXERCISE_ID/sets
+# Expected: 201 Created with set object
+```
+
+*Add Set to Exercise (cardio):*
+```bash
+curl -X POST -b cookies.txt \
+  -H "Content-Type: application/json" \
+  -H "x-csrf-token: YOUR_CSRF_TOKEN" \
+  -d '{"duration": 1800, "distance": 5.0, "distanceUnit": "km", "completed": true}' \
+  http://localhost:3000/api/workouts/WORKOUT_ID/exercises/EXERCISE_ID/sets
+# Expected: 201 Created with set object
+```
+
+*Finish Workout:*
+```bash
+curl -X PATCH -b cookies.txt \
+  -H "Content-Type: application/json" \
+  -H "x-csrf-token: YOUR_CSRF_TOKEN" \
+  -d '{"endTime": "2025-11-30T12:00:00Z"}' \
+  http://localhost:3000/api/workouts/WORKOUT_ID
+# Expected: 200 OK with updated workout object
+```
+
+**Request Validation:**
+- Strength exercises require `reps` (required), `weight` and `weightUnit` (optional)
+- Cardio exercises require `duration` (required), `distance` and `distanceUnit` (optional)
+- All mutating endpoints require CSRF token in `x-csrf-token` header
+- All endpoints require authentication (session cookie)
+
 ### Visual Development
 - Comprehensive design checklist in `context/DESIGN-PRINCIPLES.md`
 - When making visual (front-end, UI,UX) changes, always refer to that file for guidance.

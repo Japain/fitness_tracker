@@ -8,6 +8,9 @@ import { prisma } from './lib/prisma';
 import passport from './middleware/auth';
 import { csrfCookieParser, setCsrfToken } from './middleware/csrf';
 import authRoutes from './routes/auth';
+import workoutRoutes from './routes/workouts';
+import workoutExerciseRoutes from './routes/workoutExercises';
+import workoutSetRoutes from './routes/workoutSets';
 import { logError } from './utils/errorLogger';
 
 const app = express();
@@ -53,6 +56,11 @@ app.use(passport.session());
 
 // Mount authentication routes
 app.use('/api/auth', authRoutes);
+
+// Mount workout API routes
+app.use('/api/workouts', workoutRoutes);
+app.use('/api/workouts', workoutExerciseRoutes);
+app.use('/api/workouts', workoutSetRoutes);
 
 // Health check endpoint - Verifies server and database connectivity
 app.get('/api/health', async (req, res) => {
