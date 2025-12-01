@@ -383,15 +383,6 @@
   - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 189-210
   - **Completed:** 2025-11-29
 
-### User Data Segregation
-- [ ] **Implement userId filtering middleware** [@backend-typescript-dev]
-  - Update all workout/exercise routes to filter by `req.user.id`
-  - Add database queries with `WHERE userId = req.user.id`
-  - Verify no cross-user data leakage in tests
-  - **Priority:** P0 (security requirement)
-  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 98-115
-  - **Note:** Will be implemented in Phase 3 when workout/exercise routes are created
-
 ---
 
 ## Phase 3: Core Workout Features
@@ -399,7 +390,7 @@
 **Goal:** Implement workout session creation, exercise logging, and completion.
 
 ### Backend Workout API
-- [ ] **Create workout routes** [@backend-typescript-dev]
+- [x] **Create workout routes** [@backend-typescript-dev] ✅ **COMPLETED**
   - Create `packages/backend/src/routes/workouts.ts`
   - Implement `POST /api/workouts` (create new workout session)
   - Implement `GET /api/workouts` (list user's workouts, paginated)
@@ -410,7 +401,7 @@
   - **Depends on:** Authentication, requireAuth middleware
   - **Reference:** `PROJECT_REQUIREMENTS.md` lines 856-862, `ARCHITECTURE_DECISIONS.md` Section 2
 
-- [ ] **Implement active workout detection** [@backend-typescript-dev]
+- [x] **Implement active workout detection** [@backend-typescript-dev] ✅ **COMPLETED**
   - Update `GET /api/workouts/active` endpoint
   - Query: `WHERE userId = req.user.id AND endTime IS NULL`
   - Return workout with exercises/sets included
@@ -418,13 +409,13 @@
   - Add database index on (userId, endTime) WHERE endTime IS NULL
   - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 380-439
 
-- [ ] **Implement workout conflict detection** [@backend-typescript-dev]
+- [x] **Implement workout conflict detection** [@backend-typescript-dev] ✅ **COMPLETED**
   - In `POST /api/workouts`, check for existing active workout
   - Return 409 Conflict if active workout exists
   - Include `activeWorkoutId` in error response
   - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 316-342
 
-- [ ] **Create workout exercise routes** [@backend-typescript-dev]
+- [x] **Create workout exercise routes** [@backend-typescript-dev] ✅ **COMPLETED**
   - Create `packages/backend/src/routes/workoutExercises.ts`
   - Implement `POST /api/workouts/:id/exercises` (add exercise to workout)
   - Implement `GET /api/workouts/:id/exercises` (list exercises in workout)
@@ -432,7 +423,7 @@
   - Implement `DELETE /api/workouts/:workoutId/exercises/:exerciseId` (remove)
   - **Reference:** `PROJECT_REQUIREMENTS.md` lines 864-869
 
-- [ ] **Create workout set routes** [@backend-typescript-dev]
+- [x] **Create workout set routes** [@backend-typescript-dev] ✅ **COMPLETED**
   - Create `packages/backend/src/routes/workoutSets.ts`
   - Implement `POST /api/workouts/:workoutId/exercises/:exerciseId/sets` (add set)
   - Implement `PATCH /api/workouts/:workoutId/exercises/:exerciseId/sets/:setId` (update set)
@@ -440,6 +431,15 @@
   - Validate strength vs. cardio fields based on exercise type
   - **Depends on:** Exercise API (to look up exercise type)
   - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 539-565, 656-673
+
+### User Data Segregation
+- [x] **Implement userId filtering middleware** [@backend-typescript-dev] ✅ **COMPLETED**
+  - Update all workout/exercise routes to filter by `req.user.id`
+  - Add database queries with `WHERE userId = req.user.id`
+  - Verify no cross-user data leakage in tests
+  - **Priority:** P0 (security requirement)
+  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 98-115
+  - **Note:** Implemented in all workout, exercise, and set routes with proper type casting
 
 ### Backend Input Validation
 - [ ] **Install Zod validation library** [@backend-typescript-dev]
