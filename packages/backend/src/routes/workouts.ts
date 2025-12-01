@@ -23,34 +23,66 @@ router.use(requireAuth);
 router.post('/', verifyCsrfToken, async (req, res) => {
   try {
     const { startTime, notes } = req.body;
+    const userId = (req.user as User).id;
 
-    // Check for existing active workout (conflict detection)
-    const activeWorkout = await prisma.workoutSession.findFirst({
-      where: {
-        userId: (req.user as User).id,
-        endTime: null,
-      },
-    });
-
-    if (activeWorkout) {
-      return res.status(409).json({
-        error: 'Active workout exists',
-        message: 'You already have an active workout in progress. Please complete it before starting a new one.',
-        activeWorkoutId: activeWorkout.id,
-      });
+    // Validate startTime if provided
+    let startDate: Date;
+    if (startTime) {
+      startDate = new Date(startTime);
+      if (isNaN(startDate.getTime())) {
+        return res.status(400).json({
+          error: 'Validation error',
+          message: 'startTime must be a valid ISO 8601 date string',
+        });
+      }
+    } else {
+      startDate = new Date();
     }
 
-    // Create new workout session
-    const workout = await prisma.workoutSession.create({
-      data: {
-        userId: (req.user as User).id,
-        startTime: startTime ? new Date(startTime) : new Date(),
-        notes: notes || null,
-      },
+    // Atomically check for existing active workout and create new one in a transaction
+    // This prevents race conditions where multiple concurrent requests could create duplicate active workouts
+    const workout = await prisma.$transaction(async (tx) => {
+      // Check for existing active workout within transaction
+      const activeWorkout = await tx.workoutSession.findFirst({
+        where: {
+          userId,
+          endTime: null,
+        },
+      });
+
+      if (activeWorkout) {
+        // Throw a custom error to be caught below
+        throw {
+          status: 409,
+          error: 'Active workout exists',
+          message: 'You already have an active workout in progress. Please complete it before starting a new one.',
+          activeWorkoutId: activeWorkout.id,
+        };
+      }
+
+      // Create new workout session within the same transaction
+      return await tx.workoutSession.create({
+        data: {
+          userId,
+          startTime: startDate,
+          notes: notes || null,
+        },
+      });
     });
 
     res.status(201).json(workout);
   } catch (error) {
+    // Handle our custom 409 conflict error
+    if (error && typeof error === 'object' && 'status' in error && error.status === 409) {
+      const conflictError = error as { status: number; error: string; message: string; activeWorkoutId: string };
+      return res.status(409).json({
+        error: conflictError.error,
+        message: conflictError.message,
+        activeWorkoutId: conflictError.activeWorkoutId,
+      });
+    }
+
+    // Handle all other errors
     logError('Failed to create workout session', error, { userId: (req.user as User | undefined)?.id });
     res.status(500).json({
       error: 'Internal server error',
@@ -72,9 +104,23 @@ router.post('/', verifyCsrfToken, async (req, res) => {
  */
 router.get('/', async (req, res) => {
   try {
-    const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
-    const offset = parseInt(req.query.offset as string) || 0;
+    // Validate and parse limit parameter
+    const limitParam = parseInt(req.query.limit as string, 10);
+    const limit = isNaN(limitParam) ? 20 : Math.min(Math.max(limitParam, 1), 100);
+
+    // Validate and parse offset parameter
+    const offsetParam = parseInt(req.query.offset as string, 10);
+    const offset = isNaN(offsetParam) ? 0 : Math.max(offsetParam, 0);
+
+    // Validate status parameter
+    const validStatuses = ['active', 'completed', 'all'];
     const status = (req.query.status as string) || 'all';
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        error: 'Validation error',
+        message: `status must be one of: ${validStatuses.join(', ')}`,
+      });
+    }
 
     // Build where clause based on status filter
     const where: any = { userId: (req.user as User).id };
@@ -245,7 +291,18 @@ router.patch('/:id', verifyCsrfToken, async (req, res) => {
     // Build update data object
     const updateData: any = {};
     if (endTime !== undefined) {
-      updateData.endTime = endTime ? new Date(endTime) : null;
+      if (endTime === null) {
+        updateData.endTime = null;
+      } else {
+        const endDate = new Date(endTime);
+        if (isNaN(endDate.getTime())) {
+          return res.status(400).json({
+            error: 'Validation error',
+            message: 'endTime must be a valid ISO 8601 date string or null',
+          });
+        }
+        updateData.endTime = endDate;
+      }
     }
     if (notes !== undefined) {
       updateData.notes = notes || null;

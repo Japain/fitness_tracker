@@ -432,6 +432,31 @@
   - **Depends on:** Exercise API (to look up exercise type)
   - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 539-565, 656-673
 
+- [x] **Address PR #7 critical validation issues (P0/P1)** [@backend-typescript-dev] ✅ **COMPLETED**
+  - **Fixed race condition in active workout creation (P0):**
+    - Wrapped check + create in Prisma transaction for atomicity
+    - Prevents concurrent requests from creating duplicate active workouts
+    - File: `workouts.ts:23-92`
+  - **Fixed invalid date validation (P1):**
+    - Added `isNaN(date.getTime())` validation for startTime in POST /api/workouts
+    - Added validation for endTime in PATCH /api/workouts/:id
+    - Returns 400 for invalid ISO 8601 date strings
+  - **Fixed duplicate setNumber/orderIndex validation (P1):**
+    - Added conflict detection in POST /api/workouts/:workoutId/exercises/:exerciseId/sets
+    - Added conflict detection in POST /api/workouts/:id/exercises
+    - Returns 400 if duplicate values provided
+  - **Fixed zero value validation (P1):**
+    - Changed `reps` validation from `< 0` to `<= 0` (must be positive)
+    - Changed `duration` validation from `< 0` to `<= 0` (must be positive)
+    - Applied to both POST and PATCH handlers
+  - **Fixed query parameter validation (P1):**
+    - Added NaN handling for limit/offset parsing
+    - Added negative value protection (limit: 1-100, offset: >=0)
+    - Added status whitelist validation ('active', 'completed', 'all')
+  - **Completed:** 2025-12-01
+  - **Reference:** PR #7 review comments (24 total, 8 P0/P1 addressed, 16 P2/P3 deferred)
+  - **Deferred items:** See "Backend Input Validation" section below for P2/P3 improvements
+
 ### User Data Segregation
 - [x] **Implement userId filtering middleware** [@backend-typescript-dev] ✅ **COMPLETED**
   - Update all workout/exercise routes to filter by `req.user.id`
@@ -442,6 +467,9 @@
   - **Note:** Implemented in all workout, exercise, and set routes with proper type casting
 
 ### Backend Input Validation
+
+**Note:** PR #7 review identified several validation improvements that will be addressed during Zod implementation (see P2/P3 deferred items below).
+
 - [ ] **Install Zod validation library** [@backend-typescript-dev]
   - Install: `npm install zod`
   - Create `packages/shared/validators/workout.ts`
@@ -452,11 +480,43 @@
   - Create schema for `WorkoutSet` (setNumber, reps, weight, duration, distance)
   - Export schemas for backend/frontend use
   - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 2169-2200
+  - **Will address PR #7 P2 comments:** Replace `any` types with Prisma types, validate empty updates, consolidate duplicated validation logic
 
 - [ ] **Apply validation to all routes** [@backend-typescript-dev]
   - Validate request bodies with Zod schemas
   - Return 400 Bad Request with error details on validation failure
   - **Depends on:** Zod schemas
+
+- [ ] **Address deferred PR #7 code quality improvements (P2 - Medium Priority)** [@backend-typescript-dev]
+  - **Replace `any` types with Prisma types** (5 locations):
+    - `workouts.ts:80` - Use `Prisma.WorkoutSessionWhereInput` for where clause
+    - `workouts.ts:246` - Use `Prisma.WorkoutSessionUpdateInput` for updateData
+    - `workoutSets.ts:153` - Use `Prisma.WorkoutSetCreateInput` for setData
+    - `workoutSets.ts:254` - Use `Prisma.WorkoutSetUpdateInput` for updateData
+    - `workoutExercises.ts:216` - Use `Prisma.WorkoutExerciseUpdateInput` for updateData
+  - **Empty update validation** (3 locations):
+    - `workoutExercises.ts:223` - Validate at least one field in PATCH
+    - `workouts.ts:253` - Validate at least one field in PATCH
+    - `workoutSets.ts:329` - Validate at least one field in PATCH
+  - **Consolidate duplicated validation** (2 locations):
+    - Extract strength/cardio validation into reusable function (workoutSets.ts:78-139, 252-314)
+    - Extract workout verification logic into helper function (duplicated across workouts.ts, workoutExercises.ts, workoutSets.ts)
+  - **Reference:** PR #7 review comments (P2 items)
+  - **Note:** Many of these will be naturally resolved by Zod implementation
+
+- [ ] **Address deferred PR #7 minor improvements (P3 - Low Priority)** [@backend-typescript-dev]
+  - **Type assertion verbosity** (workouts.ts:30):
+    - Extract `userId` variable instead of repeated `(req.user as User).id`
+    - Partially addressed in race condition fix
+  - **Database query optimization** (workoutSets.ts:45):
+    - Combine workout and workout exercise verification into single query with relations
+    - Only if performance benchmarks identify as bottleneck
+  - **OrderIndex negative validation** (workoutExercises.ts:217):
+    - Add validation: `orderIndex >= 0`
+  - **Security - ID enumeration** (workouts.ts:39):
+    - Evaluate if exposing `activeWorkoutId` in 409 response poses security risk
+    - Low risk since requires authentication and user can only see own IDs
+  - **Reference:** PR #7 review comments (P3 items)
 
 ### Frontend Dashboard
 - [ ] **Create Dashboard page** [@frontend-typescript-dev]

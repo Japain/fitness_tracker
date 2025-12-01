@@ -81,6 +81,20 @@ router.post('/:workoutId/exercises', verifyCsrfToken, async (req, res) => {
         orderBy: { orderIndex: 'desc' },
       });
       finalOrderIndex = maxOrderExercise ? maxOrderExercise.orderIndex + 1 : 0;
+    } else {
+      // If orderIndex is provided, check for conflicts
+      const existingExercise = await prisma.workoutExercise.findFirst({
+        where: {
+          workoutSessionId: workoutId,
+          orderIndex: finalOrderIndex,
+        },
+      });
+      if (existingExercise) {
+        return res.status(400).json({
+          error: 'Validation error',
+          message: `An exercise with orderIndex ${finalOrderIndex} already exists in this workout`,
+        });
+      }
     }
 
     // Create workout exercise

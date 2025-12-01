@@ -86,10 +86,10 @@ router.post('/:workoutId/exercises/:exerciseId/sets', verifyCsrfToken, async (re
           message: 'Reps are required for strength exercises',
         });
       }
-      if (typeof reps !== 'number' || reps < 0) {
+      if (typeof reps !== 'number' || reps <= 0) {
         return res.status(400).json({
           error: 'Validation error',
-          message: 'Reps must be a non-negative number',
+          message: 'Reps must be a positive number',
         });
       }
       // Validate weight if provided
@@ -115,10 +115,10 @@ router.post('/:workoutId/exercises/:exerciseId/sets', verifyCsrfToken, async (re
           message: 'Duration is required for cardio exercises',
         });
       }
-      if (typeof duration !== 'number' || duration < 0) {
+      if (typeof duration !== 'number' || duration <= 0) {
         return res.status(400).json({
           error: 'Validation error',
-          message: 'Duration must be a non-negative number (seconds)',
+          message: 'Duration must be a positive number (seconds)',
         });
       }
       // Validate distance if provided
@@ -147,6 +147,20 @@ router.post('/:workoutId/exercises/:exerciseId/sets', verifyCsrfToken, async (re
         orderBy: { setNumber: 'desc' },
       });
       finalSetNumber = maxSet ? maxSet.setNumber + 1 : 1;
+    } else {
+      // If setNumber is provided, check for conflicts
+      const existingSet = await prisma.workoutSet.findFirst({
+        where: {
+          workoutExerciseId: exerciseId,
+          setNumber: finalSetNumber,
+        },
+      });
+      if (existingSet) {
+        return res.status(400).json({
+          error: 'Validation error',
+          message: `Set number ${finalSetNumber} already exists for this exercise`,
+        });
+      }
     }
 
     // Build set data based on exercise type
@@ -256,10 +270,10 @@ router.patch('/:workoutId/exercises/:exerciseId/sets/:setId', verifyCsrfToken, a
     if (exerciseType === 'strength') {
       // Validate strength fields if being updated
       if (reps !== undefined) {
-        if (typeof reps !== 'number' || reps < 0) {
+        if (typeof reps !== 'number' || reps <= 0) {
           return res.status(400).json({
             error: 'Validation error',
-            message: 'Reps must be a non-negative number',
+            message: 'Reps must be a positive number',
           });
         }
         updateData.reps = reps;
@@ -285,10 +299,10 @@ router.patch('/:workoutId/exercises/:exerciseId/sets/:setId', verifyCsrfToken, a
     } else if (exerciseType === 'cardio') {
       // Validate cardio fields if being updated
       if (duration !== undefined) {
-        if (typeof duration !== 'number' || duration < 0) {
+        if (typeof duration !== 'number' || duration <= 0) {
           return res.status(400).json({
             error: 'Validation error',
-            message: 'Duration must be a non-negative number (seconds)',
+            message: 'Duration must be a positive number (seconds)',
           });
         }
         updateData.duration = duration;
