@@ -96,22 +96,71 @@ fitness_tracker/
 
    You'll need to add OAuth credentials when you reach Phase 2 (Authentication).
 
-### Development
+### Running the Application
 
-Run all packages in development mode:
+#### Quick Start (Recommended)
+
+Start all services together:
+
 ```bash
+# 1. Start PostgreSQL database
+docker-compose up -d
+
+# 2. Start both backend and frontend
 npm run dev
 ```
 
-Or run individually:
+The application will be available at:
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:3000
+- **Database**: localhost:5432
+
+#### Running Services Individually
+
+If you prefer to run services separately for debugging:
+
 ```bash
-# Backend (runs on port 3000)
+# Terminal 1: Start PostgreSQL
+docker-compose up -d
+
+# Terminal 2: Start Backend (port 3000)
 cd packages/backend
 npm run dev
 
-# Frontend (runs on port 5173)
+# Terminal 3: Start Frontend (port 5173)
 cd packages/frontend
 npm run dev
+```
+
+**Backend Output:**
+```
+🚀 Server running on port 3000 in development mode
+📊 Database: localhost:5432
+🌐 CORS enabled for: http://localhost:5173
+🔒 Security headers enabled via Helmet
+```
+
+**Frontend Output:**
+```
+  VITE v5.x.x  ready in xxx ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+```
+
+#### Stopping Services
+
+```bash
+# Stop backend/frontend: Ctrl+C in terminal
+
+# Stop database
+docker-compose stop
+
+# Stop and remove database (keeps data)
+docker-compose down
+
+# Stop and remove database AND data
+docker-compose down -v  # ⚠️ This deletes all data!
 ```
 
 ### Database Management
@@ -260,9 +309,9 @@ This project uses specialized Claude Code agents for different aspects of develo
   - API client with CSRF token support
   - TypeScript project references configured across all packages
 
-- ✅ **Phase 2: Backend Authentication** (Completed 2025-11-29)
+- ✅ **Phase 2: Authentication & User Management** (Completed 2025-11-29)
 
-  **Authentication Infrastructure:**
+  **Backend Authentication:**
   - Passport.js configured with Google OAuth strategy
   - PostgreSQL-backed session management (7-day expiration)
   - Custom CSRF protection using Double Submit Cookie pattern
@@ -276,19 +325,21 @@ This project uses specialized Claude Code agents for different aspects of develo
   - `POST /api/auth/logout` - End session
   - `GET /api/auth/csrf-token` - Get CSRF token
 
+  **Frontend Authentication:**
+  - Authentication page built per design mockup (06-authentication.html)
+  - Auth store integrated with backend endpoints
+  - CSRF token handling in API client
+  - ProtectedRoute component with auth checks
+  - Session persistence across page refreshes
+
   **Security Features:**
   - User upsert logic (find or create via Google ID)
   - Automatic profile updates on login
   - Session persistence in PostgreSQL
+  - CSRF protection on all mutating requests
   - Type-safe authentication with TypeScript
 
 ### Next Steps
-
-**Phase 2: Frontend Authentication** (In Progress)
-- Build authentication UI (login page per mockup 06-authentication.html)
-- Integrate auth store with backend endpoints
-- Implement CSRF token handling in API client
-- Create ProtectedRoute component with auth checks
 
 **Phase 3: Core Workout Features**
 - Implement workout session creation and management

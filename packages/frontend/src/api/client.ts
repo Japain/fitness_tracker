@@ -11,7 +11,7 @@ let csrfToken: string | null = null;
  */
 export async function fetchCsrfToken(): Promise<string> {
   try {
-    const response = await fetch('/api/csrf-token', {
+    const response = await fetch('/api/auth/csrf-token', {
       credentials: 'include',
     });
 
@@ -109,7 +109,7 @@ export async function apiRequest<T>(
 
   // Include CSRF token for state-changing requests
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) && csrfToken) {
-    headers['X-CSRF-Token'] = csrfToken;
+    headers['x-csrf-token'] = csrfToken;
   }
 
   // Set content type for JSON bodies
