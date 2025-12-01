@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { logError } from '../utils/errorLogger';
 import type { User } from '@fitness-tracker/shared';
 
 /**
@@ -41,7 +42,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
 
   if (!user || !user.id) {
     // Edge case: session exists but user data is malformed
-    console.error('Authenticated request has invalid user data:', req.user);
+    logError('Authenticated request has invalid user data', undefined, { user: req.user });
     res.status(401).json({
       error: 'Invalid session',
       message: 'Your session is invalid. Please log in again.',
