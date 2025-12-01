@@ -434,21 +434,11 @@
 
 - [x] **Address PR #7 critical validation issues (P0/P1)** [@backend-typescript-dev] ✅ **COMPLETED**
   - **Fixed race condition in active workout creation (P0):**
-    - Wrapped check + create in Prisma transaction for atomicity
     - Prevents concurrent requests from creating duplicate active workouts
     - File: `workouts.ts:23-92`
   - **Fixed invalid date validation (P1):**
-    - Added `isNaN(date.getTime())` validation for startTime in POST /api/workouts
-    - Added validation for endTime in PATCH /api/workouts/:id
-    - Returns 400 for invalid ISO 8601 date strings
   - **Fixed duplicate setNumber/orderIndex validation (P1):**
-    - Added conflict detection in POST /api/workouts/:workoutId/exercises/:exerciseId/sets
-    - Added conflict detection in POST /api/workouts/:id/exercises
-    - Returns 400 if duplicate values provided
-  - **Fixed zero value validation (P1):**
-    - Changed `reps` validation from `< 0` to `<= 0` (must be positive)
-    - Changed `duration` validation from `< 0` to `<= 0` (must be positive)
-    - Applied to both POST and PATCH handlers
+  - **Fixed zero value validation for reps and duration (P1):**
   - **Fixed query parameter validation (P1):**
     - Added NaN handling for limit/offset parsing
     - Added negative value protection (limit: 1-100, offset: >=0)
