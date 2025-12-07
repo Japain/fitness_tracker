@@ -1,9 +1,18 @@
 import { Router } from 'express';
 import { requireAuth } from '../middleware/requireAuth';
 import { verifyCsrfToken } from '../middleware/csrf';
+import { validateBody } from '../middleware/validateRequest';
 import { prisma } from '../lib/prisma';
 import { logError } from '../utils/errorLogger';
+import { verifyWorkoutOwnership } from '../utils/workoutHelpers';
 import type { User } from '@fitness-tracker/shared';
+import {
+  createWorkoutExerciseSchema,
+  updateWorkoutExerciseSchema,
+  type CreateWorkoutExerciseInput,
+  type UpdateWorkoutExerciseInput,
+} from '@fitness-tracker/shared/validators';
+import type { Prisma } from '@prisma/client';
 
 const router = Router();
 
@@ -22,36 +31,18 @@ router.use(requireAuth);
  * - notes: Optional exercise-specific notes
  *
  * Security: Validates workout belongs to authenticated user
+ * Validation: Enforced by Zod schema (exerciseId required, orderIndex >= 0 if provided)
  * Returns: 404 if workout not found, 400 if exercise doesn't exist, 201 with created exercise instance
  */
-router.post('/:workoutId/exercises', verifyCsrfToken, async (req, res) => {
+router.post('/:workoutId/exercises', verifyCsrfToken, validateBody(createWorkoutExerciseSchema), async (req, res) => {
   try {
-    
     const { workoutId } = req.params;
-    const { exerciseId, orderIndex, notes } = req.body;
-
-    // Validate required fields
-    if (!exerciseId) {
-      return res.status(400).json({
-        error: 'Validation error',
-        message: 'exerciseId is required',
-      });
-    }
+    const { exerciseId, orderIndex, notes } = req.validatedBody as CreateWorkoutExerciseInput;
+    const userId = (req.user as User).id;
 
     // Verify workout exists and belongs to user
-    const workout = await prisma.workoutSession.findFirst({
-      where: {
-        id: workoutId,
-        userId: (req.user as User).id, // CRITICAL: Filter by userId
-      },
-    });
-
-    if (!workout) {
-      return res.status(404).json({
-        error: 'Workout not found',
-        message: 'The requested workout does not exist or you do not have permission to access it',
-      });
-    }
+    const workout = await verifyWorkoutOwnership(workoutId, userId, res);
+    if (!workout) return; // Response already sent by helper
 
     // Verify exercise exists and user has access to it
     // User can access: library exercises (isCustom = false) OR their own custom exercises
@@ -60,7 +51,7 @@ router.post('/:workoutId/exercises', verifyCsrfToken, async (req, res) => {
         id: exerciseId,
         OR: [
           { isCustom: false }, // Library exercise
-          { userId: (req.user as User).id }, // User's custom exercise
+          { userId }, // User's custom exercise
         ],
       },
     });
@@ -136,23 +127,12 @@ router.post('/:workoutId/exercises', verifyCsrfToken, async (req, res) => {
  */
 router.get('/:workoutId/exercises', async (req, res) => {
   try {
-    
     const { workoutId } = req.params;
+    const userId = (req.user as User).id;
 
     // Verify workout exists and belongs to user
-    const workout = await prisma.workoutSession.findFirst({
-      where: {
-        id: workoutId,
-        userId: (req.user as User).id, // CRITICAL: Filter by userId
-      },
-    });
-
-    if (!workout) {
-      return res.status(404).json({
-        error: 'Workout not found',
-        message: 'The requested workout does not exist or you do not have permission to access it',
-      });
-    }
+    const workout = await verifyWorkoutOwnership(workoutId, userId, res);
+    if (!workout) return; // Response already sent by helper
 
     // Fetch exercises with related data
     const exercises = await prisma.workoutExercise.findMany({
@@ -188,28 +168,18 @@ router.get('/:workoutId/exercises', async (req, res) => {
  * - notes: Updated exercise notes
  *
  * Security: Validates workout belongs to authenticated user
+ * Validation: At least one field must be provided (enforced by Zod schema)
  * Returns: 404 if workout or exercise not found, 200 with updated exercise
  */
-router.patch('/:workoutId/exercises/:exerciseId', verifyCsrfToken, async (req, res) => {
+router.patch('/:workoutId/exercises/:exerciseId', verifyCsrfToken, validateBody(updateWorkoutExerciseSchema), async (req, res) => {
   try {
-    
     const { workoutId, exerciseId } = req.params;
-    const { orderIndex, notes } = req.body;
+    const { orderIndex, notes } = req.validatedBody as UpdateWorkoutExerciseInput;
+    const userId = (req.user as User).id;
 
     // Verify workout exists and belongs to user
-    const workout = await prisma.workoutSession.findFirst({
-      where: {
-        id: workoutId,
-        userId: (req.user as User).id, // CRITICAL: Filter by userId
-      },
-    });
-
-    if (!workout) {
-      return res.status(404).json({
-        error: 'Workout not found',
-        message: 'The requested workout does not exist or you do not have permission to access it',
-      });
-    }
+    const workout = await verifyWorkoutOwnership(workoutId, userId, res);
+    if (!workout) return; // Response already sent by helper
 
     // Verify workout exercise exists
     const existingWorkoutExercise = await prisma.workoutExercise.findFirst({
@@ -226,8 +196,8 @@ router.patch('/:workoutId/exercises/:exerciseId', verifyCsrfToken, async (req, r
       });
     }
 
-    // Build update data
-    const updateData: any = {};
+    // Build update data with proper Prisma types
+    const updateData: Prisma.WorkoutExerciseUpdateInput = {};
     if (orderIndex !== undefined) {
       updateData.orderIndex = orderIndex;
     }
@@ -271,23 +241,12 @@ router.patch('/:workoutId/exercises/:exerciseId', verifyCsrfToken, async (req, r
  */
 router.delete('/:workoutId/exercises/:exerciseId', verifyCsrfToken, async (req, res) => {
   try {
-    
     const { workoutId, exerciseId } = req.params;
+    const userId = (req.user as User).id;
 
     // Verify workout exists and belongs to user
-    const workout = await prisma.workoutSession.findFirst({
-      where: {
-        id: workoutId,
-        userId: (req.user as User).id, // CRITICAL: Filter by userId
-      },
-    });
-
-    if (!workout) {
-      return res.status(404).json({
-        error: 'Workout not found',
-        message: 'The requested workout does not exist or you do not have permission to access it',
-      });
-    }
+    const workout = await verifyWorkoutOwnership(workoutId, userId, res);
+    if (!workout) return; // Response already sent by helper
 
     // Verify workout exercise exists
     const existingWorkoutExercise = await prisma.workoutExercise.findFirst({

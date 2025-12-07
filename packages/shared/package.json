@@ -2,8 +2,18 @@
   "name": "@fitness-tracker/shared",
   "version": "1.0.0",
   "description": "Shared types and utilities for fitness tracker",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/types/index.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/types/index.js"
+    },
+    "./validators": {
+      "types": "./dist/validators/index.d.ts",
+      "default": "./dist/validators/index.js"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
@@ -11,6 +21,9 @@
   },
   "keywords": ["fitness", "types"],
   "license": "MIT",
+  "dependencies": {
+    "zod": "^3.24.1"
+  },
   "devDependencies": {
     "typescript": "^5.3.3"
   }

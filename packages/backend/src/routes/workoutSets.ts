@@ -1,10 +1,18 @@
 import { Router } from 'express';
 import { requireAuth } from '../middleware/requireAuth';
 import { verifyCsrfToken } from '../middleware/csrf';
+import { validateBody } from '../middleware/validateRequest';
 import { prisma } from '../lib/prisma';
 import { logError } from '../utils/errorLogger';
+import { verifyWorkoutExerciseOwnership } from '../utils/workoutHelpers';
 import type { User } from '@fitness-tracker/shared';
-
+import {
+  createWorkoutSetSchema,
+  updateWorkoutSetSchema,
+  type CreateWorkoutSetInput,
+  type UpdateWorkoutSetInput,
+} from '@fitness-tracker/shared/validators';
+import type { Prisma } from '@prisma/client';
 
 const router = Router();
 
@@ -19,12 +27,12 @@ router.use(requireAuth);
  *
  * Request body:
  * For strength exercises:
- * - reps: Number of repetitions
+ * - reps: Number of repetitions (required)
  * - weight: Weight value (optional for bodyweight)
  * - weightUnit: 'lbs' | 'kg' | 'bodyweight'
  *
  * For cardio exercises:
- * - duration: Duration in seconds
+ * - duration: Duration in seconds (required)
  * - distance: Distance value (optional)
  * - distanceUnit: 'miles' | 'km'
  *
@@ -36,110 +44,39 @@ router.use(requireAuth);
  * Validation: Ensures strength/cardio fields match exercise type
  * Returns: 404 if workout/exercise not found, 400 for validation errors, 201 with created set
  */
-router.post('/:workoutId/exercises/:exerciseId/sets', verifyCsrfToken, async (req, res) => {
+router.post('/:workoutId/exercises/:exerciseId/sets', verifyCsrfToken, validateBody(createWorkoutSetSchema), async (req, res) => {
   try {
-    
     const { workoutId, exerciseId } = req.params;
-    const { setNumber, reps, weight, weightUnit, duration, distance, distanceUnit, completed } = req.body;
+    const validatedData = req.validatedBody as CreateWorkoutSetInput;
+    const userId = (req.user as User).id;
 
-    // Verify workout exists and belongs to user
-    const workout = await prisma.workoutSession.findFirst({
-      where: {
-        id: workoutId,
-        userId: (req.user as User).id, // CRITICAL: Filter by userId
-      },
-    });
-
-    if (!workout) {
-      return res.status(404).json({
-        error: 'Workout not found',
-        message: 'The requested workout does not exist or you do not have permission to access it',
-      });
-    }
-
-    // Verify workout exercise exists and get exercise type
-    const workoutExercise = await prisma.workoutExercise.findFirst({
-      where: {
-        id: exerciseId,
-        workoutSessionId: workoutId,
-      },
-      include: {
-        exercise: true,
-      },
-    });
-
-    if (!workoutExercise) {
-      return res.status(404).json({
-        error: 'Exercise not found',
-        message: 'The requested exercise is not part of this workout',
-      });
-    }
+    // Verify workout exercise exists and user owns the workout
+    const workoutExercise = await verifyWorkoutExerciseOwnership(workoutId, exerciseId, userId, res);
+    if (!workoutExercise) return; // Response already sent by helper
 
     // Validate fields based on exercise type
     const exerciseType = workoutExercise.exercise.type;
 
     if (exerciseType === 'strength') {
-      // Strength exercises require reps, optionally weight and weightUnit
-      if (reps === undefined || reps === null) {
+      // Strength exercises require reps
+      if (validatedData.reps === undefined || validatedData.reps === null) {
         return res.status(400).json({
           error: 'Validation error',
           message: 'Reps are required for strength exercises',
         });
       }
-      if (typeof reps !== 'number' || reps <= 0) {
-        return res.status(400).json({
-          error: 'Validation error',
-          message: 'Reps must be a positive number',
-        });
-      }
-      // Validate weight if provided
-      if (weight !== undefined && weight !== null) {
-        if (typeof weight !== 'number' || weight < 0) {
-          return res.status(400).json({
-            error: 'Validation error',
-            message: 'Weight must be a non-negative number',
-          });
-        }
-        if (!weightUnit || !['lbs', 'kg', 'bodyweight'].includes(weightUnit)) {
-          return res.status(400).json({
-            error: 'Validation error',
-            message: 'weightUnit must be one of: lbs, kg, bodyweight',
-          });
-        }
-      }
     } else if (exerciseType === 'cardio') {
-      // Cardio exercises require duration, optionally distance and distanceUnit
-      if (duration === undefined || duration === null) {
+      // Cardio exercises require duration
+      if (validatedData.duration === undefined || validatedData.duration === null) {
         return res.status(400).json({
           error: 'Validation error',
           message: 'Duration is required for cardio exercises',
         });
       }
-      if (typeof duration !== 'number' || duration <= 0) {
-        return res.status(400).json({
-          error: 'Validation error',
-          message: 'Duration must be a positive number (seconds)',
-        });
-      }
-      // Validate distance if provided
-      if (distance !== undefined && distance !== null) {
-        if (typeof distance !== 'number' || distance < 0) {
-          return res.status(400).json({
-            error: 'Validation error',
-            message: 'Distance must be a non-negative number',
-          });
-        }
-        if (!distanceUnit || !['miles', 'km'].includes(distanceUnit)) {
-          return res.status(400).json({
-            error: 'Validation error',
-            message: 'distanceUnit must be one of: miles, km',
-          });
-        }
-      }
     }
 
     // Determine setNumber if not provided
-    let finalSetNumber = setNumber;
+    let finalSetNumber = validatedData.setNumber;
     if (finalSetNumber === undefined || finalSetNumber === null) {
       // Get the current max setNumber for this exercise
       const maxSet = await prisma.workoutSet.findFirst({
@@ -163,21 +100,21 @@ router.post('/:workoutId/exercises/:exerciseId/sets', verifyCsrfToken, async (re
       }
     }
 
-    // Build set data based on exercise type
-    const setData: any = {
+    // Build set data based on exercise type with proper Prisma types
+    const setData: Prisma.WorkoutSetUncheckedCreateInput = {
       workoutExerciseId: exerciseId,
       setNumber: finalSetNumber,
-      completed: completed ?? false,
+      completed: validatedData.completed ?? false,
     };
 
     if (exerciseType === 'strength') {
-      setData.reps = reps;
-      setData.weight = weight ?? null;
-      setData.weightUnit = weightUnit ?? null;
+      setData.reps = validatedData.reps!;
+      setData.weight = validatedData.weight ?? null;
+      setData.weightUnit = (validatedData.weightUnit ?? null) as string | null;
     } else if (exerciseType === 'cardio') {
-      setData.duration = duration;
-      setData.distance = distance ?? null;
-      setData.distanceUnit = distanceUnit ?? null;
+      setData.duration = validatedData.duration!;
+      setData.distance = validatedData.distance ?? null;
+      setData.distanceUnit = (validatedData.distanceUnit ?? null) as string | null;
     }
 
     // Create set
@@ -206,47 +143,18 @@ router.post('/:workoutId/exercises/:exerciseId/sets', verifyCsrfToken, async (re
  * Request body: Any fields from the set (reps, weight, duration, distance, completed, etc.)
  *
  * Security: Validates workout belongs to authenticated user
- * Validation: Ensures updated fields are valid for exercise type
+ * Validation: Ensures updated fields are valid for exercise type, at least one field required
  * Returns: 404 if workout/exercise/set not found, 400 for validation errors, 200 with updated set
  */
-router.patch('/:workoutId/exercises/:exerciseId/sets/:setId', verifyCsrfToken, async (req, res) => {
+router.patch('/:workoutId/exercises/:exerciseId/sets/:setId', verifyCsrfToken, validateBody(updateWorkoutSetSchema), async (req, res) => {
   try {
-    
     const { workoutId, exerciseId, setId } = req.params;
-    const { reps, weight, weightUnit, duration, distance, distanceUnit, completed, setNumber } = req.body;
+    const validatedData = req.validatedBody as UpdateWorkoutSetInput;
+    const userId = (req.user as User).id;
 
-    // Verify workout exists and belongs to user
-    const workout = await prisma.workoutSession.findFirst({
-      where: {
-        id: workoutId,
-        userId: (req.user as User).id, // CRITICAL: Filter by userId
-      },
-    });
-
-    if (!workout) {
-      return res.status(404).json({
-        error: 'Workout not found',
-        message: 'The requested workout does not exist or you do not have permission to access it',
-      });
-    }
-
-    // Verify workout exercise exists and get exercise type
-    const workoutExercise = await prisma.workoutExercise.findFirst({
-      where: {
-        id: exerciseId,
-        workoutSessionId: workoutId,
-      },
-      include: {
-        exercise: true,
-      },
-    });
-
-    if (!workoutExercise) {
-      return res.status(404).json({
-        error: 'Exercise not found',
-        message: 'The requested exercise is not part of this workout',
-      });
-    }
+    // Verify workout exercise exists and user owns the workout
+    const workoutExercise = await verifyWorkoutExerciseOwnership(workoutId, exerciseId, userId, res);
+    if (!workoutExercise) return; // Response already sent by helper
 
     // Verify set exists
     const existingSet = await prisma.workoutSet.findFirst({
@@ -265,80 +173,38 @@ router.patch('/:workoutId/exercises/:exerciseId/sets/:setId', verifyCsrfToken, a
 
     // Validate fields based on exercise type
     const exerciseType = workoutExercise.exercise.type;
-    const updateData: any = {};
+    const updateData: Prisma.WorkoutSetUpdateInput = {};
 
     if (exerciseType === 'strength') {
       // Validate strength fields if being updated
-      if (reps !== undefined) {
-        if (typeof reps !== 'number' || reps <= 0) {
-          return res.status(400).json({
-            error: 'Validation error',
-            message: 'Reps must be a positive number',
-          });
-        }
-        updateData.reps = reps;
+      if (validatedData.reps !== undefined) {
+        updateData.reps = validatedData.reps;
       }
-      if (weight !== undefined) {
-        if (weight !== null && (typeof weight !== 'number' || weight < 0)) {
-          return res.status(400).json({
-            error: 'Validation error',
-            message: 'Weight must be a non-negative number or null',
-          });
-        }
-        updateData.weight = weight;
+      if (validatedData.weight !== undefined) {
+        updateData.weight = validatedData.weight;
       }
-      if (weightUnit !== undefined) {
-        if (weightUnit !== null && !['lbs', 'kg', 'bodyweight'].includes(weightUnit)) {
-          return res.status(400).json({
-            error: 'Validation error',
-            message: 'weightUnit must be one of: lbs, kg, bodyweight, or null',
-          });
-        }
-        updateData.weightUnit = weightUnit;
+      if (validatedData.weightUnit !== undefined) {
+        updateData.weightUnit = validatedData.weightUnit;
       }
     } else if (exerciseType === 'cardio') {
       // Validate cardio fields if being updated
-      if (duration !== undefined) {
-        if (typeof duration !== 'number' || duration <= 0) {
-          return res.status(400).json({
-            error: 'Validation error',
-            message: 'Duration must be a positive number (seconds)',
-          });
-        }
-        updateData.duration = duration;
+      if (validatedData.duration !== undefined) {
+        updateData.duration = validatedData.duration;
       }
-      if (distance !== undefined) {
-        if (distance !== null && (typeof distance !== 'number' || distance < 0)) {
-          return res.status(400).json({
-            error: 'Validation error',
-            message: 'Distance must be a non-negative number or null',
-          });
-        }
-        updateData.distance = distance;
+      if (validatedData.distance !== undefined) {
+        updateData.distance = validatedData.distance;
       }
-      if (distanceUnit !== undefined) {
-        if (distanceUnit !== null && !['miles', 'km'].includes(distanceUnit)) {
-          return res.status(400).json({
-            error: 'Validation error',
-            message: 'distanceUnit must be one of: miles, km, or null',
-          });
-        }
-        updateData.distanceUnit = distanceUnit;
+      if (validatedData.distanceUnit !== undefined) {
+        updateData.distanceUnit = validatedData.distanceUnit;
       }
     }
 
     // Common fields that can be updated regardless of exercise type
-    if (completed !== undefined) {
-      updateData.completed = Boolean(completed);
+    if (validatedData.completed !== undefined) {
+      updateData.completed = validatedData.completed;
     }
-    if (setNumber !== undefined) {
-      if (typeof setNumber !== 'number' || setNumber < 1) {
-        return res.status(400).json({
-          error: 'Validation error',
-          message: 'setNumber must be a positive number',
-        });
-      }
-      updateData.setNumber = setNumber;
+    if (validatedData.setNumber !== undefined) {
+      updateData.setNumber = validatedData.setNumber;
     }
 
     // Update set
@@ -371,38 +237,12 @@ router.patch('/:workoutId/exercises/:exerciseId/sets/:setId', verifyCsrfToken, a
  */
 router.delete('/:workoutId/exercises/:exerciseId/sets/:setId', verifyCsrfToken, async (req, res) => {
   try {
-    
     const { workoutId, exerciseId, setId } = req.params;
+    const userId = (req.user as User).id;
 
-    // Verify workout exists and belongs to user
-    const workout = await prisma.workoutSession.findFirst({
-      where: {
-        id: workoutId,
-        userId: (req.user as User).id, // CRITICAL: Filter by userId
-      },
-    });
-
-    if (!workout) {
-      return res.status(404).json({
-        error: 'Workout not found',
-        message: 'The requested workout does not exist or you do not have permission to access it',
-      });
-    }
-
-    // Verify workout exercise exists
-    const workoutExercise = await prisma.workoutExercise.findFirst({
-      where: {
-        id: exerciseId,
-        workoutSessionId: workoutId,
-      },
-    });
-
-    if (!workoutExercise) {
-      return res.status(404).json({
-        error: 'Exercise not found',
-        message: 'The requested exercise is not part of this workout',
-      });
-    }
+    // Verify workout exercise exists and user owns the workout
+    const workoutExercise = await verifyWorkoutExerciseOwnership(workoutId, exerciseId, userId, res);
+    if (!workoutExercise) return; // Response already sent by helper
 
     // Verify set exists
     const existingSet = await prisma.workoutSet.findFirst({
