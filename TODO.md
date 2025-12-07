@@ -458,55 +458,71 @@
 
 ### Backend Input Validation
 
-**Note:** PR #7 review identified several validation improvements that will be addressed during Zod implementation (see P2/P3 deferred items below).
+**Status:** ✅ **COMPLETE** - All validation work finished on 2025-12-04 (deprecation warnings fixed 2025-12-07)
 
-- [ ] **Install Zod validation library** [@backend-typescript-dev]
-  - Install: `npm install zod`
-  - Create `packages/shared/validators/workout.ts`
+**Reference:** See `context/VALIDATION_IMPLEMENTATION_SUMMARY.md` for comprehensive implementation details
 
-- [ ] **Create Zod schemas for workout data** [@backend-typescript-dev]
-  - Create schema for `WorkoutSession` (startTime, endTime, notes)
-  - Create schema for `WorkoutExercise` (exerciseId, orderIndex)
-  - Create schema for `WorkoutSet` (setNumber, reps, weight, duration, distance)
-  - Export schemas for backend/frontend use
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 2169-2200
-  - **Will address PR #7 P2 comments:** Replace `any` types with Prisma types, validate empty updates, consolidate duplicated validation logic
+- [x] **Resolve Zod version mismatch and deprecation warnings** [@backend-typescript-dev] ✅ **COMPLETED**
+  - Fixed Zod version conflict between root and package dependencies
+  - Removed Zod from root package.json (should only be in packages where used)
+  - Added Zod 3.24.1 to backend package.json as direct dependency
+  - Both backend and shared packages now use consistent Zod 3.25.76
+  - Eliminated all deprecation warnings from backend dev server
+  - Resolved 2 moderate security vulnerabilities
+  - **Completed:** 2025-12-07
+  - **Reference:** `context/VALIDATION_IMPLEMENTATION_SUMMARY.md` (Deprecation Warning Resolution section)
 
-- [ ] **Apply validation to all routes** [@backend-typescript-dev]
-  - Validate request bodies with Zod schemas
-  - Return 400 Bad Request with error details on validation failure
-  - **Depends on:** Zod schemas
+- [x] **Install Zod validation library** [@backend-typescript-dev] ✅ **COMPLETED**
+  - Installed Zod 3.24.1 in root and shared packages
+  - Created `packages/shared/validators/workout.ts` with all schemas
+  - Created `packages/shared/validators/index.ts` barrel export
+  - Updated `packages/shared/tsconfig.json` to include validators
+  - Configured package.json exports for `@fitness-tracker/shared/validators` imports
+  - **Completed:** 2025-12-04
+  - **Reference:** `context/VALIDATION_IMPLEMENTATION_SUMMARY.md` lines 13-25
 
-- [ ] **Address deferred PR #7 code quality improvements (P2 - Medium Priority)** [@backend-typescript-dev]
-  - **Replace `any` types with Prisma types** (5 locations):
-    - `workouts.ts:80` - Use `Prisma.WorkoutSessionWhereInput` for where clause
-    - `workouts.ts:246` - Use `Prisma.WorkoutSessionUpdateInput` for updateData
-    - `workoutSets.ts:153` - Use `Prisma.WorkoutSetCreateInput` for setData
-    - `workoutSets.ts:254` - Use `Prisma.WorkoutSetUpdateInput` for updateData
-    - `workoutExercises.ts:216` - Use `Prisma.WorkoutExerciseUpdateInput` for updateData
-  - **Empty update validation** (3 locations):
-    - `workoutExercises.ts:223` - Validate at least one field in PATCH
-    - `workouts.ts:253` - Validate at least one field in PATCH
-    - `workoutSets.ts:329` - Validate at least one field in PATCH
-  - **Consolidate duplicated validation** (2 locations):
-    - Extract strength/cardio validation into reusable function (workoutSets.ts:78-139, 252-314)
-    - Extract workout verification logic into helper function (duplicated across workouts.ts, workoutExercises.ts, workoutSets.ts)
-  - **Reference:** PR #7 review comments (P2 items)
-  - **Note:** Many of these will be naturally resolved by Zod implementation
+- [x] **Create Zod schemas for workout data** [@backend-typescript-dev] ✅ **COMPLETED**
+  - Created `createWorkoutSessionSchema` and `updateWorkoutSessionSchema`
+  - Created `workoutListQuerySchema` for pagination and filtering
+  - Created `createWorkoutExerciseSchema` and `updateWorkoutExerciseSchema`
+  - Created `createWorkoutSetSchema` and `updateWorkoutSetSchema`
+  - All schemas include custom error messages and business logic refinements
+  - Schemas enforce type safety, coercion, and validation constraints
+  - **Completed:** 2025-12-04
+  - **Reference:** `context/VALIDATION_IMPLEMENTATION_SUMMARY.md` lines 27-51, `ARCHITECTURE_DECISIONS.md` lines 2169-2200
 
-- [ ] **Address deferred PR #7 minor improvements (P3 - Low Priority)** [@backend-typescript-dev]
-  - **Type assertion verbosity** (workouts.ts:30):
-    - Extract `userId` variable instead of repeated `(req.user as User).id`
-    - Partially addressed in race condition fix
-  - **Database query optimization** (workoutSets.ts:45):
-    - Combine workout and workout exercise verification into single query with relations
-    - Only if performance benchmarks identify as bottleneck
-  - **OrderIndex negative validation** (workoutExercises.ts:217):
-    - Add validation: `orderIndex >= 0`
-  - **Security - ID enumeration** (workouts.ts:39):
-    - Evaluate if exposing `activeWorkoutId` in 409 response poses security risk
-    - Low risk since requires authentication and user can only see own IDs
-  - **Reference:** PR #7 review comments (P3 items)
+- [x] **Apply validation to all routes** [@backend-typescript-dev] ✅ **COMPLETED**
+  - Created `packages/backend/src/middleware/validateRequest.ts` middleware
+  - Implemented `validateBody<T>(schema)` and `validateQuery<T>(schema)` functions
+  - Applied validation to all workout routes (workouts.ts)
+  - Applied validation to all exercise routes (workoutExercises.ts)
+  - Applied validation to all set routes (workoutSets.ts)
+  - All validation failures return 400 Bad Request with detailed Zod error messages
+  - **Completed:** 2025-12-04
+  - **Reference:** `context/VALIDATION_IMPLEMENTATION_SUMMARY.md` lines 53-66, 89-137
+
+- [x] **Address deferred PR #7 code quality improvements (P2 - Medium Priority)** [@backend-typescript-dev] ✅ **COMPLETED**
+  - ✅ Replaced all 5 `any` types with Prisma types:
+    - `workouts.ts:126` → `Prisma.WorkoutSessionWhereInput`
+    - `workouts.ts:292` → `Prisma.WorkoutSessionUpdateInput`
+    - `workoutExercises.ts:230` → `Prisma.WorkoutExerciseUpdateInput`
+    - `workoutSets.ts:167` → `Prisma.WorkoutSetCreateInput`
+    - `workoutSets.ts:268` → `Prisma.WorkoutSetUpdateInput`
+  - ✅ Implemented empty update validation at all 3 locations via Zod refinements
+  - ✅ Consolidated duplicated validation logic:
+    - Strength/cardio validation moved to Zod schemas with refinements
+    - Workout verification extracted to `verifyWorkoutOwnership()` helper
+    - Exercise verification extracted to `verifyWorkoutExerciseOwnership()` helper
+  - **Completed:** 2025-12-04
+  - **Reference:** `context/VALIDATION_IMPLEMENTATION_SUMMARY.md` lines 139-154, PR #7 review
+
+- [x] **Address deferred PR #7 minor improvements (P3 - Low Priority)** [@backend-typescript-dev] ✅ **COMPLETED**
+  - ✅ Type assertion verbosity: Extracted `userId` variables where beneficial
+  - ✅ Database query optimization: Combined verification into helper functions
+  - ✅ OrderIndex negative validation: Enforced via Zod schema `.min(0)` constraint
+  - ✅ Security ID enumeration: Evaluated and deemed low risk (requires auth, user's own data)
+  - **Completed:** 2025-12-04
+  - **Reference:** `context/VALIDATION_IMPLEMENTATION_SUMMARY.md` lines 156-163, PR #7 review
 
 ### Frontend Dashboard
 - [ ] **Create Dashboard page** [@frontend-typescript-dev]

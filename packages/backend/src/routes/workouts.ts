@@ -1,9 +1,19 @@
 import { Router } from 'express';
 import { requireAuth } from '../middleware/requireAuth';
 import { verifyCsrfToken } from '../middleware/csrf';
+import { validateBody, validateQuery } from '../middleware/validateRequest';
 import { prisma } from '../lib/prisma';
 import { logError } from '../utils/errorLogger';
 import type { User } from '@fitness-tracker/shared';
+import {
+  createWorkoutSessionSchema,
+  updateWorkoutSessionSchema,
+  workoutListQuerySchema,
+  type CreateWorkoutSessionInput,
+  type UpdateWorkoutSessionInput,
+  type WorkoutListQuery,
+} from '@fitness-tracker/shared/validators';
+import type { Prisma } from '@prisma/client';
 
 const router = Router();
 
@@ -20,21 +30,15 @@ router.use(requireAuth);
  * Security: Checks for existing active workout (409 Conflict)
  * Returns: Created workout with 201 status
  */
-router.post('/', verifyCsrfToken, async (req, res) => {
+router.post('/', verifyCsrfToken, validateBody(createWorkoutSessionSchema), async (req, res) => {
   try {
-    const { startTime, notes } = req.body;
+    const { startTime, notes } = req.validatedBody as CreateWorkoutSessionInput;
     const userId = (req.user as User).id;
 
-    // Validate startTime if provided
+    // Parse startTime if provided, otherwise use current time
     let startDate: Date;
     if (startTime) {
       startDate = new Date(startTime);
-      if (isNaN(startDate.getTime())) {
-        return res.status(400).json({
-          error: 'Validation error',
-          message: 'startTime must be a valid ISO 8601 date string',
-        });
-      }
     } else {
       startDate = new Date();
     }
@@ -102,28 +106,13 @@ router.post('/', verifyCsrfToken, async (req, res) => {
  *
  * Returns: Array of workouts ordered by startTime descending
  */
-router.get('/', async (req, res) => {
+router.get('/', validateQuery(workoutListQuerySchema), async (req, res) => {
   try {
-    // Validate and parse limit parameter
-    const limitParam = parseInt(req.query.limit as string, 10);
-    const limit = isNaN(limitParam) ? 20 : Math.min(Math.max(limitParam, 1), 100);
-
-    // Validate and parse offset parameter
-    const offsetParam = parseInt(req.query.offset as string, 10);
-    const offset = isNaN(offsetParam) ? 0 : Math.max(offsetParam, 0);
-
-    // Validate status parameter
-    const validStatuses = ['active', 'completed', 'all'];
-    const status = (req.query.status as string) || 'all';
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({
-        error: 'Validation error',
-        message: `status must be one of: ${validStatuses.join(', ')}`,
-      });
-    }
+    const { limit, offset, status } = req.validatedQuery as WorkoutListQuery;
+    const userId = (req.user as User).id;
 
     // Build where clause based on status filter
-    const where: any = { userId: (req.user as User).id };
+    const where: Prisma.WorkoutSessionWhereInput = { userId };
     if (status === 'active') {
       where.endTime = null;
     } else if (status === 'completed') {
@@ -176,9 +165,11 @@ router.get('/', async (req, res) => {
  */
 router.get('/active', async (req, res) => {
   try {
+    const userId = (req.user as User).id;
+
     const activeWorkout = await prisma.workoutSession.findFirst({
       where: {
-        userId: (req.user as User).id,
+        userId,
         endTime: null,
       },
       include: {
@@ -218,11 +209,12 @@ router.get('/active', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = (req.user as User).id;
 
     const workout = await prisma.workoutSession.findFirst({
       where: {
         id,
-        userId: (req.user as User).id, // CRITICAL: Filter by userId for data segregation
+        userId, // CRITICAL: Filter by userId for data segregation
       },
       include: {
         exercises: {
@@ -266,18 +258,20 @@ router.get('/:id', async (req, res) => {
  * - notes: String (to update workout notes)
  *
  * Security: Validates workout belongs to authenticated user
+ * Validation: At least one field must be provided (enforced by Zod schema)
  * Returns: 404 if workout not found, 200 with updated workout
  */
-router.patch('/:id', verifyCsrfToken, async (req, res) => {
+router.patch('/:id', verifyCsrfToken, validateBody(updateWorkoutSessionSchema), async (req, res) => {
   try {
     const { id } = req.params;
-    const { endTime, notes } = req.body;
+    const { endTime, notes } = req.validatedBody as UpdateWorkoutSessionInput;
+    const userId = (req.user as User).id;
 
     // First verify workout exists and belongs to user
     const existingWorkout = await prisma.workoutSession.findFirst({
       where: {
         id,
-        userId: (req.user as User).id, // CRITICAL: Filter by userId
+        userId, // CRITICAL: Filter by userId
       },
     });
 
@@ -288,21 +282,10 @@ router.patch('/:id', verifyCsrfToken, async (req, res) => {
       });
     }
 
-    // Build update data object
-    const updateData: any = {};
+    // Build update data object with proper Prisma types
+    const updateData: Prisma.WorkoutSessionUpdateInput = {};
     if (endTime !== undefined) {
-      if (endTime === null) {
-        updateData.endTime = null;
-      } else {
-        const endDate = new Date(endTime);
-        if (isNaN(endDate.getTime())) {
-          return res.status(400).json({
-            error: 'Validation error',
-            message: 'endTime must be a valid ISO 8601 date string or null',
-          });
-        }
-        updateData.endTime = endDate;
-      }
+      updateData.endTime = endTime === null ? null : new Date(endTime);
     }
     if (notes !== undefined) {
       updateData.notes = notes || null;
@@ -349,12 +332,13 @@ router.patch('/:id', verifyCsrfToken, async (req, res) => {
 router.delete('/:id', verifyCsrfToken, async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = (req.user as User).id;
 
     // First verify workout exists and belongs to user
     const existingWorkout = await prisma.workoutSession.findFirst({
       where: {
         id,
-        userId: (req.user as User).id, // CRITICAL: Filter by userId
+        userId, // CRITICAL: Filter by userId
       },
     });
 

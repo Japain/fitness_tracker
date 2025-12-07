@@ -26,7 +26,8 @@
     "helmet": "^8.1.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
-    "prisma": "5.22.0"
+    "prisma": "5.22.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/connect-pg-simple": "^7.0.3",
