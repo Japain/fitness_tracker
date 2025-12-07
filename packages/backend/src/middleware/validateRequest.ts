@@ -16,14 +16,14 @@ export function validateBody<T>(schema: ZodSchema<T>) {
     try {
       const validated = schema.parse(req.body);
       // Attach validated data to request for type-safe access in route handlers
-      (req as any).validatedBody = validated;
+      req.validatedBody = validated;
       next();
     } catch (error) {
       if (error instanceof ZodError) {
         return res.status(400).json({
           error: 'Validation error',
           message: 'Invalid request data',
-          details: error.issues.map((err: any) => ({
+          details: error.issues.map((err) => ({
             field: err.path.join('.'),
             message: err.message,
           })),
@@ -48,14 +48,14 @@ export function validateQuery<T>(schema: ZodSchema<T>) {
     try {
       const validated = schema.parse(req.query);
       // Attach validated data to request for type-safe access in route handlers
-      (req as any).validatedQuery = validated;
+      req.validatedQuery = validated;
       next();
     } catch (error) {
       if (error instanceof ZodError) {
         return res.status(400).json({
           error: 'Validation error',
           message: 'Invalid query parameters',
-          details: error.issues.map((err: any) => ({
+          details: error.issues.map((err) => ({
             field: err.path.join('.'),
             message: err.message,
           })),

@@ -108,7 +108,8 @@ router.post('/', verifyCsrfToken, validateBody(createWorkoutSessionSchema), asyn
  */
 router.get('/', validateQuery(workoutListQuerySchema), async (req, res) => {
   try {
-    const { limit, offset, status } = req.validatedQuery as WorkoutListQuery;
+    const validatedQuery = req.validatedQuery as WorkoutListQuery;
+    const { limit, offset, status } = validatedQuery;
     const userId = (req.user as User).id;
 
     // Build where clause based on status filter

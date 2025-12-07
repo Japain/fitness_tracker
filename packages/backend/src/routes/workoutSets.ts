@@ -101,10 +101,8 @@ router.post('/:workoutId/exercises/:exerciseId/sets', verifyCsrfToken, validateB
     }
 
     // Build set data based on exercise type with proper Prisma types
-    const setData: Prisma.WorkoutSetCreateInput = {
-      workoutExercise: {
-        connect: { id: exerciseId }
-      },
+    const setData: Prisma.WorkoutSetUncheckedCreateInput = {
+      workoutExerciseId: exerciseId,
       setNumber: finalSetNumber,
       completed: validatedData.completed ?? false,
     };
@@ -112,11 +110,11 @@ router.post('/:workoutId/exercises/:exerciseId/sets', verifyCsrfToken, validateB
     if (exerciseType === 'strength') {
       setData.reps = validatedData.reps!;
       setData.weight = validatedData.weight ?? null;
-      setData.weightUnit = validatedData.weightUnit ?? null;
+      setData.weightUnit = (validatedData.weightUnit ?? null) as string | null;
     } else if (exerciseType === 'cardio') {
       setData.duration = validatedData.duration!;
       setData.distance = validatedData.distance ?? null;
-      setData.distanceUnit = validatedData.distanceUnit ?? null;
+      setData.distanceUnit = (validatedData.distanceUnit ?? null) as string | null;
     }
 
     // Create set

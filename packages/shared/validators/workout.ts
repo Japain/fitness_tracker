@@ -73,27 +73,12 @@ export const updateWorkoutExerciseSchema = z.object({
 // ============================================================================
 
 /**
- * Base schema for strength exercise sets
- */
-const strengthSetSchema = z.object({
-  reps: z.number().int().positive({ message: 'Reps must be a positive number' }),
-  weight: z.number().nonnegative({ message: 'Weight must be a non-negative number' }).optional().nullable(),
-  weightUnit: z.enum(['lbs', 'kg', 'bodyweight']).optional().nullable(),
-});
-
-/**
- * Base schema for cardio exercise sets
- */
-const cardioSetSchema = z.object({
-  duration: z.number().int().positive({ message: 'Duration must be a positive number (seconds)' }),
-  distance: z.number().nonnegative({ message: 'Distance must be a non-negative number' }).optional().nullable(),
-  distanceUnit: z.enum(['miles', 'km']).optional().nullable(),
-});
-
-/**
  * Schema for creating a new workout set
- * Note: This is a union schema that validates based on which fields are present
- * Backend must additionally validate against exercise type
+ * Note: This schema accepts both strength and cardio fields.
+ * The backend performs additional runtime validation to ensure the provided fields
+ * match the exercise type (strength exercises require reps, cardio requires duration).
+ * This approach maintains flexibility while ensuring type safety through Zod validation
+ * combined with backend business logic validation.
  */
 export const createWorkoutSetSchema = z.object({
   setNumber: z.number().int().positive().optional(),
@@ -136,30 +121,12 @@ export const updateWorkoutSetSchema = z.object({
 }).refine(
   (data) => {
     // At least one field must be provided
-    return Object.keys(data).length > 0 && Object.values(data).some(v => v !== undefined);
+    return Object.values(data).some(v => v !== undefined);
   },
   {
     message: 'At least one field must be provided for update',
   }
 );
-
-// ============================================================================
-// Type-Specific Validation Functions
-// ============================================================================
-
-/**
- * Validates that a set contains valid strength exercise data
- */
-export function validateStrengthSet(data: unknown): z.infer<typeof strengthSetSchema> {
-  return strengthSetSchema.parse(data);
-}
-
-/**
- * Validates that a set contains valid cardio exercise data
- */
-export function validateCardioSet(data: unknown): z.infer<typeof cardioSetSchema> {
-  return cardioSetSchema.parse(data);
-}
 
 // ============================================================================
 // Type Exports
