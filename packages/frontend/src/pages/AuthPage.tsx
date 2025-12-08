@@ -1,4 +1,5 @@
-import { Box, Heading, Text, Button, VStack, HStack, Flex, Icon } from '@chakra-ui/react';
+import { Box, Heading, Text, Button, VStack, HStack, Flex, Icon, Alert, AlertIcon, AlertDescription } from '@chakra-ui/react';
+import { useSearchParams } from 'react-router-dom';
 
 /**
  * Authentication/Login Page
@@ -6,6 +7,9 @@ import { Box, Heading, Text, Button, VStack, HStack, Flex, Icon } from '@chakra-
  * Design reference: mockups/html/06-authentication.html
  */
 function AuthPage() {
+  const [searchParams] = useSearchParams();
+  const error = searchParams.get('error');
+
   const handleGoogleLogin = () => {
     // Redirect to backend Google OAuth endpoint
     window.location.href = '/api/auth/google';
@@ -50,6 +54,18 @@ function AuthPage() {
         <Text color="neutral.600" mb="3xl" lineHeight="relaxed">
           Log your workouts in under 30 seconds and track your fitness journey.
         </Text>
+
+        {/* Error Alert */}
+        {error && (
+          <Alert status="error" borderRadius="md" mb="lg">
+            <AlertIcon />
+            <AlertDescription fontSize="sm">
+              {error === 'auth_failed'
+                ? 'Authentication failed. Please try again.'
+                : 'An error occurred during login. Please try again.'}
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Google OAuth Button */}
         <Button

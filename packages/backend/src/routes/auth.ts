@@ -10,13 +10,23 @@ const router = Router();
 /**
  * Cookie clearing options
  * Used when logging out to ensure cookies are properly removed
+ * Must match session cookie configuration
  */
-const COOKIE_CLEAR_OPTIONS = {
+const COOKIE_CLEAR_OPTIONS: {
+  httpOnly: boolean;
+  secure: boolean;
+  sameSite?: 'lax' | 'strict' | 'none';
+  path: string;
+} = {
   httpOnly: true,
   secure: config.isProduction,
-  sameSite: 'lax' as const,
   path: '/',
 };
+
+// Only set sameSite in production (matches session cookie config)
+if (config.isProduction) {
+  COOKIE_CLEAR_OPTIONS.sameSite = 'lax';
+}
 
 /**
  * GET /api/auth/google
@@ -37,10 +47,21 @@ router.get(
 router.get(
   '/google/callback',
   passport.authenticate('google', {
-    failureRedirect: '/login?error=auth_failed',
+    failureRedirect: `${config.cors.origin}/login?error=auth_failed`,
   }),
   setCsrfToken,
   (req, res) => {
+    // Diagnostic logging
+    console.log('=== OAuth Callback Success ===');
+    console.log('Session ID:', req.sessionID);
+    console.log('Is authenticated:', req.isAuthenticated());
+    console.log('User:', req.user);
+    console.log('Session cookie domain:', req.session.cookie.domain);
+    console.log('Session cookie path:', req.session.cookie.path);
+    console.log('Session cookie sameSite:', req.session.cookie.sameSite);
+    console.log('Redirecting to:', `${config.cors.origin}/`);
+    console.log('==============================');
+
     // Successful authentication
     // Redirect to frontend dashboard
     res.redirect(`${config.cors.origin}/`);
@@ -53,6 +74,17 @@ router.get(
  * Returns user data if authenticated, 401 if not
  */
 router.get('/me', (req, res) => {
+  // Diagnostic logging to understand session state
+  console.log('=== /api/auth/me DEBUG ===');
+  console.log('Session ID:', req.sessionID);
+  console.log('Is authenticated:', req.isAuthenticated());
+  console.log('Session data:', JSON.stringify(req.session, null, 2));
+  console.log('Cookie header:', req.headers.cookie);
+  console.log('User agent:', req.headers['user-agent']);
+  console.log('Origin:', req.headers.origin);
+  console.log('Referer:', req.headers.referer);
+  console.log('========================');
+
   if (!req.isAuthenticated()) {
     return res.status(401).json({
       error: 'Not authenticated',
