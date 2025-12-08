@@ -1,3 +1,5 @@
+import type { Exercise } from './exercise';
+
 /**
  * WorkoutSession entity - represents a single workout session
  */
@@ -49,4 +51,25 @@ export interface WorkoutSet {
   // Common fields
   completed: boolean;          // Set completion status
   createdAt: Date;
+}
+
+/**
+ * Extended types for API responses that include nested relationships
+ */
+
+/**
+ * WorkoutExercise with nested Exercise data
+ * Returned by API when fetching workout details
+ */
+export interface WorkoutExerciseWithExercise extends WorkoutExercise {
+  exercise: Exercise;
+  sets?: WorkoutSet[];
+}
+
+/**
+ * WorkoutSession with nested exercises and sets
+ * Returned by API when fetching workout details
+ */
+export interface WorkoutSessionWithExercises extends WorkoutSession {
+  exercises: WorkoutExerciseWithExercise[];
 }

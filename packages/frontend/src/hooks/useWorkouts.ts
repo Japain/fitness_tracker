@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import type { WorkoutSession } from '@fitness-tracker/shared';
+import type { WorkoutSessionWithExercises } from '@fitness-tracker/shared';
 import { fetcher } from '../api/client';
 
 /**
@@ -16,7 +16,7 @@ interface PaginationMeta {
  * Workouts list response from backend
  */
 interface WorkoutsListResponse {
-  workouts: WorkoutSession[];
+  workouts: WorkoutSessionWithExercises[];
   pagination: PaginationMeta;
 }
 
@@ -76,7 +76,7 @@ export function useWeeklyStats() {
  * Calculate weekly workout statistics
  * Filters workouts from the last 7 days and computes totals
  */
-function calculateWeeklyStats(workouts: WorkoutSession[]) {
+function calculateWeeklyStats(workouts: WorkoutSessionWithExercises[]) {
   const now = new Date();
   const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
@@ -102,11 +102,23 @@ function calculateWeeklyStats(workouts: WorkoutSession[]) {
   // Format duration as hours (e.g., "3.2h")
   const totalDurationHours = (totalDuration / (1000 * 60 * 60)).toFixed(1);
 
-  // Note: Exercise count and volume require fetching workout details
-  // For MVP, we'll use placeholder values
-  // TODO: Create backend endpoint that returns aggregated weekly stats
-  const totalExercises = 0; // Placeholder
-  const totalVolume = 0; // Placeholder
+  // Count total unique exercises from all weekly workouts
+  const totalExercises = weeklyWorkouts.reduce((sum, workout) => {
+    return sum + (workout.exercises?.length || 0);
+  }, 0);
+
+  // Calculate total volume (sum of weight * reps for all strength sets)
+  const totalVolume = weeklyWorkouts.reduce((sum, workout) => {
+    return sum + (workout.exercises || []).reduce((exerciseSum: number, workoutExercise) => {
+      return exerciseSum + (workoutExercise.sets || []).reduce((setSum: number, set) => {
+        // Only count completed strength sets with weight
+        if (set.completed && set.weight && set.reps) {
+          return setSum + (set.weight * set.reps);
+        }
+        return setSum;
+      }, 0);
+    }, 0);
+  }, 0);
 
   return {
     totalWorkouts,

@@ -145,6 +145,15 @@ function Dashboard() {
         </Text>
       </VStack>
 
+      {/* In-Progress Workout Banner - shown when activeWorkout exists */}
+      {activeWorkout && (
+        <InProgressBanner
+          workoutId={activeWorkout.id}
+          startTime={activeWorkout.startTime}
+          onResume={() => navigate(`/workout/${activeWorkout.id}`)}
+        />
+      )}
+
       {/* Primary CTA - Start New Workout */}
       <Button
         w="full"
@@ -337,14 +346,98 @@ function StatCard({ value, label, isLoading }: StatCardProps) {
 }
 
 /**
+ * In-Progress Workout Banner Component
+ * Design reference: mockups/html/01-dashboard-home.html lines 424-434
+ * Shows when user has an active workout session
+ */
+interface InProgressBannerProps {
+  workoutId: string;
+  startTime: Date | string;
+  onResume: () => void;
+}
+
+function InProgressBanner({ startTime, onResume }: InProgressBannerProps) {
+  // Calculate elapsed time since workout start
+  const calculateElapsedTime = (start: Date | string): string => {
+    const startDate = new Date(start).getTime();
+    const now = Date.now();
+    const elapsedMinutes = Math.floor((now - startDate) / (1000 * 60));
+
+    if (elapsedMinutes < 60) {
+      return `${elapsedMinutes} minutes ago`;
+    } else {
+      const hours = Math.floor(elapsedMinutes / 60);
+      const minutes = elapsedMinutes % 60;
+      return `${hours}h ${minutes}m ago`;
+    }
+  };
+
+  return (
+    <Box
+      bgGradient="linear(135deg, success.500, #059669)"
+      color="white"
+      p="lg"
+      borderRadius="md"
+      mb="2xl"
+      boxShadow="md"
+    >
+      <HStack spacing="sm" mb="xs">
+        <Box
+          w="8px"
+          h="8px"
+          bg="white"
+          borderRadius="full"
+          sx={{
+            '@keyframes pulse': {
+              '0%, 100%': { opacity: 1 },
+              '50%': { opacity: 0.5 },
+            },
+            animation: 'pulse 2s ease-in-out infinite',
+          }}
+        />
+        <Text fontSize="lg" fontWeight="semibold">
+          Workout in progress
+        </Text>
+      </HStack>
+      <Text fontSize="sm" mb="md" opacity={0.9}>
+        Started {calculateElapsedTime(startTime)}
+      </Text>
+      <Button
+        w="full"
+        h="48px"
+        bg="white"
+        color="success.500"
+        fontSize="md"
+        fontWeight="semibold"
+        onClick={onResume}
+        _hover={{
+          bg: 'whiteAlpha.900',
+        }}
+        _active={{
+          bg: 'whiteAlpha.800',
+        }}
+      >
+        Resume Workout
+      </Button>
+    </Box>
+  );
+}
+
+/**
  * Workout Card Component
  * Displays a workout summary with date, duration, and exercises
+ * Design reference: mockups/html/01-dashboard-home.html lines 471-499
  */
 interface WorkoutCardProps {
   workout: {
     id: string;
     startTime: Date | string;
     endTime?: Date | string | null;
+    exercises?: Array<{
+      exercise: {
+        name: string;
+      };
+    }>;
   };
   formatDate: (date: Date | string) => string;
   calculateDuration: (start: Date | string, end?: Date | string | null) => string;
@@ -352,6 +445,22 @@ interface WorkoutCardProps {
 }
 
 function WorkoutCard({ workout, formatDate, calculateDuration, onClick }: WorkoutCardProps) {
+  // Format exercise list: "Exercise1, Exercise2, Exercise3 +N more"
+  const formatExercises = (): string => {
+    const exercises = workout.exercises || [];
+    if (exercises.length === 0) return 'No exercises logged';
+
+    const exerciseNames = exercises.map((we) => we.exercise.name);
+
+    if (exerciseNames.length <= 3) {
+      return exerciseNames.join(', ');
+    } else {
+      const firstThree = exerciseNames.slice(0, 3).join(', ');
+      const remaining = exerciseNames.length - 3;
+      return `${firstThree} +${remaining} more`;
+    }
+  };
+
   return (
     <Box
       bg="white"
@@ -384,8 +493,7 @@ function WorkoutCard({ workout, formatDate, calculateDuration, onClick }: Workou
         </Box>
       </HStack>
       <Text fontSize="sm" color="neutral.600">
-        {/* Placeholder: exercise count would come from workout details */}
-        View workout details
+        {formatExercises()}
       </Text>
     </Box>
   );

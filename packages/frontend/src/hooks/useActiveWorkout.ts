@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import type { WorkoutSession } from '@fitness-tracker/shared';
+import type { WorkoutSessionWithExercises } from '@fitness-tracker/shared';
 import { fetcher, ApiError } from '../api/client';
 
 /**
@@ -10,7 +10,7 @@ import { fetcher, ApiError } from '../api/client';
  * const { activeWorkout, isLoading, isError, refetch } = useActiveWorkout();
  */
 export function useActiveWorkout() {
-  const { data, error, mutate, isLoading } = useSWR<WorkoutSession | null>(
+  const { data, error, mutate, isLoading } = useSWR<WorkoutSessionWithExercises | null>(
     '/api/workouts/active',
     fetcher,
     {
