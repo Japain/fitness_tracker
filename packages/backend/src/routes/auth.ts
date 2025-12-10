@@ -51,7 +51,6 @@ router.get(
   }),
   setCsrfToken,
   (req, res) => {
-
     // Successful authentication
     // Redirect to frontend dashboard
     res.redirect(`${config.cors.origin}/`);
@@ -64,7 +63,6 @@ router.get(
  * Returns user data if authenticated, 401 if not
  */
 router.get('/me', (req, res) => {
-
   if (!req.isAuthenticated()) {
     return res.status(401).json({
       error: 'Not authenticated',

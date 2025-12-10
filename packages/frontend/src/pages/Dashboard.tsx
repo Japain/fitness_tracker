@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -47,6 +47,10 @@ function Dashboard() {
 
   const [isCreatingWorkout, setIsCreatingWorkout] = useState(false);
   const { isOpen: isConflictModalOpen, onOpen: openConflictModal, onClose: closeConflictModal } = useDisclosure();
+
+  // Memoized formatted values to avoid recalculating on every render
+  const formattedDuration = useMemo(() => `${stats.totalDuration.toFixed(1)}h`, [stats.totalDuration]);
+  const formattedVolume = useMemo(() => `${(stats.totalVolume / 1000).toFixed(1)}k`, [stats.totalVolume]);
 
   /**
    * Handle "Start New Workout" button click
@@ -148,7 +152,6 @@ function Dashboard() {
       {/* In-Progress Workout Banner - shown when activeWorkout exists */}
       {activeWorkout && (
         <InProgressBanner
-          workoutId={activeWorkout.id}
           startTime={activeWorkout.startTime}
           onResume={() => navigate(`/workout/${activeWorkout.id}`)}
         />
@@ -196,7 +199,7 @@ function Dashboard() {
             isLoading={statsLoading}
           />
           <StatCard
-            value={stats.totalDuration}
+            value={formattedDuration}
             label="Total Time"
             isLoading={statsLoading}
           />
@@ -206,7 +209,7 @@ function Dashboard() {
             isLoading={statsLoading}
           />
           <StatCard
-            value={`${(stats.totalVolume / 1000).toFixed(1)}k`}
+            value={formattedVolume}
             label="Total Weight (lbs)"
             isLoading={statsLoading}
           />
@@ -351,7 +354,6 @@ function StatCard({ value, label, isLoading }: StatCardProps) {
  * Shows when user has an active workout session
  */
 interface InProgressBannerProps {
-  workoutId: string;
   startTime: Date | string;
   onResume: () => void;
 }

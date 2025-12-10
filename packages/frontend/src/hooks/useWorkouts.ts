@@ -89,7 +89,7 @@ function calculateWeeklyStats(workouts: WorkoutSessionWithExercises[]) {
   // Count total workouts
   const totalWorkouts = weeklyWorkouts.length;
 
-  // Calculate total duration (only for completed workouts)
+  // Calculate total duration in hours (only for completed workouts)
   const totalDuration = weeklyWorkouts.reduce((sum, workout) => {
     if (workout.endTime) {
       const start = new Date(workout.startTime).getTime();
@@ -97,10 +97,7 @@ function calculateWeeklyStats(workouts: WorkoutSessionWithExercises[]) {
       return sum + (end - start);
     }
     return sum;
-  }, 0);
-
-  // Format duration as hours (e.g., "3.2h")
-  const totalDurationHours = (totalDuration / (1000 * 60 * 60)).toFixed(1);
+  }, 0) / (1000 * 60 * 60); // Convert to hours
 
   // Count total unique exercises from all weekly workouts
   const totalExercises = weeklyWorkouts.reduce((sum, workout) => {
@@ -122,7 +119,7 @@ function calculateWeeklyStats(workouts: WorkoutSessionWithExercises[]) {
 
   return {
     totalWorkouts,
-    totalDuration: `${totalDurationHours}h`,
+    totalDuration, // Raw number in hours
     totalExercises,
     totalVolume,
   };
