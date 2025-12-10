@@ -68,7 +68,14 @@ This is a **monorepo** using npm workspaces with three packages:
 - `packages/backend/src/middleware/auth.ts` - Passport.js configuration with GoogleStrategy
 - `packages/backend/src/middleware/csrf.ts` - CSRF token generation and validation
 - `packages/backend/src/middleware/requireAuth.ts` - Authentication guard for protected routes
+- `packages/backend/src/middleware/validateRequest.ts` - Zod validation middleware
 - `packages/backend/src/routes/auth.ts` - Authentication endpoints
+
+**Backend Workout Files:**
+- `packages/backend/src/routes/workouts.ts` - Workout session endpoints
+- `packages/backend/src/routes/workoutExercises.ts` - Workout exercise endpoints
+- `packages/backend/src/routes/workoutSets.ts` - Workout set endpoints
+- `packages/backend/src/utils/workoutHelpers.ts` - Ownership verification helpers
 
 **Authentication Endpoints:**
 - `GET /api/auth/google` - Initiates OAuth flow with Google
@@ -231,14 +238,34 @@ curl -X PATCH -b cookies.txt \
 ```
 
 **Request Validation:**
+- Comprehensive Zod validation implemented for all workout endpoints
+- Validation schemas located in `packages/shared/validators/workout.ts`
+- Middleware located in `packages/backend/src/middleware/validateRequest.ts`
 - Strength exercises require `reps` (required), `weight` and `weightUnit` (optional)
 - Cardio exercises require `duration` (required), `distance` and `distanceUnit` (optional)
 - All mutating endpoints require CSRF token in `x-csrf-token` header
 - All endpoints require authentication (session cookie)
+- Detailed validation documentation: `context/VALIDATION_IMPLEMENTATION_SUMMARY.md`
+
+### Frontend Hooks & State Management
+
+**Custom Hooks:**
+- `useWorkouts()` - Fetches recent workouts with pagination and weekly stats
+  - Located in `packages/frontend/src/hooks/useWorkouts.ts`
+  - Uses SWR for automatic caching and revalidation
+  - `useRecentWorkouts(limit)` - Fetches N most recent workouts
+  - `useWeeklyStats()` - Calculates weekly workout statistics
+- `useActiveWorkout()` - Fetches currently active workout
+  - Located in `packages/frontend/src/hooks/useActiveWorkout.ts`
+
+**Navigation Components:**
+- `TopNav` - Top navigation bar with logo and user menu
+- `BottomNav` - Bottom navigation with Dashboard/History tabs (mobile-optimized)
+- `AppLayout` - Main layout wrapper combining TopNav, content area, and BottomNav
 
 ### Visual Development
 - Comprehensive design checklist in `context/DESIGN-PRINCIPLES.md`
-- When making visual (front-end, UI,UX) changes, always refer to that file for guidance.
+- When making visual (front-end, UI, UX) changes, always refer to that file for guidance.
 
 ### Design Mockups
 The `mockups/` folder contains approved UI designs for implementation:
@@ -614,3 +641,18 @@ const activeWorkout = await prisma.workoutSession.findFirst({
 - Social features (friends, sharing, leaderboards)
 - Nutrition logging and meal tracking
 - Native mobile apps (iOS/Android)
+
+## Additional Documentation
+
+The `context/` directory contains detailed technical documentation:
+
+- **`ARCHITECTURE_DECISIONS.md`** - Comprehensive technical decisions and implementation patterns
+- **`PROJECT_REQUIREMENTS.md`** - Detailed product requirements and user stories
+- **`DESIGN-PRINCIPLES.md`** - Design philosophy and accessibility checklist
+- **`VALIDATION_IMPLEMENTATION_SUMMARY.md`** - Zod validation implementation guide
+- **`AUTH_TROUBLESHOOTING_LOG.md`** - Authentication debugging and solutions
+
+The root directory also contains:
+
+- **`DEPLOYMENT_STRATEGY.md`** - Production deployment guide (Vercel + Railway recommended)
+- **`TODO.md`** - Implementation progress tracker with all phases
