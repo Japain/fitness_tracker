@@ -10,13 +10,23 @@ const router = Router();
 /**
  * Cookie clearing options
  * Used when logging out to ensure cookies are properly removed
+ * Must match session cookie configuration
  */
-const COOKIE_CLEAR_OPTIONS = {
+const COOKIE_CLEAR_OPTIONS: {
+  httpOnly: boolean;
+  secure: boolean;
+  sameSite?: 'lax' | 'strict' | 'none';
+  path: string;
+} = {
   httpOnly: true,
   secure: config.isProduction,
-  sameSite: 'lax' as const,
   path: '/',
 };
+
+// Only set sameSite in production (matches session cookie config)
+if (config.isProduction) {
+  COOKIE_CLEAR_OPTIONS.sameSite = 'lax';
+}
 
 /**
  * GET /api/auth/google
@@ -37,7 +47,7 @@ router.get(
 router.get(
   '/google/callback',
   passport.authenticate('google', {
-    failureRedirect: '/login?error=auth_failed',
+    failureRedirect: `${config.cors.origin}/login?error=auth_failed`,
   }),
   setCsrfToken,
   (req, res) => {

@@ -47,13 +47,26 @@ export function setCsrfToken(req: Request, res: Response, next: NextFunction): v
     // Generate new token
     token = generateToken();
 
-    // Set cookie
-    res.cookie(CSRF_COOKIE_NAME, token, {
+    // Set cookie with configuration matching session cookies
+    // In development: omit sameSite to allow cross-origin (localhost:3000 <-> localhost:5173)
+    // In production: use sameSite 'lax' for CSRF protection
+    const cookieOptions: {
+      httpOnly: boolean;
+      secure: boolean;
+      sameSite?: 'lax' | 'strict' | 'none';
+      maxAge: number;
+    } = {
       httpOnly: true,
       secure: config.isProduction,
-      sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days (match session duration)
-    });
+    };
+
+    // Only set sameSite in production
+    if (config.isProduction) {
+      cookieOptions.sameSite = 'lax';
+    }
+
+    res.cookie(CSRF_COOKIE_NAME, token, cookieOptions);
   }
 
   // Attach token to request for use in getCsrfToken endpoint

@@ -28,9 +28,11 @@ interface AuthState {
  */
 export const useAuthStore = create<AuthState>((set) => ({
   // Initial state
+  // isLoading starts TRUE to prevent ProtectedRoute from redirecting
+  // before the initial auth check completes (race condition fix)
   user: null,
   isAuthenticated: false,
-  isLoading: false,
+  isLoading: true,
   error: null,
 
   // Actions

@@ -1,8 +1,33 @@
 # Fitness Tracker - Implementation TODO
 
-**Version:** 1.2
-**Date:** 2025-11-29
-**Status:** Phase 2 Complete (Authentication) - Ready for Phase 3 (Core Workout Features)
+**Version:** 1.4
+**Date:** 2025-12-07
+**Status:** Phase 3 Backend & Dashboard Complete - Ready for Active Workout Screen
+
+## Recent Completed Work (Sessions: 2025-12-04 to 2025-12-07)
+
+### Backend Workout API (Phase 3)
+- ✅ Created complete workout API routes (workouts.ts, workoutExercises.ts, workoutSets.ts)
+- ✅ Implemented comprehensive Zod validation for all endpoints
+- ✅ Fixed critical validation issues from PR #7 review (P0/P1 items)
+- ✅ Resolved Zod version conflicts and eliminated deprecation warnings
+- ✅ Added helper functions for workout/exercise ownership verification
+- ✅ Applied validation middleware to all state-changing endpoints
+
+### Frontend Dashboard (Phase 3)
+- ✅ Implemented Dashboard page with stats, recent workouts, and workout creation
+- ✅ Created TopNav and BottomNav navigation components
+- ✅ Fixed authentication race condition (initial loading state)
+- ✅ Fixed backend cookie configuration for localhost development
+- ✅ Created useWorkouts hook for fetching recent workouts and weekly stats
+- ✅ Implemented active workout conflict modal
+- ✅ Added loading states and empty states
+
+### Documentation Updates
+- ✅ Created DEPLOYMENT_STRATEGY.md for production deployment planning
+- ✅ Created VALIDATION_IMPLEMENTATION_SUMMARY.md documenting Zod validation approach
+- ✅ Reorganized documentation into context/ directory
+- ✅ Updated AUTH_TROUBLESHOOTING_LOG.md with authentication fixes
 
 ---
 
@@ -525,25 +550,57 @@
   - **Reference:** `context/VALIDATION_IMPLEMENTATION_SUMMARY.md` lines 156-163, PR #7 review
 
 ### Frontend Dashboard
-- [ ] **Create Dashboard page** [@frontend-typescript-dev]
-  - Create `packages/frontend/src/pages/Dashboard.tsx`
-  - Implement UI per `mockups/01-dashboard-home.html`
-  - Display welcome message with user's displayName
-  - Show "Start New Workout" button (prominent primary CTA)
-  - Display this week's stats (4 stat cards: workouts, exercises, total volume, avg duration)
-  - Show recent workouts (last 3 workouts as cards)
-  - Implement "View All" link to history page
-  - **Depends on:** Auth store, workout API
+- [x] **Create Dashboard page** [@frontend-typescript-dev] ✅ **COMPLETED**
+  - Created `packages/frontend/src/pages/Dashboard.tsx`
+  - Implemented UI per `mockups/01-dashboard-home.html`
+  - Display welcome message with user's displayName (extracts first name)
+  - Show "Start New Workout" button (prominent primary CTA with icon)
+  - Display this week's stats (4 stat cards: workouts, time, exercises, volume)
+  - Show recent workouts (last 3 workouts with date formatting and duration)
+  - Implemented "View All Workouts" link to history page
+  - Added loading states (Skeleton components for stats and workouts)
+  - Added empty state: "No workouts yet. Start your first workout!"
+  - **Completed:** 2025-12-07
   - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 156-247
 
-- [ ] **Implement workout creation** [@frontend-typescript-dev]
+- [x] **Implement workout creation** [@frontend-typescript-dev] ✅ **COMPLETED**
   - Handle "Start New Workout" button click
   - Call `POST /api/workouts` with startTime = now
   - Handle 409 conflict (show modal: "Resume active workout?")
   - Navigate to `/workout/:id` on success
-  - Show error toast on failure
-  - **Depends on:** Backend workout API
+  - Show error toast on failure using Chakra Toast
+  - Implemented active workout conflict modal with "Resume" and "Cancel" buttons
+  - **Completed:** 2025-12-07
   - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 316-367
+
+- [x] **Create useWorkouts hooks** [@frontend-typescript-dev] ✅ **COMPLETED**
+  - Created `packages/frontend/src/hooks/useWorkouts.ts`
+  - Implemented `useRecentWorkouts(limit)` - Fetches recent workouts with pagination
+  - Implemented `useWeeklyStats()` - Calculates weekly stats from workouts
+  - Both hooks use SWR with proper caching (5s and 10s deduplication)
+  - Helper function `calculateWeeklyStats()` filters last 7 days and computes totals
+  - **Note:** Exercise count and volume are placeholders (0) - require workout details from backend
+  - **Future optimization:** Consider dedicated backend endpoint `GET /api/stats/weekly`
+  - **Completed:** 2025-12-07
+
+- [x] **Fix authentication race condition** [@frontend-typescript-dev] ✅ **COMPLETED**
+  - Fixed critical bug: users redirected to login before auth check completed
+  - Root cause: `authStore` initial state `isLoading: false` caused premature routing
+  - Fix: Changed initial state to `isLoading: true` in `packages/frontend/src/stores/authStore.ts`
+  - Now shows loading spinner until `checkAuth()` completes
+  - Users correctly routed to Dashboard (if authenticated) or Login (if not)
+  - **Completed:** 2025-12-07
+  - **Priority:** P0 (blocked authentication flow)
+  - **Reference:** `AUTH_TROUBLESHOOTING_LOG.md`
+
+- [x] **Fix backend cookie configuration for development** [@backend-typescript-dev] ✅ **COMPLETED**
+  - Made session and CSRF cookies `sameSite` conditional (undefined in dev, 'lax' in prod)
+  - Allows cross-origin cookies between localhost:3000 and localhost:5173
+  - Files updated: `packages/backend/src/index.ts`, `packages/backend/src/middleware/csrf.ts`
+  - Fixed OAuth failure redirect URL to use frontend origin
+  - Added debug logging to auth endpoints
+  - **Completed:** 2025-12-07
+  - **Reference:** `AUTH_TROUBLESHOOTING_LOG.md`
 
 ### Frontend Active Workout Screen
 - [ ] **Create ActiveWorkout page** [@frontend-typescript-dev]

@@ -33,6 +33,20 @@ app.use(csrfCookieParser);
 // Session middleware - PostgreSQL-backed sessions
 const PgSession = connectPgSimple(session);
 
+// Build cookie configuration
+// In development: omit sameSite to allow cross-origin cookies (localhost:3000 <-> localhost:5173)
+// In production: use sameSite 'lax' for CSRF protection
+const cookieConfig: session.CookieOptions = {
+  httpOnly: true,
+  secure: config.isProduction, // HTTPS only in production
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
+
+// Only set sameSite in production (development needs cross-origin cookies for OAuth flow)
+if (config.isProduction) {
+  cookieConfig.sameSite = 'lax';
+}
+
 app.use(session({
   store: new PgSession({
     conString: config.database.url,
@@ -42,12 +56,7 @@ app.use(session({
   secret: config.session.secret || 'dev-secret-change-in-production',
   resave: false,
   saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    secure: config.isProduction, // HTTPS only in production
-    sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-  },
+  cookie: cookieConfig,
 }));
 
 // Initialize Passport and restore authentication state from session
