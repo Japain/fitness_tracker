@@ -51,16 +51,6 @@ router.get(
   }),
   setCsrfToken,
   (req, res) => {
-    // Diagnostic logging
-    console.log('=== OAuth Callback Success ===');
-    console.log('Session ID:', req.sessionID);
-    console.log('Is authenticated:', req.isAuthenticated());
-    console.log('User:', req.user);
-    console.log('Session cookie domain:', req.session.cookie.domain);
-    console.log('Session cookie path:', req.session.cookie.path);
-    console.log('Session cookie sameSite:', req.session.cookie.sameSite);
-    console.log('Redirecting to:', `${config.cors.origin}/`);
-    console.log('==============================');
 
     // Successful authentication
     // Redirect to frontend dashboard
@@ -74,16 +64,6 @@ router.get(
  * Returns user data if authenticated, 401 if not
  */
 router.get('/me', (req, res) => {
-  // Diagnostic logging to understand session state
-  console.log('=== /api/auth/me DEBUG ===');
-  console.log('Session ID:', req.sessionID);
-  console.log('Is authenticated:', req.isAuthenticated());
-  console.log('Session data:', JSON.stringify(req.session, null, 2));
-  console.log('Cookie header:', req.headers.cookie);
-  console.log('User agent:', req.headers['user-agent']);
-  console.log('Origin:', req.headers.origin);
-  console.log('Referer:', req.headers.referer);
-  console.log('========================');
 
   if (!req.isAuthenticated()) {
     return res.status(401).json({
