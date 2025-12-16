@@ -6,6 +6,8 @@
 import { Router } from 'express';
 import { prisma } from '../lib/prisma';
 import { requireAuth } from '../middleware/requireAuth';
+import { logError } from '../utils/errorLogger';
+import type { User } from '@fitness-tracker/shared';
 
 const router = Router();
 
@@ -20,11 +22,13 @@ const router = Router();
  */
 router.get('/', requireAuth, async (req, res) => {
   try {
+    const userId = (req.user as User).id;
+
     const exercises = await prisma.exercise.findMany({
       where: {
         OR: [
           { isCustom: false },           // Library exercises
-          { userId: req.user.id },       // User's custom exercises
+          { userId },                    // User's custom exercises
         ],
       },
       orderBy: [
@@ -35,10 +39,10 @@ router.get('/', requireAuth, async (req, res) => {
 
     res.json(exercises);
   } catch (error) {
-    console.error('Error fetching exercises:', error);
+    logError('Failed to fetch exercises', error, { userId: (req.user as User | undefined)?.id });
     res.status(500).json({
+      error: 'Internal server error',
       message: 'Failed to fetch exercises',
-      error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
