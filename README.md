@@ -163,6 +163,116 @@ docker-compose down
 docker-compose down -v  # ⚠️ This deletes all data!
 ```
 
+### Troubleshooting
+
+#### Port Already in Use
+
+If you see `EADDRINUSE: address already in use :::3000` or similar errors when starting the application:
+
+**Check what's running on a port:**
+```bash
+# Check backend port (3000)
+lsof -ti:3000
+
+# Check frontend port (5173)
+lsof -ti:5173
+```
+
+**Kill the process using the port:**
+```bash
+# Kill backend process
+kill $(lsof -ti:3000)
+
+# Kill frontend process
+kill $(lsof -ti:5173)
+
+# Then restart the application
+npm run dev
+```
+
+#### Docker Container Conflicts
+
+If you see `The container name "/fitness_tracker_postgres" is already in use`:
+
+**Option 1 - Start the existing container:**
+```bash
+docker start fitness_tracker_postgres
+```
+
+**Option 2 - Remove and recreate:**
+```bash
+# Remove the existing container (keeps data)
+docker rm fitness_tracker_postgres
+
+# Start fresh
+docker-compose up -d
+```
+
+**Option 3 - Clean restart (⚠️ deletes all data):**
+```bash
+docker-compose down -v
+docker-compose up -d
+cd packages/backend
+npx prisma migrate dev
+npx prisma db seed
+```
+
+#### Check Service Status
+
+**Verify database is running:**
+```bash
+docker-compose ps
+# Should show fitness_tracker_postgres as "running"
+```
+
+**Test database connection:**
+```bash
+docker exec -it fitness_tracker_postgres psql -U fitness_tracker -d fitness_tracker_dev -c "SELECT 1;"
+# Should return: (1 row)
+```
+
+**Check backend health:**
+```bash
+curl http://localhost:3000/api/health
+# Should return: {"status":"ok","database":"connected","timestamp":"..."}
+```
+
+**Verify all services:**
+```bash
+# Backend should be on port 3000
+lsof -ti:3000
+
+# Frontend should be on port 5173
+lsof -ti:5173
+
+# Database should be on port 5432
+lsof -ti:5432
+```
+
+#### Clean Restart (Full Reset)
+
+If you need to completely reset your development environment:
+
+```bash
+# 1. Stop all processes
+# Press Ctrl+C in terminals running npm run dev
+
+# 2. Kill any lingering processes
+kill $(lsof -ti:3000) 2>/dev/null || true
+kill $(lsof -ti:5173) 2>/dev/null || true
+
+# 3. Reset database (⚠️ deletes all data)
+docker-compose down -v
+
+# 4. Start fresh
+docker-compose up -d
+cd packages/backend
+npx prisma migrate dev
+npx prisma db seed
+cd ../..
+npm run dev
+```
+
 ### Database Management
 
 **Prisma commands (run from `packages/backend/`):**

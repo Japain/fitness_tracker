@@ -135,7 +135,33 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
           {exercise.name}
         </Heading>
 
-        <HStack spacing="sm">
+        <HStack spacing="xs">
+          {/* Edit button */}
+          <IconButton
+            aria-label="Edit exercise notes"
+            icon={
+              <Icon viewBox="0 0 24 24" boxSize="20px">
+                <path
+                  fill="currentColor"
+                  d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                />
+              </Icon>
+            }
+            variant="ghost"
+            color="neutral.500"
+            size="sm"
+            minH="44px"
+            minW="44px"
+            onClick={() => {
+              // TODO: Implement edit modal for exercise notes
+              alert('Edit functionality coming soon:\n- Add/edit notes for this exercise');
+            }}
+            _hover={{
+              bg: 'neutral.100',
+              color: 'neutral.700',
+            }}
+          />
+
           {/* Delete button */}
           <IconButton
             aria-label="Delete exercise"

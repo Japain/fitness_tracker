@@ -114,7 +114,7 @@ function ActiveWorkout() {
       <WorkoutHeader startTime={workout.startTime} onBack={() => navigate('/')} />
 
       {/* Main Content */}
-      <Box p="xl" maxW="600px" mx="auto" w="full">
+      <Box px="lg" py="xl" maxW="600px" mx="auto" w="full">
         {/* Exercises Section */}
         <VStack align="stretch" spacing="md">
           <Heading
@@ -295,6 +295,7 @@ function WorkoutHeader({ startTime, onBack }: WorkoutHeaderProps) {
     >
       <HStack justify="space-between" align="center" mb="md">
         <Button
+          aria-label="Return to dashboard"
           variant="unstyled"
           color="white"
           p="sm"
@@ -303,9 +304,34 @@ function WorkoutHeader({ startTime, onBack }: WorkoutHeaderProps) {
           display="flex"
           alignItems="center"
           onClick={onBack}
+          _hover={{
+            bg: 'rgba(255, 255, 255, 0.1)',
+          }}
         >
           <Icon viewBox="0 0 24 24" boxSize="20px">
             <path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+          </Icon>
+        </Button>
+
+        <Button
+          aria-label="Workout menu"
+          variant="unstyled"
+          color="white"
+          p="sm"
+          minH="44px"
+          minW="44px"
+          display="flex"
+          alignItems="center"
+          onClick={() => {
+            // TODO: Implement menu with options: Add notes, Cancel workout, Settings
+            alert('Menu functionality coming soon:\n- Add notes to workout\n- Cancel workout\n- Settings');
+          }}
+          _hover={{
+            bg: 'rgba(255, 255, 255, 0.1)',
+          }}
+        >
+          <Icon viewBox="0 0 24 24" boxSize="20px">
+            <path fill="currentColor" d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
           </Icon>
         </Button>
       </HStack>

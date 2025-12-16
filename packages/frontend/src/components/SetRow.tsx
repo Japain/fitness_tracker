@@ -34,6 +34,7 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
   const [duration, setDuration] = useState(set.duration ? (set.duration / 60).toString() : ''); // Convert seconds to minutes
   const [distance, setDistance] = useState(set.distance?.toString() || '');
   const [completed, setCompleted] = useState(set.completed);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Update local state when prop changes
   useEffect(() => {
@@ -48,6 +49,8 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
    * Update set in database
    */
   const updateSet = async (field: string, value: string | boolean) => {
+    setIsSaving(true);
+
     try {
       const updateData: Record<string, unknown> = {};
 
@@ -85,6 +88,8 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
         isClosable: true,
         position: 'top',
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -114,11 +119,11 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
     updateSet('completed', newCompleted);
   };
 
-  // Render strength exercise inputs (Weight, Reps, Sets placeholder)
+  // Render strength exercise inputs (Weight, Reps)
   if (exerciseType === 'strength') {
     return (
       <Grid
-        templateColumns="40px 1fr 1fr 1fr 44px"
+        templateColumns="40px 1fr 1fr 44px"
         gap="md"
         alignItems="center"
         py="md"
@@ -149,6 +154,9 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
             h="44px"
             borderRadius="sm"
             borderColor="neutral.300"
+            isDisabled={isSaving}
+            opacity={isSaving ? 0.6 : 1}
+            transition="opacity 0.2s"
             _focus={{
               borderColor: 'primary.500',
               boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
@@ -174,30 +182,13 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
             h="44px"
             borderRadius="sm"
             borderColor="neutral.300"
+            isDisabled={isSaving}
+            opacity={isSaving ? 0.6 : 1}
+            transition="opacity 0.2s"
             _focus={{
               borderColor: 'primary.500',
               boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
             }}
-          />
-        </Box>
-
-        {/* Sets placeholder (mockup shows this but we don't use it in our data model) */}
-        <Box>
-          <Text fontSize="xs" color="neutral.600" fontWeight="medium" mb="xs">
-            Sets
-          </Text>
-          <Input
-            type="number"
-            value="1"
-            disabled
-            fontSize="md"
-            fontWeight="semibold"
-            textAlign="center"
-            h="44px"
-            borderRadius="sm"
-            bg="neutral.50"
-            borderColor="neutral.200"
-            opacity={0.5}
           />
         </Box>
 
@@ -259,6 +250,9 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
           h="44px"
           borderRadius="sm"
           borderColor="neutral.300"
+          isDisabled={isSaving}
+          opacity={isSaving ? 0.6 : 1}
+          transition="opacity 0.2s"
           _focus={{
             borderColor: 'primary.500',
             boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
@@ -284,6 +278,9 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
           h="44px"
           borderRadius="sm"
           borderColor="neutral.300"
+          isDisabled={isSaving}
+          opacity={isSaving ? 0.6 : 1}
+          transition="opacity 0.2s"
           _focus={{
             borderColor: 'primary.500',
             boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
