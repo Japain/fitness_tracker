@@ -80,9 +80,10 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
       // Refresh workout data
       onUpdate();
     } catch (error) {
+      // TODO: Implement centralized error handling pattern
       toast({
         title: 'Failed to update set',
-        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        description: error instanceof Error ? error.message : 'An unexpected error occurred while updating the set. Please try again.',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -101,12 +102,11 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
   };
 
   /**
-   * Handle Enter key (save changes and blur)
+   * Handle Enter key (blur will trigger save via onBlur)
    */
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, field: string, value: string) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.currentTarget.blur();
-      updateSet(field, value);
     }
   };
 
@@ -138,15 +138,16 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
 
         {/* Weight Input */}
         <Box>
+          {/* TODO: Use user preferences for unit display if available, fallback to set.weightUnit */}
           <Text fontSize="xs" color="neutral.600" fontWeight="medium" mb="xs">
-            Weight (lbs)
+            Weight ({set.weightUnit || 'lbs'})
           </Text>
           <Input
             type="number"
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
             onBlur={(e) => handleBlur('weight', e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, 'weight', weight)}
+            onKeyDown={handleKeyDown}
             inputMode="decimal"
             fontSize="md"
             fontWeight="semibold"
@@ -174,7 +175,7 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
             value={reps}
             onChange={(e) => setReps(e.target.value)}
             onBlur={(e) => handleBlur('reps', e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, 'reps', reps)}
+            onKeyDown={handleKeyDown}
             inputMode="numeric"
             fontSize="md"
             fontWeight="semibold"
@@ -242,7 +243,7 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
           value={duration}
           onChange={(e) => setDuration(e.target.value)}
           onBlur={(e) => handleBlur('duration', e.target.value)}
-          onKeyDown={(e) => handleKeyDown(e, 'duration', duration)}
+          onKeyDown={handleKeyDown}
           inputMode="decimal"
           fontSize="md"
           fontWeight="semibold"
@@ -262,15 +263,16 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
 
       {/* Distance Input */}
       <Box>
+        {/* TODO: Use user preferences for unit display if available, fallback to set.distanceUnit */}
         <Text fontSize="xs" color="neutral.600" fontWeight="medium" mb="xs">
-          Distance (km)
+          Distance ({set.distanceUnit || 'km'})
         </Text>
         <Input
           type="number"
           value={distance}
           onChange={(e) => setDistance(e.target.value)}
           onBlur={(e) => handleBlur('distance', e.target.value)}
-          onKeyDown={(e) => handleKeyDown(e, 'distance', distance)}
+          onKeyDown={handleKeyDown}
           inputMode="decimal"
           fontSize="md"
           fontWeight="semibold"

@@ -18,7 +18,7 @@ import {
   Heading,
   useToast,
 } from '@chakra-ui/react';
-import { Exercise } from '@fitness-tracker/shared';
+import { Exercise, WorkoutSessionWithExercises } from '@fitness-tracker/shared';
 import { useExercises } from '../hooks/useExercises';
 import { apiRequest } from '../api/client';
 
@@ -38,6 +38,7 @@ interface ExerciseSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
   workoutId: string;
+  workout: WorkoutSessionWithExercises;
   onExerciseAdded: () => void;
 }
 
@@ -48,6 +49,7 @@ function ExerciseSelectionModal({
   isOpen,
   onClose,
   workoutId,
+  workout,
   onExerciseAdded,
 }: ExerciseSelectionModalProps) {
   const toast = useToast();
@@ -115,8 +117,8 @@ function ExerciseSelectionModal({
     setIsAdding(true);
 
     try {
-      // Get current exercise count for orderIndex
-      const orderIndex = exercises.length;
+      // Get current exercise count from workout for orderIndex
+      const orderIndex = workout.exercises?.length || 0;
 
       await apiRequest(`/api/workouts/${workoutId}/exercises`, {
         method: 'POST',
@@ -148,9 +150,10 @@ function ExerciseSelectionModal({
       setSearchQuery('');
       setSelectedCategory('All');
     } catch (error) {
+      // TODO: Implement centralized error handling pattern
       toast({
         title: 'Failed to add exercise',
-        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        description: error instanceof Error ? error.message : 'An unexpected error occurred while adding the exercise. Please try again.',
         status: 'error',
         duration: 5000,
         isClosable: true,

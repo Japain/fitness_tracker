@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   Box,
   Heading,
@@ -8,6 +8,13 @@ import {
   Icon,
   IconButton,
   useToast,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  useDisclosure,
 } from '@chakra-ui/react';
 import { WorkoutExerciseWithExercise } from '@fitness-tracker/shared';
 import { apiRequest } from '../api/client';
@@ -29,6 +36,8 @@ interface ExerciseCardProps {
 function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProps) {
   const toast = useToast();
   const [isAddingSet, setIsAddingSet] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = useRef<HTMLButtonElement>(null);
 
   const { exercise, sets = [] } = workoutExercise;
   const isStrength = exercise.type === 'strength';
@@ -71,9 +80,10 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
       // Refresh workout data
       onUpdate();
     } catch (error) {
+      // TODO: Implement centralized error handling pattern
       toast({
         title: 'Failed to add set',
-        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        description: error instanceof Error ? error.message : 'An unexpected error occurred while adding the set. Please try again.',
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -85,13 +95,11 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
   };
 
   /**
-   * Handle delete exercise
+   * Handle delete exercise confirmation
    * Removes the exercise from the workout
    */
   const handleDeleteExercise = async () => {
-    if (!confirm('Are you sure you want to remove this exercise?')) {
-      return;
-    }
+    onClose();
 
     try {
       await apiRequest(`/api/workouts/${workoutId}/exercises/${workoutExercise.id}`, {
@@ -109,9 +117,10 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
       // Refresh workout data
       onUpdate();
     } catch (error) {
+      // TODO: Implement centralized error handling pattern
       toast({
         title: 'Failed to remove exercise',
-        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        description: error instanceof Error ? error.message : 'An unexpected error occurred while removing the exercise. Please try again.',
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -178,7 +187,7 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
             size="sm"
             minH="44px"
             minW="44px"
-            onClick={handleDeleteExercise}
+            onClick={onOpen}
             _hover={{
               bg: 'error.50',
               color: 'error.500',
@@ -223,6 +232,36 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
       >
         + Add Another Set
       </Button>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        isOpen={isOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onClose}
+        isCentered
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent mx="lg">
+            <AlertDialogHeader fontSize="lg" fontWeight="semibold">
+              Remove Exercise
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Are you sure you want to remove <strong>{exercise.name}</strong> from this workout?
+              All sets will be deleted.
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onClose} variant="ghost">
+                Cancel
+              </Button>
+              <Button colorScheme="red" onClick={handleDeleteExercise} ml="md">
+                Remove
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Box>
   );
 }

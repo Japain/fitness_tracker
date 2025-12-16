@@ -96,9 +96,10 @@ function ActiveWorkout() {
       // Navigate to workout detail view
       navigate(`/history/${id}`);
     } catch (error) {
+      // TODO: Implement centralized error handling pattern
       toast({
         title: 'Failed to finish workout',
-        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        description: error instanceof Error ? error.message : 'An unexpected error occurred while finishing the workout. Please try again.',
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -236,6 +237,7 @@ function ActiveWorkout() {
         isOpen={isOpen}
         onClose={onClose}
         workoutId={id!}
+        workout={workout}
         onExerciseAdded={mutate}
       />
     </Box>
