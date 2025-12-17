@@ -8,6 +8,7 @@ import { prisma } from './lib/prisma';
 import passport from './middleware/auth';
 import { csrfCookieParser, setCsrfToken } from './middleware/csrf';
 import authRoutes from './routes/auth';
+import exerciseRoutes from './routes/exercises';
 import workoutRoutes from './routes/workouts';
 import workoutExerciseRoutes from './routes/workoutExercises';
 import workoutSetRoutes from './routes/workoutSets';
@@ -65,6 +66,9 @@ app.use(passport.session());
 
 // Mount authentication routes
 app.use('/api/auth', authRoutes);
+
+// Mount exercise library routes
+app.use('/api/exercises', exerciseRoutes);
 
 // Mount workout API routes
 app.use('/api/workouts', workoutRoutes);

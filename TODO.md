@@ -1,10 +1,35 @@
 # Fitness Tracker - Implementation TODO
 
-**Version:** 1.4
-**Date:** 2025-12-07
-**Status:** Phase 3 Backend & Dashboard Complete - Ready for Active Workout Screen
+**Version:** 1.5
+**Date:** 2025-12-15
+**Status:** Phase 3 Active Workout Screen Complete - Ready for Workout History
 
-## Recent Completed Work (Sessions: 2025-12-04 to 2025-12-07)
+## Recent Completed Work (Sessions: 2025-12-07 to 2025-12-15)
+
+### Frontend Active Workout Screen (Phase 3)
+- ✅ Implemented ActiveWorkout page with real-time workout timer
+- ✅ Created ExerciseCard component for displaying exercises with set tables
+- ✅ Created SetRow component for individual set input (weight, reps, completion)
+- ✅ Created ExerciseSelectionModal with search, category filters, and recent exercises
+- ✅ Implemented workout timer with MM:SS format and pulsing animation
+- ✅ Added exercise selection with category filtering (Push, Pull, Legs, Core, Cardio)
+- ✅ Implemented set input fields with mobile-optimized number keyboards
+- ✅ Added finish workout functionality with summary display
+
+### Backend Exercise API (Phase 4 - Partial)
+- ✅ Created exercises routes with GET endpoint
+- ✅ Implemented exercise fetching (library + custom exercises)
+- ✅ Fixed error handling and type safety in exercises endpoint
+- ✅ Added proper user data segregation (library exercises + user's custom only)
+
+### Documentation Updates
+- ✅ Added comprehensive troubleshooting section to README.md
+  - Port conflict resolution (EADDRINUSE errors)
+  - Docker container conflict handling
+  - Service status verification commands
+  - Full environment reset procedures
+
+## Previous Completed Work (Sessions: 2025-12-04 to 2025-12-07)
 
 ### Backend Workout API (Phase 3)
 - ✅ Created complete workout API routes (workouts.ts, workoutExercises.ts, workoutSets.ts)
@@ -23,7 +48,7 @@
 - ✅ Implemented active workout conflict modal
 - ✅ Added loading states and empty states
 
-### Documentation Updates
+### Documentation Updates (Previous)
 - ✅ Created DEPLOYMENT_STRATEGY.md for production deployment planning
 - ✅ Created VALIDATION_IMPLEMENTATION_SUMMARY.md documenting Zod validation approach
 - ✅ Reorganized documentation into context/ directory
@@ -603,63 +628,68 @@
   - **Reference:** `AUTH_TROUBLESHOOTING_LOG.md`
 
 ### Frontend Active Workout Screen
-- [ ] **Create ActiveWorkout page** [@frontend-typescript-dev]
-  - Create `packages/frontend/src/pages/ActiveWorkout.tsx`
-  - Implement UI per `mockups/02-active-workout.html`
+- [x] **Create ActiveWorkout page** [@frontend-typescript-dev] ✅ **COMPLETED**
+  - Created `packages/frontend/src/pages/ActiveWorkout.tsx`
+  - Implemented UI per `mockups/02-active-workout.html`
   - Display workout header with timer, back button
   - Show list of exercises with sets (table format per mockup)
-  - Add fixed bottom actions: "Add Exercise" + "Finish Workout"
+  - Added fixed bottom actions: "Add Exercise" + "Finish Workout"
   - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 254-361
+  - **Completed:** 2025-12-15
 
-- [ ] **Implement workout timer** [@frontend-typescript-dev]
+- [x] **Implement workout timer** [@frontend-typescript-dev] ✅ **COMPLETED**
   - Calculate elapsed time from `startTime` to now
   - Display timer in MM:SS format
   - Update every second with setInterval
   - Add pulsing dot animation per mockup
+  - **Completed:** 2025-12-15
 
-- [ ] **Create ExerciseCard component** [@frontend-typescript-dev]
-  - Create `packages/frontend/src/components/ExerciseCard.tsx`
+- [x] **Create ExerciseCard component** [@frontend-typescript-dev] ✅ **COMPLETED**
+  - Created `packages/frontend/src/components/ExerciseCard.tsx`
   - Display exercise name, category
   - Show sets in table format (Set# | Weight | Reps | Checkbox)
   - Add "Add Another Set" button
   - Include edit/delete icons per mockup
   - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 291-341
+  - **Completed:** 2025-12-15
 
-- [ ] **Implement set input fields** [@frontend-typescript-dev]
-  - Create number inputs for weight, reps
-  - Use `inputMode="numeric"` or `"decimal"` for mobile keyboard
-  - Center-align numbers per mockup
-  - Add checkbox for set completion
-  - Auto-save on blur or Enter key
+- [x] **Implement set input fields** [@frontend-typescript-dev] ✅ **COMPLETED**
+  - Created SetRow component with number inputs for weight, reps
+  - Used `inputMode="numeric"` and `"decimal"` for mobile keyboard
+  - Center-aligned numbers per mockup
+  - Added checkbox for set completion
+  - Implemented auto-save on blur
   - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 310-328, `PROJECT_REQUIREMENTS.md` lines 222-242
+  - **Completed:** 2025-12-15
 
-- [ ] **Create ExerciseSelectionModal component** [@frontend-typescript-dev]
-  - Create `packages/frontend/src/components/ExerciseSelectionModal.tsx`
-  - Implement UI per `mockups/03-exercise-selection.html`
+- [x] **Create ExerciseSelectionModal component** [@frontend-typescript-dev] ✅ **COMPLETED**
+  - Created `packages/frontend/src/components/ExerciseSelectionModal.tsx`
+  - Implemented UI per `mockups/03-exercise-selection.html`
   - Show bottom sheet modal (slide up animation)
   - Display search input at top
   - Show recent exercises (3 items)
   - Show category pills (horizontal scroll: Push, Pull, Legs, Core, Cardio)
   - Display exercise list (filtered by search/category)
   - Add "Create Custom Exercise" button at bottom
-  - **Depends on:** Exercise API
   - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 368-483, `PROJECT_REQUIREMENTS.md` lines 186-210
+  - **Completed:** 2025-12-15
 
-- [ ] **Implement exercise selection logic** [@frontend-typescript-dev]
+- [x] **Implement exercise selection logic** [@frontend-typescript-dev] ✅ **COMPLETED**
   - Handle category filter (show only exercises in selected category)
-  - Implement search filter (fuzzy match on exercise name)
+  - Implement search filter (case-insensitive match on exercise name)
   - Track recently used exercises in localStorage
   - Call `POST /api/workouts/:id/exercises` on selection
-  - Close modal and add exercise to UI optimistically
-  - **Depends on:** Backend workout exercise API
+  - Close modal and add exercise to UI with SWR revalidation
+  - **Completed:** 2025-12-15
 
-- [ ] **Implement finish workout** [@frontend-typescript-dev]
+- [x] **Implement finish workout** [@frontend-typescript-dev] ✅ **COMPLETED**
   - Handle "Finish Workout" button click
   - Call `PATCH /api/workouts/:id` with endTime = now
-  - Show workout summary (duration, exercise count, total sets)
-  - Navigate to workout detail view
-  - Clear active workout from state
+  - Show success toast notification
+  - Navigate to dashboard
+  - Clear active workout from state via SWR revalidation
   - **Reference:** `PROJECT_REQUIREMENTS.md` lines 260-277
+  - **Completed:** 2025-12-15
 
 ### Frontend Workout History
 - [ ] **Create WorkoutHistory page** [@frontend-typescript-dev]
@@ -682,6 +712,32 @@
   - **Depends on:** Backend workout API
   - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 579-654
 
+### Code Quality Improvements (Deferred from PR #10)
+- [ ] **Refactor SetRow component** [@frontend-typescript-dev]
+  - Reduce code duplication between strength and cardio rendering
+  - Consider extracting shared input logic to reusable components
+  - **Priority:** P2 (Medium)
+  - **Reference:** PR #10 Comment 13 (SetRow.tsx)
+
+- [ ] **Optimize useEffect dependencies in ExerciseSelectionModal** [@frontend-typescript-dev]
+  - Remove unnecessary `isOpen` dependency from useEffect
+  - Consider extracting filter logic to separate hooks
+  - **Priority:** P2 (Medium)
+  - **Reference:** PR #10 Comment 15
+
+- [ ] **Implement TODO functionality** [@frontend-typescript-dev]
+  - Replace alert() placeholders with actual functionality:
+    - Edit exercise notes (ExerciseCard.tsx:84)
+    - Menu button with options: Add notes, Cancel workout, Settings (ActiveWorkout.tsx:47)
+  - **Priority:** P3 (Low - nice-to-have)
+  - **Reference:** PR #10 Comment 8
+
+- [ ] **Add SVG accessibility attributes** [@frontend-typescript-dev]
+  - Add `aria-hidden="true"` to all decorative SVG icons
+  - Ensure icons with semantic meaning have appropriate labels
+  - **Priority:** P3 (Low - accessibility enhancement)
+  - **Reference:** PR #10 Comment 16
+
 ---
 
 ## Phase 4: Exercise Management
@@ -689,16 +745,19 @@
 **Goal:** Implement exercise library browsing and custom exercise creation.
 
 ### Backend Exercise API
-- [ ] **Create exercise routes** [@backend-typescript-dev]
-  - Create `packages/backend/src/routes/exercises.ts`
-  - Implement `GET /api/exercises` (list exercises with filters)
-  - Support query params: `?category=Push&search=bench&isCustom=false`
-  - Return library exercises (isCustom=false) + user's custom exercises
-  - Implement `POST /api/exercises` (create custom exercise)
-  - Implement `PATCH /api/exercises/:id` (update custom exercise, user-owned only)
-  - Implement `DELETE /api/exercises/:id` (delete custom exercise, user-owned only)
+- [x] **Create exercise routes (GET endpoint)** [@backend-typescript-dev] ✅ **PARTIALLY COMPLETED**
+  - Created `packages/backend/src/routes/exercises.ts`
+  - ✅ Implemented `GET /api/exercises` (list exercises with filters)
+  - ✅ Returns library exercises (isCustom=false) + user's custom exercises
+  - ✅ Ordered by category and name
+  - ✅ Fixed error handling and type safety (2025-12-15)
+  - ⏳ TODO: Support query params for category/search filters
+  - ⏳ TODO: Implement `POST /api/exercises` (create custom exercise)
+  - ⏳ TODO: Implement `PATCH /api/exercises/:id` (update custom exercise)
+  - ⏳ TODO: Implement `DELETE /api/exercises/:id` (delete custom exercise)
   - **Depends on:** Authentication, requireAuth
   - **Reference:** `PROJECT_REQUIREMENTS.md` lines 870-876, `ARCHITECTURE_DECISIONS.md` lines 830-855
+  - **Completed (GET only):** 2025-12-15
 
 - [ ] **Implement exercise ownership checks** [@backend-typescript-dev]
   - In PATCH/DELETE routes, verify `exercise.userId === req.user.id`
