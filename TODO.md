@@ -712,6 +712,32 @@
   - **Depends on:** Backend workout API
   - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 579-654
 
+### Code Quality Improvements (Deferred from PR #10)
+- [ ] **Refactor SetRow component** [@frontend-typescript-dev]
+  - Reduce code duplication between strength and cardio rendering
+  - Consider extracting shared input logic to reusable components
+  - **Priority:** P2 (Medium)
+  - **Reference:** PR #10 Comment 13 (SetRow.tsx)
+
+- [ ] **Optimize useEffect dependencies in ExerciseSelectionModal** [@frontend-typescript-dev]
+  - Remove unnecessary `isOpen` dependency from useEffect
+  - Consider extracting filter logic to separate hooks
+  - **Priority:** P2 (Medium)
+  - **Reference:** PR #10 Comment 15
+
+- [ ] **Implement TODO functionality** [@frontend-typescript-dev]
+  - Replace alert() placeholders with actual functionality:
+    - Edit exercise notes (ExerciseCard.tsx:84)
+    - Menu button with options: Add notes, Cancel workout, Settings (ActiveWorkout.tsx:47)
+  - **Priority:** P3 (Low - nice-to-have)
+  - **Reference:** PR #10 Comment 8
+
+- [ ] **Add SVG accessibility attributes** [@frontend-typescript-dev]
+  - Add `aria-hidden="true"` to all decorative SVG icons
+  - Ensure icons with semantic meaning have appropriate labels
+  - **Priority:** P3 (Low - accessibility enhancement)
+  - **Reference:** PR #10 Comment 16
+
 ---
 
 ## Phase 4: Exercise Management

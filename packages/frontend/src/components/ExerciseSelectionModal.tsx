@@ -37,7 +37,7 @@ import { apiRequest } from '../api/client';
 interface ExerciseSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  workoutId: string;
+  workoutId: string | undefined;
   workout: WorkoutSessionWithExercises;
   onExerciseAdded: () => void;
 }
@@ -55,6 +55,12 @@ function ExerciseSelectionModal({
   const toast = useToast();
   const { exercises, isLoading } = useExercises();
 
+  // Validate workoutId is provided
+  if (!workoutId) {
+    console.error('ExerciseSelectionModal: workoutId is required');
+    return null;
+  }
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [recentExerciseIds, setRecentExerciseIds] = useState<string[]>([]);
@@ -69,6 +75,9 @@ function ExerciseSelectionModal({
       }
     } catch (error) {
       console.error('Failed to load recent exercises:', error);
+      // Clear corrupted data from localStorage
+      localStorage.removeItem(RECENT_EXERCISES_KEY);
+      setRecentExerciseIds([]);
     }
   }, [isOpen]);
 
@@ -106,6 +115,9 @@ function ExerciseSelectionModal({
       setRecentExerciseIds(updated);
     } catch (error) {
       console.error('Failed to save recent exercise:', error);
+      // Clear corrupted data from localStorage
+      localStorage.removeItem(RECENT_EXERCISES_KEY);
+      setRecentExerciseIds([]);
     }
   };
 

@@ -55,15 +55,19 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
       const updateData: Record<string, unknown> = {};
 
       if (field === 'weight') {
-        updateData.weight = value ? parseFloat(value as string) : null;
+        const parsedWeight = parseFloat((value as string).trim());
+        updateData.weight = value && !isNaN(parsedWeight) ? parsedWeight : null;
         updateData.weightUnit = set.weightUnit || 'lbs';
       } else if (field === 'reps') {
-        updateData.reps = value ? parseInt(value as string, 10) : null;
+        const parsedReps = parseInt((value as string).trim(), 10);
+        updateData.reps = value && !isNaN(parsedReps) ? parsedReps : null;
       } else if (field === 'duration') {
         // Convert minutes to seconds
-        updateData.duration = value ? Math.round(parseFloat(value as string) * 60) : null;
+        const parsedDuration = parseFloat((value as string).trim());
+        updateData.duration = value && !isNaN(parsedDuration) ? Math.round(parsedDuration * 60) : null;
       } else if (field === 'distance') {
-        updateData.distance = value ? parseFloat(value as string) : null;
+        const parsedDistance = parseFloat((value as string).trim());
+        updateData.distance = value && !isNaN(parsedDistance) ? parsedDistance : null;
         updateData.distanceUnit = set.distanceUnit || 'km';
       } else if (field === 'completed') {
         updateData.completed = value;
@@ -96,9 +100,28 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
 
   /**
    * Handle input blur (save changes)
+   * Only update if value has changed from original
    */
   const handleBlur = (field: string, value: string) => {
-    updateSet(field, value);
+    let originalValue: string;
+
+    if (field === 'weight') {
+      originalValue = set.weight?.toString() || '';
+    } else if (field === 'reps') {
+      originalValue = set.reps?.toString() || '';
+    } else if (field === 'duration') {
+      // set.duration is in seconds, value is in minutes (string)
+      originalValue = set.duration ? (set.duration / 60).toString() : '';
+    } else if (field === 'distance') {
+      originalValue = set.distance?.toString() || '';
+    } else {
+      originalValue = '';
+    }
+
+    // Only update if value has changed
+    if (value !== originalValue) {
+      updateSet(field, value);
+    }
   };
 
   /**
@@ -195,6 +218,7 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
 
         {/* Completion Checkbox */}
         <Checkbox
+          aria-label="Mark set as completed"
           isChecked={completed}
           onChange={handleToggleCompleted}
           colorScheme="green"
@@ -292,6 +316,7 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
 
       {/* Completion Checkbox */}
       <Checkbox
+        aria-label="Mark set as completed"
         isChecked={completed}
         onChange={handleToggleCompleted}
         colorScheme="green"

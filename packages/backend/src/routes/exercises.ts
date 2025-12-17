@@ -27,8 +27,8 @@ router.get('/', requireAuth, async (req, res) => {
     const exercises = await prisma.exercise.findMany({
       where: {
         OR: [
-          { isCustom: false },           // Library exercises
-          { userId },                    // User's custom exercises
+          { isCustom: false, userId: null },  // Library exercises (explicit filtering)
+          { isCustom: true, userId },         // User's custom exercises (explicit filtering)
         ],
       },
       orderBy: [

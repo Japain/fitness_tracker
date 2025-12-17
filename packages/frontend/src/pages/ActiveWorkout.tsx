@@ -37,6 +37,20 @@ function ActiveWorkout() {
 
   const [isFinishing, setIsFinishing] = useState(false);
 
+  // Validate id parameter exists
+  if (!id) {
+    return (
+      <Center h="50vh">
+        <VStack spacing="lg">
+          <Text color="error.500" fontSize="lg" fontWeight="semibold">
+            Workout ID is required
+          </Text>
+          <Button onClick={() => navigate('/')}>Return to Dashboard</Button>
+        </VStack>
+      </Center>
+    );
+  }
+
   // Fetch workout details
   const {
     data: workout,
@@ -54,7 +68,17 @@ function ActiveWorkout() {
           <Text color="error.500" fontSize="lg" fontWeight="semibold">
             Failed to load workout
           </Text>
-          <Button onClick={() => navigate('/')}>Return to Dashboard</Button>
+          <Text color="neutral.600" fontSize="md" textAlign="center" px="lg">
+            There was a problem loading your workout. Please try again.
+          </Text>
+          <HStack spacing="md">
+            <Button onClick={() => mutate()} colorScheme="primary">
+              Retry
+            </Button>
+            <Button onClick={() => navigate('/')} variant="outline">
+              Return to Dashboard
+            </Button>
+          </HStack>
         </VStack>
       </Center>
     );
@@ -169,7 +193,7 @@ function ActiveWorkout() {
               <ExerciseCard
                 key={workoutExercise.id}
                 workoutExercise={workoutExercise}
-                workoutId={id!}
+                workoutId={id}
                 onUpdate={mutate}
               />
             ))
@@ -236,7 +260,7 @@ function ActiveWorkout() {
       <ExerciseSelectionModal
         isOpen={isOpen}
         onClose={onClose}
-        workoutId={id!}
+        workoutId={id}
         workout={workout}
         onExerciseAdded={mutate}
       />
@@ -259,7 +283,15 @@ function WorkoutHeader({ startTime, onBack }: WorkoutHeaderProps) {
   // Calculate elapsed time and update every second
   useEffect(() => {
     const calculateElapsed = () => {
-      const start = new Date(startTime).getTime();
+      const startDate = new Date(startTime);
+      const start = startDate.getTime();
+
+      // Validate date is valid
+      if (isNaN(start)) {
+        console.error('Invalid startTime date:', startTime);
+        return '00:00';
+      }
+
       const now = Date.now();
       const elapsedSeconds = Math.floor((now - start) / 1000);
 
