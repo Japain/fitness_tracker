@@ -91,8 +91,15 @@ export function useWorkoutHistory(limit: number = 20) {
  * for better performance with large datasets
  */
 export function useMonthlyStats() {
+  // Get current month's date range
+  const now = new Date();
+  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const firstDayISO = firstDayOfMonth.toISOString();
+
   const { data, error, isLoading } = useSWR<WorkoutsListResponse>(
-    '/api/workouts?limit=100&offset=0', // Fetch enough to cover typical monthly volume
+    // Fetch all workouts from current month start
+    // Backend will return all workouts since this date (no arbitrary limit)
+    `/api/workouts?limit=1000&offset=0&startDate=${firstDayISO}`,
     fetcher,
     {
       revalidateOnFocus: true,
@@ -101,7 +108,7 @@ export function useMonthlyStats() {
     }
   );
 
-  // Calculate monthly stats
+  // Calculate monthly stats from all fetched workouts
   const stats = calculateMonthlyStats(data?.workouts ?? []);
 
   return {

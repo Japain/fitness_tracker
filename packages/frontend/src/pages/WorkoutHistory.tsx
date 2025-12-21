@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
-  Heading,
   Text,
   VStack,
   HStack,
@@ -279,7 +278,9 @@ function WorkoutCard({ workout, onClick }: WorkoutCardProps) {
               d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"
             />
           </Icon>
-          <Text>{calculateDuration(workout.startTime, workout.endTime)}</Text>
+          <Text aria-label={`Workout duration: ${calculateDuration(workout.startTime, workout.endTime)}`}>
+            {calculateDuration(workout.startTime, workout.endTime)}
+          </Text>
         </HStack>
 
         <HStack spacing="xs">
@@ -289,7 +290,7 @@ function WorkoutCard({ workout, onClick }: WorkoutCardProps) {
               d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"
             />
           </Icon>
-          <Text>
+          <Text aria-label={`Workout contains ${exerciseCount} ${exerciseCount === 1 ? 'exercise' : 'exercises'}`}>
             {exerciseCount} {exerciseCount === 1 ? 'exercise' : 'exercises'}
           </Text>
         </HStack>
@@ -300,7 +301,7 @@ function WorkoutCard({ workout, onClick }: WorkoutCardProps) {
         <Flex flexWrap="wrap" gap="xs" fontSize="sm" color="neutral.700">
           {exerciseNames.slice(0, 3).map((name, index) => (
             <Box
-              key={index}
+              key={`${name}-${index}`}
               display="inline-block"
               px="md"
               py="xs"

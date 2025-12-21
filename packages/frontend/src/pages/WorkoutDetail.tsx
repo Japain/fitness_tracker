@@ -12,7 +12,12 @@ import {
 import { ChevronLeftIcon } from '@chakra-ui/icons';
 import type { WorkoutExerciseWithExercise, WorkoutSet } from '@fitness-tracker/shared';
 import { useWorkoutDetail } from '../hooks/useWorkoutDetail';
-import { formatWorkoutDate, calculateDuration } from '../utils/dateFormatting';
+import {
+  formatWorkoutDate,
+  calculateDurationMinutes,
+  formatMinutesForDisplay,
+  formatSecondsToMinutesSeconds,
+} from '../utils/dateFormatting';
 
 /**
  * Workout Detail Page
@@ -134,7 +139,9 @@ function WorkoutDetail() {
                 borderColor="neutral.200"
               >
                 <StatItem
-                  value={calculateDuration(workout.startTime, workout.endTime).replace(' min', '')}
+                  value={formatMinutesForDisplay(
+                    calculateDurationMinutes(workout.startTime, workout.endTime)
+                  )}
                   label="Minutes"
                 />
                 <StatItem
@@ -336,7 +343,7 @@ function SetsTable({ sets, isStrengthExercise }: SetsTableProps) {
           ) : (
             <>
               <Text color="neutral.700" textAlign="center">
-                {set.duration ? `${Math.floor(set.duration / 60)}m ${set.duration % 60}s` : '-'}
+                {set.duration ? formatSecondsToMinutesSeconds(set.duration) : '-'}
               </Text>
               <Text color="neutral.700" textAlign="center">
                 {set.distance ? `${set.distance} ${set.distanceUnit || 'km'}` : '-'}

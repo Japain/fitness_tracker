@@ -1,10 +1,32 @@
 # Fitness Tracker - Implementation TODO
 
-**Version:** 1.5
-**Date:** 2025-12-15
-**Status:** Phase 3 Active Workout Screen Complete - Ready for Workout History
+**Version:** 1.6
+**Date:** 2025-12-21
+**Status:** Phase 3 Complete - Workout History Implemented & PR #11 Review Issues Resolved
 
-## Recent Completed Work (Sessions: 2025-12-07 to 2025-12-15)
+## Recent Completed Work (Sessions: 2025-12-15 to 2025-12-21)
+
+### PR #11 Review Fixes (Phase 3 - Code Quality)
+- ✅ Fixed monthly stats data accuracy (replaced hardcoded 100 limit with dynamic date-filtered query)
+- ✅ Created utility functions for duration calculation (`calculateDurationMinutes`, `formatMinutesForDisplay`, `formatSecondsToMinutesSeconds`)
+- ✅ Fixed negative duration edge case with `Math.max(0, ...)` protection
+- ✅ Fixed React key anti-pattern (changed from index to `${name}-${index}`)
+- ✅ Improved UX: "Just now" instead of "0 minutes ago"
+- ✅ Improved UX: Hide zero seconds in duration display ("5m" instead of "5m 0s")
+- ✅ Added screen reader accessibility with aria-label attributes for workout metadata
+- ✅ Removed unused Heading import from WorkoutHistory.tsx
+- ✅ All TypeScript compilation checks passed
+- ✅ Files modified: useWorkoutHistory.ts, dateFormatting.ts, WorkoutDetail.tsx, WorkoutHistory.tsx
+
+### Frontend Workout History (Phase 3)
+- ✅ Implemented WorkoutHistory page with monthly stats and workout list
+- ✅ Created WorkoutDetail page with exercise/set display
+- ✅ Implemented useWorkoutHistory hooks (useMonthlyStats, useWorkouts)
+- ✅ Created date formatting utilities (calculateDuration, formatDate, calculateElapsedTime)
+- ✅ Added pagination support for workout lists
+- ✅ Implemented proper loading states and empty states
+
+## Previous Completed Work (Sessions: 2025-12-07 to 2025-12-15)
 
 ### Frontend Active Workout Screen (Phase 3)
 - ✅ Implemented ActiveWorkout page with real-time workout timer
@@ -692,25 +714,45 @@
   - **Completed:** 2025-12-15
 
 ### Frontend Workout History
-- [ ] **Create WorkoutHistory page** [@frontend-typescript-dev]
-  - Create `packages/frontend/src/pages/WorkoutHistory.tsx`
-  - Implement UI per `mockups/04-workout-history.html`
-  - Display stats summary card (total workouts, total exercises, avg duration)
+- [x] **Create WorkoutHistory page** [@frontend-typescript-dev] ✅ **COMPLETED**
+  - Created `packages/frontend/src/pages/WorkoutHistory.tsx`
+  - Implemented UI per `mockups/04-workout-history.html`
+  - Display monthly stats card (workouts this month, total exercises, avg duration)
   - Show workout list in reverse chronological order
-  - Implement pagination or infinite scroll (20 workouts per page)
+  - Implemented pagination (20 workouts per page)
   - Each workout card shows: date, duration, exercise count, exercise pills
-  - **Depends on:** Backend workout API
+  - Added loading states (Skeleton) and empty states
   - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 489-572
+  - **Completed:** 2025-12-21 (PR #11)
 
-- [ ] **Create WorkoutDetail page** [@frontend-typescript-dev]
-  - Create `packages/frontend/src/pages/WorkoutDetail.tsx`
-  - Implement UI per `mockups/05-workout-detail.html`
+- [x] **Create WorkoutDetail page** [@frontend-typescript-dev] ✅ **COMPLETED**
+  - Created `packages/frontend/src/pages/WorkoutDetail.tsx`
+  - Implemented UI per `mockups/05-workout-detail.html`
   - Display workout date, duration, total sets
   - Show each exercise with sets in table format
   - Include back button to history
   - Add menu button for future actions (duplicate, edit, delete)
-  - **Depends on:** Backend workout API
+  - Properly handles both strength and cardio exercises
   - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 579-654
+  - **Completed:** 2025-12-21 (PR #11)
+
+- [x] **Create useWorkoutHistory hooks** [@frontend-typescript-dev] ✅ **COMPLETED**
+  - Created `packages/frontend/src/hooks/useWorkoutHistory.ts`
+  - Implemented `useMonthlyStats()` - Fetches and calculates monthly workout statistics
+  - Implemented `useWorkouts(limit, offset)` - Fetches paginated workout list
+  - Both hooks use SWR with proper caching
+  - Fixed data accuracy issue (now filters by month instead of hardcoded limit)
+  - **Completed:** 2025-12-21
+
+- [x] **Create date formatting utilities** [@frontend-typescript-dev] ✅ **COMPLETED**
+  - Created `packages/frontend/src/utils/dateFormatting.ts`
+  - Implemented `formatDate()` - Formats dates as "Dec 15, 2025"
+  - Implemented `calculateDuration()` and `calculateDurationMinutes()` - Safe duration calculation
+  - Implemented `formatMinutesForDisplay()` - Formats minutes as "45 min"
+  - Implemented `formatSecondsToMinutesSeconds()` - Formats seconds as "5m 30s" (hides 0s)
+  - Implemented `calculateElapsedTime()` - Shows "Just now", "5 minutes ago", etc.
+  - All functions handle edge cases (negative durations, zero values)
+  - **Completed:** 2025-12-21
 
 ### Code Quality Improvements (Deferred from PR #10)
 - [ ] **Refactor SetRow component** [@frontend-typescript-dev]
