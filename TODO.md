@@ -4,77 +4,25 @@
 **Date:** 2025-12-21
 **Status:** Phase 3 Complete - Workout History Implemented & PR #11 Review Issues Resolved
 
-## Recent Completed Work (Sessions: 2025-12-15 to 2025-12-21)
+## Recent Completed Work
 
-### PR #11 Review Fixes (Phase 3 - Code Quality)
-- ✅ Fixed monthly stats data accuracy (replaced hardcoded 100 limit with dynamic date-filtered query)
-- ✅ Created utility functions for duration calculation (`calculateDurationMinutes`, `formatMinutesForDisplay`, `formatSecondsToMinutesSeconds`)
-- ✅ Fixed negative duration edge case with `Math.max(0, ...)` protection
-- ✅ Fixed React key anti-pattern (changed from index to `${name}-${index}`)
-- ✅ Improved UX: "Just now" instead of "0 minutes ago"
-- ✅ Improved UX: Hide zero seconds in duration display ("5m" instead of "5m 0s")
-- ✅ Added screen reader accessibility with aria-label attributes for workout metadata
-- ✅ Removed unused Heading import from WorkoutHistory.tsx
-- ✅ All TypeScript compilation checks passed
-- ✅ Files modified: useWorkoutHistory.ts, dateFormatting.ts, WorkoutDetail.tsx, WorkoutHistory.tsx
+### Phase 3 - Workout History (2025-12-21)
+- ✅ Complete workout history feature with WorkoutHistory and WorkoutDetail pages
+- ✅ Fixed PR #11 review issues (data accuracy, React keys, accessibility, UX improvements)
+- ✅ Date formatting utilities with edge case handling
+- ✅ **Details:** See `FRONTEND_SESSION_NOTES.md` - Phase 3: Workout History section
 
-### Frontend Workout History (Phase 3)
-- ✅ Implemented WorkoutHistory page with monthly stats and workout list
-- ✅ Created WorkoutDetail page with exercise/set display
-- ✅ Implemented useWorkoutHistory hooks (useMonthlyStats, useWorkouts)
-- ✅ Created date formatting utilities (calculateDuration, formatDate, calculateElapsedTime)
-- ✅ Added pagination support for workout lists
-- ✅ Implemented proper loading states and empty states
+### Phase 3 - Active Workout Screen (2025-12-15)
+- ✅ Complete active workout logging UI with real-time timer and exercise management
+- ✅ Mobile-optimized input fields, exercise search/filtering, and workout completion flow
+- ✅ Fixed PR #10 review issues (orderIndex bug, duplicate API calls, accessibility)
+- ✅ **Details:** See `FRONTEND_SESSION_NOTES.md` - Phase 3: Active Workout Screen section
 
-## Previous Completed Work (Sessions: 2025-12-07 to 2025-12-15)
-
-### Frontend Active Workout Screen (Phase 3)
-- ✅ Implemented ActiveWorkout page with real-time workout timer
-- ✅ Created ExerciseCard component for displaying exercises with set tables
-- ✅ Created SetRow component for individual set input (weight, reps, completion)
-- ✅ Created ExerciseSelectionModal with search, category filters, and recent exercises
-- ✅ Implemented workout timer with MM:SS format and pulsing animation
-- ✅ Added exercise selection with category filtering (Push, Pull, Legs, Core, Cardio)
-- ✅ Implemented set input fields with mobile-optimized number keyboards
-- ✅ Added finish workout functionality with summary display
-
-### Backend Exercise API (Phase 4 - Partial)
-- ✅ Created exercises routes with GET endpoint
-- ✅ Implemented exercise fetching (library + custom exercises)
-- ✅ Fixed error handling and type safety in exercises endpoint
-- ✅ Added proper user data segregation (library exercises + user's custom only)
-
-### Documentation Updates
-- ✅ Added comprehensive troubleshooting section to README.md
-  - Port conflict resolution (EADDRINUSE errors)
-  - Docker container conflict handling
-  - Service status verification commands
-  - Full environment reset procedures
-
-## Previous Completed Work (Sessions: 2025-12-04 to 2025-12-07)
-
-### Backend Workout API (Phase 3)
-- ✅ Created complete workout API routes (workouts.ts, workoutExercises.ts, workoutSets.ts)
-- ✅ Implemented comprehensive Zod validation for all endpoints
-- ✅ Fixed critical validation issues from PR #7 review (P0/P1 items)
-- ✅ Resolved Zod version conflicts and eliminated deprecation warnings
-- ✅ Added helper functions for workout/exercise ownership verification
-- ✅ Applied validation middleware to all state-changing endpoints
-
-### Frontend Dashboard (Phase 3)
-- ✅ Implemented Dashboard page with stats, recent workouts, and workout creation
-- ✅ Created TopNav and BottomNav navigation components
-- ✅ Fixed authentication race condition (initial loading state)
-- ✅ Fixed backend cookie configuration for localhost development
-- ✅ Created useWorkouts hook for fetching recent workouts and weekly stats
-- ✅ Implemented active workout conflict modal
-- ✅ Added loading states and empty states
-
-### Documentation Updates (Previous)
-- ✅ Created DEPLOYMENT_STRATEGY.md for production deployment planning
-- ✅ Created VALIDATION_IMPLEMENTATION_SUMMARY.md documenting Zod validation approach
-- ✅ Reorganized documentation into context/ directory
-- ✅ Updated AUTH_TROUBLESHOOTING_LOG.md with authentication fixes
+### Phase 3 - Dashboard & Backend API (2025-12-07)
+- ✅ Dashboard page with workout stats, creation flow, and navigation components
+- ✅ Complete backend workout API with comprehensive Zod validation
+- ✅ Fixed authentication race condition and PR #7 validation issues
+- ✅ **Details:** See `FRONTEND_SESSION_NOTES.md` and `context/VALIDATION_IMPLEMENTATION_SUMMARY.md`
 
 ---
 
@@ -148,161 +96,71 @@
 
 ### Shared Types Package
 - [x] **Define core data types in packages/shared** [@backend-typescript-dev]
-  - Created domain-separated type files:
-    - `packages/shared/types/user.ts` - User interface with preferredWeightUnit
-    - `packages/shared/types/exercise.ts` - Exercise interface with `type` field ('strength' | 'cardio')
-    - `packages/shared/types/workout.ts` - WorkoutSession, WorkoutExercise, WorkoutSet interfaces
-    - `packages/shared/types/index.ts` - Barrel export (re-exports all types)
-  - Implemented `User` interface with profilePictureUrl, preferredWeightUnit, createdAt, updatedAt
-  - Implemented `Exercise` interface with required `type` field ('strength' | 'cardio')
-  - Implemented `WorkoutSession` interface with userId, startTime, endTime, notes
-  - Implemented `WorkoutExercise` interface (pure join entity with orderIndex)
-  - Implemented `WorkoutSet` interface (separate model per `ARCHITECTURE_DECISIONS.md` Section 3.1)
-    - Supports both strength fields (reps, weight) and cardio fields (duration, distance)
-  - All types exported via barrel pattern for backward compatibility
-  - **Priority:** P0 (blocks all other work)
-  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 792-835
-  - **Completed:** 2025-11-25
-  - **Updated:** 2025-11-29 (added preferredWeightUnit)
+  - Created domain-separated type files (User, Exercise, WorkoutSession, WorkoutExercise, WorkoutSet)
+  - All types support both strength and cardio exercises
+  - **Reference:** `CLAUDE.md` Architecture section
+  - **Completed:** 2025-11-25, Updated: 2025-11-29
 
 ### Database Schema & Migrations
 - [x] **Create Prisma schema** [@backend-typescript-dev]
-  - Created `packages/backend/prisma/schema.prisma` with complete database schema
-  - Implemented `User` model (id, googleId, email, displayName, profilePictureUrl, timestamps)
-  - Implemented `Exercise` model with `isCustom`, `userId` (nullable), `category`, `type` fields
-  - Implemented `WorkoutSession` model with `userId`, `startTime`, `endTime` (nullable for active workouts)
-  - Implemented `WorkoutExercise` join model with `orderIndex` for exercise ordering
-  - Implemented `WorkoutSet` model with nullable fields supporting both strength (reps, weight) and cardio (duration, distance)
-  - Added indexes: `userId + startTime`, `userId + endTime`, `workoutSessionId + orderIndex`
-  - Added `googleId` field to User shared type for OAuth integration
-  - **Technical Decision:** Using Prisma 5.22.0 (downgraded from 7.x per technical-architect recommendation for MVP stability)
+  - Complete database schema with 5 models (User, Exercise, WorkoutSession, WorkoutExercise, WorkoutSet)
+  - Performance indexes for user queries and workout ordering
+  - Using Prisma 5.22.0 for MVP stability
   - **Completed:** 2025-11-26
 
 - [x] **Run initial Prisma migration** [@backend-typescript-dev]
-  - Ran `npx prisma migrate dev --name init` successfully
-  - Created migration: `packages/backend/prisma/migrations/20251126151451_init/migration.sql`
-  - Generated Prisma Client at `node_modules/.prisma/client`
-  - Verified all 5 tables created: User, Exercise, WorkoutSession, WorkoutExercise, WorkoutSet
-  - Verified all 9 indexes created for query performance
-  - Database connection to Docker PostgreSQL confirmed working
+  - Initial migration applied successfully with all tables and indexes
   - **Completed:** 2025-11-26
 
 - [x] **Seed exercise library (60 exercises)** [@backend-typescript-dev]
-  - Created `packages/backend/prisma/seed.ts` with comprehensive exercise library
-  - Seeded 60 pre-defined exercises: Push (21), Pull (18), Legs (15), Core (2), Cardio (4)
-  - All exercises marked as `isCustom: false`, `userId: null` (library exercises)
-  - Configured package.json with seed script using tsx
-  - Successfully ran seed: `npx prisma db seed`
-  - Verified all exercises inserted into database
+  - 60 pre-defined exercises across 5 categories (Push, Pull, Legs, Core, Cardio)
+  - **Reference:** `CLAUDE.md` Database Setup section
   - **Completed:** 2025-11-26
 
 ### Backend Setup
 - [x] **Initialize Express server** [@backend-typescript-dev]
-  - Created `packages/backend/src/index.ts`
-  - Set up Express app on port 3000
-  - Added CORS middleware (allow localhost:5173 with credentials)
-  - Added body-parser middleware (Express.json())
-  - Added Helmet security middleware (comprehensive security headers)
-  - Created health check endpoint: `GET /api/health` (tests DB connectivity)
-  - Server successfully running and verified
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` Section 8.1
+  - Express app with CORS, Helmet security, health check endpoint
   - **Completed:** 2025-11-27
 
 - [x] **Set up Prisma Client** [@backend-typescript-dev]
-  - Created `packages/backend/src/lib/prisma.ts`
-  - Initialized PrismaClient singleton (hot-reload safe)
-  - Configured environment-based logging (verbose in dev, errors in prod)
-  - Exported client for use in routes
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` Section 4.1
+  - PrismaClient singleton with environment-based logging
   - **Completed:** 2025-11-27
 
 - [x] **Configure environment variables** [@backend-typescript-dev]
-  - Verified `packages/backend/src/config/env.ts` properly configured
-  - Loads dotenv based on NODE_ENV from project root
-  - Validates required env vars on startup
-  - Exports typed config object
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1112-1159
+  - Environment config loader with validation
+  - **Reference:** `CLAUDE.md` Environment Configuration section
   - **Completed:** 2025-11-27
 
 ### Frontend Setup
 - [x] **Initialize Vite + React + TypeScript** [@frontend-typescript-dev]
-  - Verified `packages/frontend/vite.config.ts` has proxy to backend port 3000
-  - Created `packages/frontend/src/main.tsx` entry point with all providers (Chakra, Router, SWR)
-  - Created `packages/frontend/src/App.tsx` root component with RouterProvider
-  - Tested hot reload - working correctly
+  - Vite dev server with backend API proxy, hot reload configured
   - **Completed:** 2025-11-26
 
 - [x] **Install and configure Chakra UI** [@frontend-typescript-dev]
-  - Installed: `@chakra-ui/react@^2.10.9`, `@emotion/react@^11.14.0`, `@emotion/styled@^11.14.1`, `framer-motion@^10.18.0`
-  - Created `packages/frontend/src/theme/index.ts` with complete design system
-  - Mapped all design tokens from `mockups/DESIGN-DOCUMENTATION.md`:
-    - Color palette (primary brand, 7-step neutral scale, semantic colors)
-    - Typography (system font stack, type scale, font weights, line heights)
-    - Spacing system (8px base unit, xs to 3xl scales)
-    - Border radii, shadows, component styles
-    - Mobile-first defaults (44px touch targets, 16px input font size)
-  - Configured ChakraProvider in `main.tsx`
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1441-1601, `mockups/DESIGN-DOCUMENTATION.md` lines 42-154
+  - Complete design system implementation from mockups (colors, typography, spacing, components)
+  - Mobile-first defaults (44px touch targets, 16px input font size)
+  - **Reference:** `CLAUDE.md` and `mockups/DESIGN-DOCUMENTATION.md`
   - **Completed:** 2025-11-26
 
 - [x] **Set up React Router** [@frontend-typescript-dev]
-  - Installed: `react-router-dom@^6.21.0` (already present)
-  - Created `packages/frontend/src/router/index.tsx` with lazy loading
-  - Defined routes: `/` (Dashboard), `/login` (AuthPage), `/workout/:id` (ActiveWorkout), `/history` (WorkoutHistory), `/history/:id` (WorkoutDetail)
-  - Created `packages/frontend/src/components/ProtectedRoute.tsx` with auth guard
-  - Implemented lazy loading for all route components using React.lazy() and Suspense
-  - Created page components:
-    - `packages/frontend/src/pages/Dashboard.tsx`
-    - `packages/frontend/src/pages/AuthPage.tsx`
-    - `packages/frontend/src/pages/ActiveWorkout.tsx`
-    - `packages/frontend/src/pages/WorkoutHistory.tsx`
-    - `packages/frontend/src/pages/WorkoutDetail.tsx`
-  - Created `packages/frontend/src/components/AppLayout.tsx` with nav placeholders
-  - Verified code splitting in build output (each page is separate chunk)
-  - **Depends on:** Authentication store (stubbed for now, ready for backend integration)
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1609-1708
+  - Lazy-loaded routes for all pages (Dashboard, Auth, ActiveWorkout, WorkoutHistory, WorkoutDetail)
+  - Protected route component with auth guard
+  - **Reference:** `CLAUDE.md` State Management section
   - **Completed:** 2025-11-26
 
 - [x] **Set up Zustand for state management** [@frontend-typescript-dev]
-  - Installed: `zustand@^4.5.7`
-  - Created `packages/frontend/src/stores/authStore.ts` with complete auth state management
-  - Implemented auth state: `user`, `isAuthenticated`, `isLoading`, `error`
-  - Implemented auth actions: `login()`, `logout()`, `checkAuth()`, `setLoading()`, `setError()`
-  - Typed with shared `User` interface from `@fitness-tracker/shared`
-  - Stubbed API calls ready for backend integration
-  - Integrated with ProtectedRoute component (calls checkAuth on mount)
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1213-1253
+  - Auth store with user state and authentication actions
   - **Completed:** 2025-11-26
 
 - [x] **Set up SWR for server state** [@frontend-typescript-dev]
-  - Installed: `swr@^2.3.6`
-  - Created `packages/frontend/src/hooks/useActiveWorkout.ts` as example SWR hook
-  - Created `packages/frontend/src/api/client.ts` with comprehensive API infrastructure:
-    - CSRF token management (fetchCsrfToken, getCsrfToken)
-    - Generic fetcher() function for SWR
-    - Generic apiRequest() function for mutations
-    - Custom ApiError class for typed error handling
-    - Automatic 401 redirect to login
-    - Session cookie support (credentials: 'include')
-  - Created `packages/frontend/src/components/SWRProvider.tsx` with SWR configuration
-  - Configured SWR defaults:
-    - revalidateOnFocus: false
-    - dedupingInterval: 5000ms
-    - shouldRetryOnError: false
-    - errorRetryCount: 3
-  - Integrated CSRF token initialization in `main.tsx`
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1256-1280
+  - API client with CSRF token management and error handling
+  - SWR configuration with caching and retry logic
   - **Completed:** 2025-11-26
 
 ### TypeScript Configuration
 - [x] **Configure TypeScript project references** [@backend-typescript-dev] [@frontend-typescript-dev]
-  - Verified root `tsconfig.json` has `composite: true`
-  - Verified `packages/shared/tsconfig.json` extends root config properly
-  - Verified `packages/frontend/tsconfig.json` has reference to `../shared`
-  - Confirmed frontend can import from `@fitness-tracker/shared` (User, Exercise, WorkoutSession, WorkoutExercise types)
-  - Tested build: `npm run build` ✅ - All packages build successfully with no TypeScript errors
-  - Build produces optimized bundles with code splitting (total: ~477KB, 159KB gzipped)
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1301-1426
+  - Monorepo TypeScript project references configured with shared types
+  - Build verified with code splitting and optimization
   - **Completed:** 2025-11-26
 
 ---
@@ -313,146 +171,51 @@
 
 ### Backend Authentication
 - [x] **Install authentication dependencies** [@backend-typescript-dev]
-  - Installed runtime: `passport`, `passport-google-oauth20`, `express-session`, `connect-pg-simple`, `cookie-parser`
-  - Installed types: `@types/passport`, `@types/passport-google-oauth20`, `@types/express-session`, `@types/cookie-parser`, `@types/connect-pg-simple`
+  - Passport.js, Google OAuth, express-session, PostgreSQL session store
   - **Completed:** 2025-11-29
 
 - [x] **Configure Passport.js** [@backend-typescript-dev]
-  - Created `packages/backend/src/middleware/auth.ts`
-  - Configured GoogleStrategy with environment variables (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL)
-  - Implemented user upsert logic (finds existing user by googleId or creates new user)
-  - Sets default `preferredWeightUnit: 'lbs'` for new users
-  - Configured session serialization/deserialization with user lookup
-  - Updates user profile data (email, displayName, profilePictureUrl) on each login
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 64-102
+  - Google OAuth strategy with user upsert logic and session management
   - **Completed:** 2025-11-29
 
 - [x] **Configure express-session with PostgreSQL** [@backend-typescript-dev]
-  - Created session middleware in `packages/backend/src/index.ts`
-  - Using `connect-pg-simple` for PostgreSQL-backed session store
-  - Session configuration:
-    - 7-day expiration (604800000ms)
-    - `httpOnly` cookies for XSS protection
-    - `secure: true` in production (HTTPS only)
-    - `sameSite: 'lax'` for CSRF protection
-    - Auto-creates `session` table in PostgreSQL
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 122-146
+  - PostgreSQL-backed sessions with 7-day expiration and security headers
   - **Completed:** 2025-11-29
 
 - [x] **Implement CSRF protection** [@backend-typescript-dev]
-  - **Note:** Replaced deprecated `csurf` package with custom implementation
-  - Created `packages/backend/src/middleware/csrf.ts` using **Double Submit Cookie pattern**
-  - Generates cryptographically secure 32-byte tokens
-  - Cookie name: `_csrf` (httpOnly, sameSite, 7-day expiration)
-  - Header name: `x-csrf-token` (validated on state-changing requests)
-  - Exported middleware:
-    - `csrfCookieParser` - Cookie parser middleware
-    - `setCsrfToken` - Generates and sets CSRF cookie
-    - `verifyCsrfToken` - Validates token on POST/PATCH/DELETE requests
-    - `csrfProtection` - Combined middleware for convenience
-  - Created endpoint: `GET /api/auth/csrf-token`
-  - **Technical Decision:** Using Double Submit Cookie instead of deprecated `csurf` for modern security best practices
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 155-210
+  - Custom Double Submit Cookie pattern (replaced deprecated `csurf`)
+  - **Reference:** `CLAUDE.md` Authentication & Security section
   - **Completed:** 2025-11-29
 
 - [x] **Create authentication routes** [@backend-typescript-dev]
-  - Created `packages/backend/src/routes/auth.ts`
-  - Implemented endpoints:
-    - `GET /api/auth/google` - Initiates OAuth flow with Google
-    - `GET /api/auth/google/callback` - OAuth callback, redirects to frontend dashboard
-    - `GET /api/auth/me` - Returns current user data (or 401 if not authenticated)
-    - `POST /api/auth/logout` - Destroys session and clears cookies
-    - `GET /api/auth/csrf-token` - Returns CSRF token for client-side requests
-  - All routes properly integrated with Passport.js
-  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 851-854, `ARCHITECTURE_DECISIONS.md` Section 1
+  - Google OAuth endpoints, session management, and CSRF token endpoint
   - **Completed:** 2025-11-29
 
 - [x] **Create requireAuth middleware** [@backend-typescript-dev]
-  - Created `packages/backend/src/middleware/requireAuth.ts`
-  - Checks `req.isAuthenticated()` via Passport
-  - Returns 401 with clear error message if not authenticated
-  - Validates user data exists and is properly formed
-  - Includes `isAuthenticated()` type guard helper function
-  - Ready to apply to protected routes (workouts, exercises, etc.)
+  - Authentication guard for protected routes
   - **Completed:** 2025-11-29
 
-- [x] **Add code documentation comments** [@backend-typescript-dev]
-  - Added comment in `packages/backend/src/middleware/auth.ts` (lines 46-47) explaining why `preferredWeightUnit` is not updated on login (to preserve user preference)
-  - Added comment in `packages/backend/src/middleware/csrf.ts` (lines 69-71) explaining CSRF is only enforced for authenticated users (all state-changing operations require auth)
-  - **Priority:** P2 (code clarity improvement)
-  - **Reference:** PR #4 Comments 2, 6
-  - **Completed:** 2025-11-29
-
-- [x] **Refactor user response using object destructuring** [@backend-typescript-dev]
-  - Updated `GET /api/auth/me` endpoint in `packages/backend/src/routes/auth.ts` (line 65) to use object destructuring
-  - Implemented: `const { googleId, ...userResponse } = user;` pattern
-  - Reduces maintenance burden when User type fields change
-  - **Priority:** P2 (code maintainability improvement)
-  - **Reference:** PR #4 Comment B (auth.ts:61)
-  - **Completed:** 2025-11-29
-
-- [x] **Improve session destruction error handling** [@backend-typescript-dev]
-  - Updated logout endpoint in `packages/backend/src/routes/auth.ts` (lines 93-101)
-  - Implemented: Returns 500 error if session.destroy() fails with clear error message
-  - Error response includes: "Logout succeeded but session cleanup failed. Please try again."
-  - **Priority:** P2 (error handling robustness)
-  - **Reference:** PR #4 Comment 7
-  - **Completed:** 2025-11-29
-
-- [x] **Implement graceful shutdown handling** [@backend-typescript-dev]
-  - Added SIGTERM and SIGINT signal handlers to `packages/backend/src/index.ts` (lines 92-130)
-  - Implemented Prisma disconnect on shutdown
-  - Implemented HTTP server close with 10-second timeout
-  - Graceful shutdown function logs all steps and exits with appropriate status codes
-  - **Priority:** P1 (production readiness)
-  - **Reference:** PR #3 Comment 4
-  - **Completed:** 2025-11-29
-
-- [x] **Implement production error logging** [@backend-typescript-dev]
-  - Created `packages/backend/src/utils/errorLogger.ts` with complete error logging utility
-  - Implemented environment-based logging (full details in dev, sanitized in prod)
-  - Implemented sensitive field redaction (passwords, tokens, secrets, apiKeys, sessionIds)
-  - Added logError, logInfo, and logWarning functions
-  - Updated health check endpoint to use secure logging (index.ts:72)
-  - Sentry integration prepared (TODO comment added for future implementation)
-  - **Priority:** P1 (security hardening)
-  - **Reference:** PR #3 Comment 6, `ARCHITECTURE_DECISIONS.md` lines 2073-2120
+- [x] **Production readiness improvements** [@backend-typescript-dev]
+  - Graceful shutdown handling, production error logging with sensitive field redaction
+  - Code documentation and error handling improvements from PR reviews
   - **Completed:** 2025-11-29
 
 ### Frontend Authentication
 - [x] **Create authentication page** [@frontend-typescript-dev]
-  - Created `packages/frontend/src/pages/AuthPage.tsx`
-  - Implemented UI per `mockups/06-authentication.html`
-  - Added "Continue with Google" button
-  - Links to `GET /api/auth/google` via backend proxy
-  - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 658-748
+  - Google OAuth login page per design mockups
   - **Completed:** 2025-11-29
 
 - [x] **Implement authentication flow** [@frontend-typescript-dev]
-  - Updated `packages/frontend/src/stores/authStore.ts`
-  - Implemented `checkAuth()` to call `GET /api/auth/me` on mount
-  - Stores user data in Zustand on successful auth
-  - Updated `logout()` to use `apiRequest()` helper for CSRF token inclusion
-  - Redirect to dashboard handled by React Router
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1213-1253
+  - Auth store with checkAuth, login, logout actions
+  - **Reference:** `FRONTEND_SESSION_NOTES.md` - Phase 2: Authentication section
   - **Completed:** 2025-11-29
 
 - [x] **Create ProtectedRoute component** [@frontend-typescript-dev]
-  - Updated `packages/frontend/src/router/ProtectedRoute.tsx`
-  - Checks `isAuthenticated` from auth store
-  - Shows loading spinner while `isLoading` is true
-  - Redirects to `/login` if not authenticated
-  - Optimized to prevent duplicate auth checks
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1676-1694
+  - Route guard with loading states and auth redirect
   - **Completed:** 2025-11-29
 
 - [x] **Implement CSRF token handling** [@frontend-typescript-dev]
-  - Updated `packages/frontend/src/api/client.ts`
-  - Fetches CSRF token on app init from `GET /api/auth/csrf-token`
-  - Includes CSRF token in all POST/PATCH/DELETE request headers as `x-csrf-token`
-  - Caches token in memory for reuse
-  - Generic `apiRequest()` helper automatically includes token
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 189-210
+  - Client-side CSRF token management for all mutations
   - **Completed:** 2025-11-29
 
 ---
@@ -462,296 +225,68 @@
 **Goal:** Implement workout session creation, exercise logging, and completion.
 
 ### Backend Workout API
-- [x] **Create workout routes** [@backend-typescript-dev] ✅ **COMPLETED**
-  - Create `packages/backend/src/routes/workouts.ts`
-  - Implement `POST /api/workouts` (create new workout session)
-  - Implement `GET /api/workouts` (list user's workouts, paginated)
-  - Implement `GET /api/workouts/:id` (get workout details with exercises/sets)
-  - Implement `GET /api/workouts/active` (get in-progress workout)
-  - Implement `PATCH /api/workouts/:id` (update workout, set endTime)
-  - Implement `DELETE /api/workouts/:id` (delete workout)
-  - **Depends on:** Authentication, requireAuth middleware
-  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 856-862, `ARCHITECTURE_DECISIONS.md` Section 2
-
-- [x] **Implement active workout detection** [@backend-typescript-dev] ✅ **COMPLETED**
-  - Update `GET /api/workouts/active` endpoint
-  - Query: `WHERE userId = req.user.id AND endTime IS NULL`
-  - Return workout with exercises/sets included
-  - Return 204 No Content if no active workout
-  - Add database index on (userId, endTime) WHERE endTime IS NULL
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 380-439
-
-- [x] **Implement workout conflict detection** [@backend-typescript-dev] ✅ **COMPLETED**
-  - In `POST /api/workouts`, check for existing active workout
-  - Return 409 Conflict if active workout exists
-  - Include `activeWorkoutId` in error response
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 316-342
-
-- [x] **Create workout exercise routes** [@backend-typescript-dev] ✅ **COMPLETED**
-  - Create `packages/backend/src/routes/workoutExercises.ts`
-  - Implement `POST /api/workouts/:id/exercises` (add exercise to workout)
-  - Implement `GET /api/workouts/:id/exercises` (list exercises in workout)
-  - Implement `PATCH /api/workouts/:workoutId/exercises/:exerciseId` (update)
-  - Implement `DELETE /api/workouts/:workoutId/exercises/:exerciseId` (remove)
-  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 864-869
-
-- [x] **Create workout set routes** [@backend-typescript-dev] ✅ **COMPLETED**
-  - Create `packages/backend/src/routes/workoutSets.ts`
-  - Implement `POST /api/workouts/:workoutId/exercises/:exerciseId/sets` (add set)
-  - Implement `PATCH /api/workouts/:workoutId/exercises/:exerciseId/sets/:setId` (update set)
-  - Implement `DELETE /api/workouts/:workoutId/exercises/:exerciseId/sets/:setId` (delete set)
-  - Validate strength vs. cardio fields based on exercise type
-  - **Depends on:** Exercise API (to look up exercise type)
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 539-565, 656-673
-
-- [x] **Address PR #7 critical validation issues (P0/P1)** [@backend-typescript-dev] ✅ **COMPLETED**
-  - **Fixed race condition in active workout creation (P0):**
-    - Prevents concurrent requests from creating duplicate active workouts
-    - File: `workouts.ts:23-92`
-  - **Fixed invalid date validation (P1):**
-  - **Fixed duplicate setNumber/orderIndex validation (P1):**
-  - **Fixed zero value validation for reps and duration (P1):**
-  - **Fixed query parameter validation (P1):**
-    - Added NaN handling for limit/offset parsing
-    - Added negative value protection (limit: 1-100, offset: >=0)
-    - Added status whitelist validation ('active', 'completed', 'all')
+- [x] **Create workout routes** [@backend-typescript-dev]
+  - Complete CRUD endpoints for workouts, exercises, and sets
+  - Active workout detection and conflict handling
+  - **Reference:** `CLAUDE.md` Workout API section
   - **Completed:** 2025-12-01
-  - **Reference:** PR #7 review comments (24 total, 8 P0/P1 addressed, 16 P2/P3 deferred)
-  - **Deferred items:** See "Backend Input Validation" section below for P2/P3 improvements
+
+- [x] **Address PR #7 validation issues** [@backend-typescript-dev]
+  - Fixed race conditions, date validation, duplicate detection, query parameter validation
+  - **Reference:** `context/VALIDATION_IMPLEMENTATION_SUMMARY.md`
+  - **Completed:** 2025-12-01
 
 ### User Data Segregation
-- [x] **Implement userId filtering middleware** [@backend-typescript-dev] ✅ **COMPLETED**
-  - Update all workout/exercise routes to filter by `req.user.id`
-  - Add database queries with `WHERE userId = req.user.id`
-  - Verify no cross-user data leakage in tests
-  - **Priority:** P0 (security requirement)
-  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 98-115
-  - **Note:** Implemented in all workout, exercise, and set routes with proper type casting
+- [x] **Implement userId filtering** [@backend-typescript-dev]
+  - All database queries filter by `req.user.id` (security requirement)
+  - **Completed:** 2025-12-01
 
 ### Backend Input Validation
-
-**Status:** ✅ **COMPLETE** - All validation work finished on 2025-12-04 (deprecation warnings fixed 2025-12-07)
-
-**Reference:** See `context/VALIDATION_IMPLEMENTATION_SUMMARY.md` for comprehensive implementation details
-
-- [x] **Resolve Zod version mismatch and deprecation warnings** [@backend-typescript-dev] ✅ **COMPLETED**
-  - Fixed Zod version conflict between root and package dependencies
-  - Removed Zod from root package.json (should only be in packages where used)
-  - Added Zod 3.24.1 to backend package.json as direct dependency
-  - Both backend and shared packages now use consistent Zod 3.25.76
-  - Eliminated all deprecation warnings from backend dev server
-  - Resolved 2 moderate security vulnerabilities
-  - **Completed:** 2025-12-07
-  - **Reference:** `context/VALIDATION_IMPLEMENTATION_SUMMARY.md` (Deprecation Warning Resolution section)
-
-- [x] **Install Zod validation library** [@backend-typescript-dev] ✅ **COMPLETED**
-  - Installed Zod 3.24.1 in root and shared packages
-  - Created `packages/shared/validators/workout.ts` with all schemas
-  - Created `packages/shared/validators/index.ts` barrel export
-  - Updated `packages/shared/tsconfig.json` to include validators
-  - Configured package.json exports for `@fitness-tracker/shared/validators` imports
-  - **Completed:** 2025-12-04
-  - **Reference:** `context/VALIDATION_IMPLEMENTATION_SUMMARY.md` lines 13-25
-
-- [x] **Create Zod schemas for workout data** [@backend-typescript-dev] ✅ **COMPLETED**
-  - Created `createWorkoutSessionSchema` and `updateWorkoutSessionSchema`
-  - Created `workoutListQuerySchema` for pagination and filtering
-  - Created `createWorkoutExerciseSchema` and `updateWorkoutExerciseSchema`
-  - Created `createWorkoutSetSchema` and `updateWorkoutSetSchema`
-  - All schemas include custom error messages and business logic refinements
-  - Schemas enforce type safety, coercion, and validation constraints
-  - **Completed:** 2025-12-04
-  - **Reference:** `context/VALIDATION_IMPLEMENTATION_SUMMARY.md` lines 27-51, `ARCHITECTURE_DECISIONS.md` lines 2169-2200
-
-- [x] **Apply validation to all routes** [@backend-typescript-dev] ✅ **COMPLETED**
-  - Created `packages/backend/src/middleware/validateRequest.ts` middleware
-  - Implemented `validateBody<T>(schema)` and `validateQuery<T>(schema)` functions
-  - Applied validation to all workout routes (workouts.ts)
-  - Applied validation to all exercise routes (workoutExercises.ts)
-  - Applied validation to all set routes (workoutSets.ts)
-  - All validation failures return 400 Bad Request with detailed Zod error messages
-  - **Completed:** 2025-12-04
-  - **Reference:** `context/VALIDATION_IMPLEMENTATION_SUMMARY.md` lines 53-66, 89-137
-
-- [x] **Address deferred PR #7 code quality improvements (P2 - Medium Priority)** [@backend-typescript-dev] ✅ **COMPLETED**
-  - ✅ Replaced all 5 `any` types with Prisma types:
-    - `workouts.ts:126` → `Prisma.WorkoutSessionWhereInput`
-    - `workouts.ts:292` → `Prisma.WorkoutSessionUpdateInput`
-    - `workoutExercises.ts:230` → `Prisma.WorkoutExerciseUpdateInput`
-    - `workoutSets.ts:167` → `Prisma.WorkoutSetCreateInput`
-    - `workoutSets.ts:268` → `Prisma.WorkoutSetUpdateInput`
-  - ✅ Implemented empty update validation at all 3 locations via Zod refinements
-  - ✅ Consolidated duplicated validation logic:
-    - Strength/cardio validation moved to Zod schemas with refinements
-    - Workout verification extracted to `verifyWorkoutOwnership()` helper
-    - Exercise verification extracted to `verifyWorkoutExerciseOwnership()` helper
-  - **Completed:** 2025-12-04
-  - **Reference:** `context/VALIDATION_IMPLEMENTATION_SUMMARY.md` lines 139-154, PR #7 review
-
-- [x] **Address deferred PR #7 minor improvements (P3 - Low Priority)** [@backend-typescript-dev] ✅ **COMPLETED**
-  - ✅ Type assertion verbosity: Extracted `userId` variables where beneficial
-  - ✅ Database query optimization: Combined verification into helper functions
-  - ✅ OrderIndex negative validation: Enforced via Zod schema `.min(0)` constraint
-  - ✅ Security ID enumeration: Evaluated and deemed low risk (requires auth, user's own data)
-  - **Completed:** 2025-12-04
-  - **Reference:** `context/VALIDATION_IMPLEMENTATION_SUMMARY.md` lines 156-163, PR #7 review
+- [x] **Comprehensive Zod validation** [@backend-typescript-dev]
+  - Zod validation schemas for all workout endpoints (shared package)
+  - Validation middleware applied to all routes
+  - Fixed Zod version conflicts and deprecation warnings
+  - Replaced `any` types with Prisma types and consolidated validation logic
+  - **Reference:** `context/VALIDATION_IMPLEMENTATION_SUMMARY.md` for complete details
+  - **Completed:** 2025-12-04, Updated: 2025-12-07
 
 ### Frontend Dashboard
-- [x] **Create Dashboard page** [@frontend-typescript-dev] ✅ **COMPLETED**
-  - Created `packages/frontend/src/pages/Dashboard.tsx`
-  - Implemented UI per `mockups/01-dashboard-home.html`
-  - Display welcome message with user's displayName (extracts first name)
-  - Show "Start New Workout" button (prominent primary CTA with icon)
-  - Display this week's stats (4 stat cards: workouts, time, exercises, volume)
-  - Show recent workouts (last 3 workouts with date formatting and duration)
-  - Implemented "View All Workouts" link to history page
-  - Added loading states (Skeleton components for stats and workouts)
-  - Added empty state: "No workouts yet. Start your first workout!"
-  - **Completed:** 2025-12-07
-  - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 156-247
-
-- [x] **Implement workout creation** [@frontend-typescript-dev] ✅ **COMPLETED**
-  - Handle "Start New Workout" button click
-  - Call `POST /api/workouts` with startTime = now
-  - Handle 409 conflict (show modal: "Resume active workout?")
-  - Navigate to `/workout/:id` on success
-  - Show error toast on failure using Chakra Toast
-  - Implemented active workout conflict modal with "Resume" and "Cancel" buttons
-  - **Completed:** 2025-12-07
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 316-367
-
-- [x] **Create useWorkouts hooks** [@frontend-typescript-dev] ✅ **COMPLETED**
-  - Created `packages/frontend/src/hooks/useWorkouts.ts`
-  - Implemented `useRecentWorkouts(limit)` - Fetches recent workouts with pagination
-  - Implemented `useWeeklyStats()` - Calculates weekly stats from workouts
-  - Both hooks use SWR with proper caching (5s and 10s deduplication)
-  - Helper function `calculateWeeklyStats()` filters last 7 days and computes totals
-  - **Note:** Exercise count and volume are placeholders (0) - require workout details from backend
-  - **Future optimization:** Consider dedicated backend endpoint `GET /api/stats/weekly`
+- [x] **Create Dashboard page** [@frontend-typescript-dev]
+  - Dashboard with stats, recent workouts, and workout creation flow
+  - Active workout conflict modal and navigation components
+  - **Reference:** `FRONTEND_SESSION_NOTES.md` - Phase 3: Dashboard Implementation
   - **Completed:** 2025-12-07
 
-- [x] **Fix authentication race condition** [@frontend-typescript-dev] ✅ **COMPLETED**
-  - Fixed critical bug: users redirected to login before auth check completed
-  - Root cause: `authStore` initial state `isLoading: false` caused premature routing
-  - Fix: Changed initial state to `isLoading: true` in `packages/frontend/src/stores/authStore.ts`
-  - Now shows loading spinner until `checkAuth()` completes
-  - Users correctly routed to Dashboard (if authenticated) or Login (if not)
+- [x] **Create useWorkouts hooks** [@frontend-typescript-dev]
+  - SWR hooks for recent workouts and weekly stats
   - **Completed:** 2025-12-07
-  - **Priority:** P0 (blocked authentication flow)
+
+- [x] **Fix authentication race condition** [@frontend-typescript-dev]
+  - Fixed critical auth loading state bug
   - **Reference:** `AUTH_TROUBLESHOOTING_LOG.md`
-
-- [x] **Fix backend cookie configuration for development** [@backend-typescript-dev] ✅ **COMPLETED**
-  - Made session and CSRF cookies `sameSite` conditional (undefined in dev, 'lax' in prod)
-  - Allows cross-origin cookies between localhost:3000 and localhost:5173
-  - Files updated: `packages/backend/src/index.ts`, `packages/backend/src/middleware/csrf.ts`
-  - Fixed OAuth failure redirect URL to use frontend origin
-  - Added debug logging to auth endpoints
   - **Completed:** 2025-12-07
-  - **Reference:** `AUTH_TROUBLESHOOTING_LOG.md`
+
+- [x] **Fix backend cookie configuration** [@backend-typescript-dev]
+  - Development environment cookie fixes for localhost
+  - **Completed:** 2025-12-07
 
 ### Frontend Active Workout Screen
-- [x] **Create ActiveWorkout page** [@frontend-typescript-dev] ✅ **COMPLETED**
-  - Created `packages/frontend/src/pages/ActiveWorkout.tsx`
-  - Implemented UI per `mockups/02-active-workout.html`
-  - Display workout header with timer, back button
-  - Show list of exercises with sets (table format per mockup)
-  - Added fixed bottom actions: "Add Exercise" + "Finish Workout"
-  - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 254-361
-  - **Completed:** 2025-12-15
-
-- [x] **Implement workout timer** [@frontend-typescript-dev] ✅ **COMPLETED**
-  - Calculate elapsed time from `startTime` to now
-  - Display timer in MM:SS format
-  - Update every second with setInterval
-  - Add pulsing dot animation per mockup
-  - **Completed:** 2025-12-15
-
-- [x] **Create ExerciseCard component** [@frontend-typescript-dev] ✅ **COMPLETED**
-  - Created `packages/frontend/src/components/ExerciseCard.tsx`
-  - Display exercise name, category
-  - Show sets in table format (Set# | Weight | Reps | Checkbox)
-  - Add "Add Another Set" button
-  - Include edit/delete icons per mockup
-  - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 291-341
-  - **Completed:** 2025-12-15
-
-- [x] **Implement set input fields** [@frontend-typescript-dev] ✅ **COMPLETED**
-  - Created SetRow component with number inputs for weight, reps
-  - Used `inputMode="numeric"` and `"decimal"` for mobile keyboard
-  - Center-aligned numbers per mockup
-  - Added checkbox for set completion
-  - Implemented auto-save on blur
-  - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 310-328, `PROJECT_REQUIREMENTS.md` lines 222-242
-  - **Completed:** 2025-12-15
-
-- [x] **Create ExerciseSelectionModal component** [@frontend-typescript-dev] ✅ **COMPLETED**
-  - Created `packages/frontend/src/components/ExerciseSelectionModal.tsx`
-  - Implemented UI per `mockups/03-exercise-selection.html`
-  - Show bottom sheet modal (slide up animation)
-  - Display search input at top
-  - Show recent exercises (3 items)
-  - Show category pills (horizontal scroll: Push, Pull, Legs, Core, Cardio)
-  - Display exercise list (filtered by search/category)
-  - Add "Create Custom Exercise" button at bottom
-  - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 368-483, `PROJECT_REQUIREMENTS.md` lines 186-210
-  - **Completed:** 2025-12-15
-
-- [x] **Implement exercise selection logic** [@frontend-typescript-dev] ✅ **COMPLETED**
-  - Handle category filter (show only exercises in selected category)
-  - Implement search filter (case-insensitive match on exercise name)
-  - Track recently used exercises in localStorage
-  - Call `POST /api/workouts/:id/exercises` on selection
-  - Close modal and add exercise to UI with SWR revalidation
-  - **Completed:** 2025-12-15
-
-- [x] **Implement finish workout** [@frontend-typescript-dev] ✅ **COMPLETED**
-  - Handle "Finish Workout" button click
-  - Call `PATCH /api/workouts/:id` with endTime = now
-  - Show success toast notification
-  - Navigate to dashboard
-  - Clear active workout from state via SWR revalidation
-  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 260-277
+- [x] **Complete active workout logging UI** [@frontend-typescript-dev]
+  - ActiveWorkout page with real-time timer, exercise management, and set input
+  - ExerciseCard, SetRow, and ExerciseSelectionModal components
+  - Mobile-optimized input fields with auto-save on blur
+  - Exercise search/filtering with localStorage-based recent exercises
+  - Finish workout flow with toast notifications
+  - **Reference:** `FRONTEND_SESSION_NOTES.md` - Phase 3: Active Workout Screen
   - **Completed:** 2025-12-15
 
 ### Frontend Workout History
-- [x] **Create WorkoutHistory page** [@frontend-typescript-dev] ✅ **COMPLETED**
-  - Created `packages/frontend/src/pages/WorkoutHistory.tsx`
-  - Implemented UI per `mockups/04-workout-history.html`
-  - Display monthly stats card (workouts this month, total exercises, avg duration)
-  - Show workout list in reverse chronological order
-  - Implemented pagination (20 workouts per page)
-  - Each workout card shows: date, duration, exercise count, exercise pills
-  - Added loading states (Skeleton) and empty states
-  - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 489-572
-  - **Completed:** 2025-12-21 (PR #11)
-
-- [x] **Create WorkoutDetail page** [@frontend-typescript-dev] ✅ **COMPLETED**
-  - Created `packages/frontend/src/pages/WorkoutDetail.tsx`
-  - Implemented UI per `mockups/05-workout-detail.html`
-  - Display workout date, duration, total sets
-  - Show each exercise with sets in table format
-  - Include back button to history
-  - Add menu button for future actions (duplicate, edit, delete)
-  - Properly handles both strength and cardio exercises
-  - **Reference:** `mockups/DESIGN-DOCUMENTATION.md` lines 579-654
-  - **Completed:** 2025-12-21 (PR #11)
-
-- [x] **Create useWorkoutHistory hooks** [@frontend-typescript-dev] ✅ **COMPLETED**
-  - Created `packages/frontend/src/hooks/useWorkoutHistory.ts`
-  - Implemented `useMonthlyStats()` - Fetches and calculates monthly workout statistics
-  - Implemented `useWorkouts(limit, offset)` - Fetches paginated workout list
-  - Both hooks use SWR with proper caching
-  - Fixed data accuracy issue (now filters by month instead of hardcoded limit)
-  - **Completed:** 2025-12-21
-
-- [x] **Create date formatting utilities** [@frontend-typescript-dev] ✅ **COMPLETED**
-  - Created `packages/frontend/src/utils/dateFormatting.ts`
-  - Implemented `formatDate()` - Formats dates as "Dec 15, 2025"
-  - Implemented `calculateDuration()` and `calculateDurationMinutes()` - Safe duration calculation
-  - Implemented `formatMinutesForDisplay()` - Formats minutes as "45 min"
-  - Implemented `formatSecondsToMinutesSeconds()` - Formats seconds as "5m 30s" (hides 0s)
-  - Implemented `calculateElapsedTime()` - Shows "Just now", "5 minutes ago", etc.
-  - All functions handle edge cases (negative durations, zero values)
+- [x] **Complete workout history feature** [@frontend-typescript-dev]
+  - WorkoutHistory page with monthly stats and paginated workout list
+  - WorkoutDetail page with exercise/set breakdown
+  - useWorkoutHistory hooks with accurate monthly stats calculation
+  - Date formatting utilities with edge case handling
+  - **Reference:** `FRONTEND_SESSION_NOTES.md` - Phase 3: Workout History
   - **Completed:** 2025-12-21
 
 ### Code Quality Improvements (Deferred from PR #10)
