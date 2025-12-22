@@ -1,10 +1,18 @@
 # Fitness Tracker - Implementation TODO
 
-**Version:** 1.6
-**Date:** 2025-12-21
-**Status:** Phase 3 Complete - Workout History Implemented & PR #11 Review Issues Resolved
+**Version:** 1.7
+**Date:** 2025-12-22
+**Status:** Phase 3 Complete - Code Quality Improvements Finished
 
 ## Recent Completed Work
+
+### Code Quality Improvements (2025-12-22)
+- ✅ SetRow component refactored with reusable SetInput component (~100 lines of code removed)
+- ✅ ExerciseSelectionModal performance optimized (removed unnecessary isOpen dependency)
+- ✅ Chakra UI best practices applied (borderRadius syntax corrections)
+- ✅ Accessibility enhanced with aria-hidden attributes on decorative SVG icons
+- ✅ TypeScript build fixed (WorkoutDetail.tsx missing dependency)
+- ✅ **Details:** See `FRONTEND_SESSION_NOTES.md` - Phase 3: Code Quality Improvements section
 
 ### Phase 3 - Workout History (2025-12-21)
 - ✅ Complete workout history feature with WorkoutHistory and WorkoutDetail pages
@@ -290,17 +298,17 @@
   - **Completed:** 2025-12-21
 
 ### Code Quality Improvements (Deferred from PR #10)
-- [ ] **Refactor SetRow component** [@frontend-typescript-dev]
-  - Reduce code duplication between strength and cardio rendering
-  - Consider extracting shared input logic to reusable components
-  - **Priority:** P2 (Medium)
-  - **Reference:** PR #10 Comment 13 (SetRow.tsx)
+- [x] **Refactor SetRow component** [@frontend-typescript-dev] ✅ **COMPLETED 2025-12-22**
+  - Created reusable SetInput component
+  - Eliminated ~100 lines of duplicated code between strength and cardio rendering
+  - Improved maintainability and follows DRY principles
+  - **Reference:** PR #10 Comment 13 (SetRow.tsx), Commit 21ec336
 
-- [ ] **Optimize useEffect dependencies in ExerciseSelectionModal** [@frontend-typescript-dev]
-  - Remove unnecessary `isOpen` dependency from useEffect
-  - Consider extracting filter logic to separate hooks
-  - **Priority:** P2 (Medium)
-  - **Reference:** PR #10 Comment 15
+- [x] **Optimize useEffect dependencies in ExerciseSelectionModal** [@frontend-typescript-dev] ✅ **COMPLETED 2025-12-22**
+  - Removed unnecessary `isOpen` dependency from useEffect
+  - Recent exercises now load once on mount instead of every modal open
+  - Improves performance by preventing redundant localStorage reads
+  - **Reference:** PR #10 Comment 15, Commit 21ec336
 
 - [ ] **Implement TODO functionality** [@frontend-typescript-dev]
   - Replace alert() placeholders with actual functionality:
@@ -309,11 +317,15 @@
   - **Priority:** P3 (Low - nice-to-have)
   - **Reference:** PR #10 Comment 8
 
-- [ ] **Add SVG accessibility attributes** [@frontend-typescript-dev]
-  - Add `aria-hidden="true"` to all decorative SVG icons
-  - Ensure icons with semantic meaning have appropriate labels
-  - **Priority:** P3 (Low - accessibility enhancement)
-  - **Reference:** PR #10 Comment 16
+- [x] **Add SVG accessibility attributes** [@frontend-typescript-dev] ✅ **COMPLETED 2025-12-22**
+  - Added `aria-hidden="true"` to all decorative SVG icons across 5 files
+  - Improves screen reader experience significantly
+  - **Reference:** PR #10 Comment 16, Commit 21ec336
+
+- [x] **Fix Chakra UI best practices** [@frontend-typescript-dev] ✅ **COMPLETED 2025-12-22**
+  - Fixed non-standard borderRadius syntax (borderRadius="md md 0 0" → borderTopRadius="md")
+  - Code now follows proper Chakra UI conventions
+  - **Reference:** Commit 21ec336
 
 ---
 
