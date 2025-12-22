@@ -173,7 +173,7 @@ function ActiveWorkout() {
                 alignItems="center"
                 justifyContent="center"
               >
-                <Icon viewBox="0 0 24 24" boxSize="64px">
+                <Icon viewBox="0 0 24 24" boxSize="64px" aria-hidden="true">
                   <path
                     fill="currentColor"
                     d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"
@@ -222,7 +222,7 @@ function ActiveWorkout() {
             fontSize="lg"
             fontWeight="semibold"
             leftIcon={
-              <Icon viewBox="0 0 24 24" boxSize="20px">
+              <Icon viewBox="0 0 24 24" boxSize="20px" aria-hidden="true">
                 <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
               </Icon>
             }
@@ -240,7 +240,7 @@ function ActiveWorkout() {
             fontSize="lg"
             fontWeight="semibold"
             leftIcon={
-              <Icon viewBox="0 0 24 24" boxSize="20px">
+              <Icon viewBox="0 0 24 24" boxSize="20px" aria-hidden="true">
                 <path fill="currentColor" d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
               </Icon>
             }
@@ -342,7 +342,7 @@ function WorkoutHeader({ startTime, onBack }: WorkoutHeaderProps) {
             bg: 'rgba(255, 255, 255, 0.1)',
           }}
         >
-          <Icon viewBox="0 0 24 24" boxSize="20px">
+          <Icon viewBox="0 0 24 24" boxSize="20px" aria-hidden="true">
             <path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
           </Icon>
         </Button>
@@ -364,7 +364,7 @@ function WorkoutHeader({ startTime, onBack }: WorkoutHeaderProps) {
             bg: 'rgba(255, 255, 255, 0.1)',
           }}
         >
-          <Icon viewBox="0 0 24 24" boxSize="20px">
+          <Icon viewBox="0 0 24 24" boxSize="20px" aria-hidden="true">
             <path fill="currentColor" d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
           </Icon>
         </Button>

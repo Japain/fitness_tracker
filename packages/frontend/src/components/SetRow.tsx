@@ -25,6 +25,51 @@ interface SetRowProps {
   onUpdate: () => void;
 }
 
+/**
+ * Shared Set Input Component
+ * Reusable input field for set values (weight, reps, duration, distance)
+ */
+interface SetInputProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  onBlur: (value: string) => void;
+  onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  inputMode: 'numeric' | 'decimal';
+  isDisabled: boolean;
+}
+
+function SetInput({ label, value, onChange, onBlur, onKeyDown, inputMode, isDisabled }: SetInputProps) {
+  return (
+    <Box>
+      <Text fontSize="xs" color="neutral.600" fontWeight="medium" mb="xs">
+        {label}
+      </Text>
+      <Input
+        type="number"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onBlur={(e) => onBlur(e.target.value)}
+        onKeyDown={onKeyDown}
+        inputMode={inputMode}
+        fontSize="md"
+        fontWeight="semibold"
+        textAlign="center"
+        h="44px"
+        borderRadius="sm"
+        borderColor="neutral.300"
+        isDisabled={isDisabled}
+        opacity={isDisabled ? 0.6 : 1}
+        transition="opacity 0.2s"
+        _focus={{
+          borderColor: 'primary.500',
+          boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
+        }}
+      />
+    </Box>
+  );
+}
+
 function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: SetRowProps) {
   const toast = useToast();
 
@@ -160,61 +205,27 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
         </Text>
 
         {/* Weight Input */}
-        <Box>
-          {/* TODO: Use user preferences for unit display if available, fallback to set.weightUnit */}
-          <Text fontSize="xs" color="neutral.600" fontWeight="medium" mb="xs">
-            Weight ({set.weightUnit || 'lbs'})
-          </Text>
-          <Input
-            type="number"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-            onBlur={(e) => handleBlur('weight', e.target.value)}
-            onKeyDown={handleKeyDown}
-            inputMode="decimal"
-            fontSize="md"
-            fontWeight="semibold"
-            textAlign="center"
-            h="44px"
-            borderRadius="sm"
-            borderColor="neutral.300"
-            isDisabled={isSaving}
-            opacity={isSaving ? 0.6 : 1}
-            transition="opacity 0.2s"
-            _focus={{
-              borderColor: 'primary.500',
-              boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
-            }}
-          />
-        </Box>
+        {/* TODO: Use user preferences for unit display if available, fallback to set.weightUnit */}
+        <SetInput
+          label={`Weight (${set.weightUnit || 'lbs'})`}
+          value={weight}
+          onChange={setWeight}
+          onBlur={(value) => handleBlur('weight', value)}
+          onKeyDown={handleKeyDown}
+          inputMode="decimal"
+          isDisabled={isSaving}
+        />
 
         {/* Reps Input */}
-        <Box>
-          <Text fontSize="xs" color="neutral.600" fontWeight="medium" mb="xs">
-            Reps
-          </Text>
-          <Input
-            type="number"
-            value={reps}
-            onChange={(e) => setReps(e.target.value)}
-            onBlur={(e) => handleBlur('reps', e.target.value)}
-            onKeyDown={handleKeyDown}
-            inputMode="numeric"
-            fontSize="md"
-            fontWeight="semibold"
-            textAlign="center"
-            h="44px"
-            borderRadius="sm"
-            borderColor="neutral.300"
-            isDisabled={isSaving}
-            opacity={isSaving ? 0.6 : 1}
-            transition="opacity 0.2s"
-            _focus={{
-              borderColor: 'primary.500',
-              boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
-            }}
-          />
-        </Box>
+        <SetInput
+          label="Reps"
+          value={reps}
+          onChange={setReps}
+          onBlur={(value) => handleBlur('reps', value)}
+          onKeyDown={handleKeyDown}
+          inputMode="numeric"
+          isDisabled={isSaving}
+        />
 
         {/* Completion Checkbox */}
         <Checkbox
@@ -258,61 +269,27 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
       </Text>
 
       {/* Duration Input (minutes) */}
-      <Box>
-        <Text fontSize="xs" color="neutral.600" fontWeight="medium" mb="xs">
-          Time (min)
-        </Text>
-        <Input
-          type="number"
-          value={duration}
-          onChange={(e) => setDuration(e.target.value)}
-          onBlur={(e) => handleBlur('duration', e.target.value)}
-          onKeyDown={handleKeyDown}
-          inputMode="decimal"
-          fontSize="md"
-          fontWeight="semibold"
-          textAlign="center"
-          h="44px"
-          borderRadius="sm"
-          borderColor="neutral.300"
-          isDisabled={isSaving}
-          opacity={isSaving ? 0.6 : 1}
-          transition="opacity 0.2s"
-          _focus={{
-            borderColor: 'primary.500',
-            boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
-          }}
-        />
-      </Box>
+      <SetInput
+        label="Time (min)"
+        value={duration}
+        onChange={setDuration}
+        onBlur={(value) => handleBlur('duration', value)}
+        onKeyDown={handleKeyDown}
+        inputMode="decimal"
+        isDisabled={isSaving}
+      />
 
       {/* Distance Input */}
-      <Box>
-        {/* TODO: Use user preferences for unit display if available, fallback to set.distanceUnit */}
-        <Text fontSize="xs" color="neutral.600" fontWeight="medium" mb="xs">
-          Distance ({set.distanceUnit || 'km'})
-        </Text>
-        <Input
-          type="number"
-          value={distance}
-          onChange={(e) => setDistance(e.target.value)}
-          onBlur={(e) => handleBlur('distance', e.target.value)}
-          onKeyDown={handleKeyDown}
-          inputMode="decimal"
-          fontSize="md"
-          fontWeight="semibold"
-          textAlign="center"
-          h="44px"
-          borderRadius="sm"
-          borderColor="neutral.300"
-          isDisabled={isSaving}
-          opacity={isSaving ? 0.6 : 1}
-          transition="opacity 0.2s"
-          _focus={{
-            borderColor: 'primary.500',
-            boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
-          }}
-        />
-      </Box>
+      {/* TODO: Use user preferences for unit display if available, fallback to set.distanceUnit */}
+      <SetInput
+        label={`Distance (${set.distanceUnit || 'km'})`}
+        value={distance}
+        onChange={setDistance}
+        onBlur={(value) => handleBlur('distance', value)}
+        onKeyDown={handleKeyDown}
+        inputMode="decimal"
+        isDisabled={isSaving}
+      />
 
       {/* Completion Checkbox */}
       <Checkbox
