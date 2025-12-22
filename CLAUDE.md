@@ -247,6 +247,88 @@ curl -X PATCH -b cookies.txt \
 - All endpoints require authentication (session cookie)
 - Detailed validation documentation: `context/VALIDATION_IMPLEMENTATION_SUMMARY.md`
 
+### Exercise API
+
+**Backend Exercise Files:**
+- `packages/backend/src/routes/exercises.ts` - Exercise library CRUD endpoints
+- `packages/shared/validators/exercise.ts` - Exercise validation schemas
+
+**Exercise Endpoints:**
+- `GET /api/exercises` - List all exercises (library + user's custom exercises)
+- `GET /api/exercises?category=Push` - Filter exercises by category
+- `GET /api/exercises?type=strength` - Filter exercises by type
+- `GET /api/exercises?search=bench` - Search exercises by name
+- `POST /api/exercises` - Create custom exercise
+- `PATCH /api/exercises/:id` - Update custom exercise (user must own it)
+- `DELETE /api/exercises/:id` - Delete custom exercise (user must own it)
+
+**Testing Backend Exercise API:**
+
+*List All Exercises:*
+```bash
+curl -b cookies.txt http://localhost:3000/api/exercises
+# Expected: 200 with array of exercises (60 library + any custom)
+```
+
+*Filter by Category:*
+```bash
+curl -b cookies.txt "http://localhost:3000/api/exercises?category=Push"
+# Expected: 200 with only Push exercises
+```
+
+*Filter by Type:*
+```bash
+curl -b cookies.txt "http://localhost:3000/api/exercises?type=strength"
+# Expected: 200 with only strength exercises
+```
+
+*Search by Name:*
+```bash
+curl -b cookies.txt "http://localhost:3000/api/exercises?search=bench"
+# Expected: 200 with exercises containing "bench" in name
+```
+
+*Create Custom Exercise:*
+```bash
+curl -X POST -b cookies.txt \
+  -H "Content-Type: application/json" \
+  -H "x-csrf-token: YOUR_CSRF_TOKEN" \
+  -d '{"name": "My Custom Exercise", "category": "Push", "type": "strength"}' \
+  http://localhost:3000/api/exercises
+# Expected: 201 Created with exercise object (isCustom: true)
+```
+
+*Update Custom Exercise:*
+```bash
+curl -X PATCH -b cookies.txt \
+  -H "Content-Type: application/json" \
+  -H "x-csrf-token: YOUR_CSRF_TOKEN" \
+  -d '{"name": "Updated Exercise Name"}' \
+  http://localhost:3000/api/exercises/EXERCISE_ID
+# Expected: 200 OK with updated exercise
+# Error: 403 Forbidden if trying to update library exercise or exercise owned by another user
+```
+
+*Delete Custom Exercise:*
+```bash
+curl -X DELETE -b cookies.txt \
+  -H "x-csrf-token: YOUR_CSRF_TOKEN" \
+  http://localhost:3000/api/exercises/EXERCISE_ID
+# Expected: 204 No Content
+# Error: 403 Forbidden if trying to delete library exercise or exercise owned by another user
+```
+
+**Exercise Validation:**
+- Comprehensive Zod validation implemented for all exercise endpoints
+- Validation schemas located in `packages/shared/validators/exercise.ts`
+- Name: 1-100 characters, trimmed, case-insensitive duplicate check for user's custom exercises
+- Category: Must be one of `Push`, `Pull`, `Legs`, `Core`, `Cardio`
+- Type: Must be `strength` or `cardio`
+- All mutating endpoints require CSRF token in `x-csrf-token` header
+- All endpoints require authentication (session cookie)
+- Library exercises (isCustom=false) cannot be modified or deleted
+- Detailed testing guide: `context/EXERCISE_API_TESTING.md`
+
 ### Frontend Hooks & State Management
 
 **Custom Hooks:**
