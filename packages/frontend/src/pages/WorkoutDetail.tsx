@@ -6,10 +6,10 @@ import {
   VStack,
   Grid,
   Button,
+  Icon,
   Skeleton,
   SkeletonText,
 } from '@chakra-ui/react';
-import { ChevronLeftIcon } from '@chakra-ui/icons';
 import type { WorkoutExerciseWithExercise, WorkoutSet } from '@fitness-tracker/shared';
 import { useWorkoutDetail } from '../hooks/useWorkoutDetail';
 import {
@@ -45,7 +45,11 @@ function WorkoutDetail() {
         {/* Back Button */}
         <Button
           variant="ghost"
-          leftIcon={<ChevronLeftIcon boxSize={5} />}
+          leftIcon={
+            <Icon viewBox="0 0 24 24" boxSize="20px" aria-hidden="true">
+              <path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+            </Icon>
+          }
           onClick={() => navigate('/history')}
           color="primary.500"
           fontWeight="semibold"
