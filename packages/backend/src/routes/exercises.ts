@@ -51,30 +51,39 @@ router.get('/', validateQuery(exerciseListQuerySchema), async (req, res) => {
     const userId = (req.user as User).id;
 
     // Build where clause with filters
-    const where: Prisma.ExerciseWhereInput = {
-      OR: [
-        { isCustom: false, userId: null },  // Library exercises
-        { isCustom: true, userId },         // User's custom exercises
-      ],
-    };
+    // Use AND array to properly combine OR clause with additional filters
+    const andConditions: Prisma.ExerciseWhereInput[] = [
+      {
+        OR: [
+          { isCustom: false, userId: null },  // Library exercises
+          { isCustom: true, userId },         // User's custom exercises
+        ],
+      },
+    ];
 
     // Apply category filter if provided
     if (category) {
-      where.category = category;
+      andConditions.push({ category });
     }
 
     // Apply type filter if provided
     if (type) {
-      where.type = type;
+      andConditions.push({ type });
     }
 
     // Apply search filter if provided (case-insensitive partial match)
     if (search) {
-      where.name = {
-        contains: search,
-        mode: 'insensitive',
-      };
+      andConditions.push({
+        name: {
+          contains: search,
+          mode: 'insensitive',
+        },
+      });
     }
+
+    const where: Prisma.ExerciseWhereInput = {
+      AND: andConditions,
+    };
 
     const exercises = await prisma.exercise.findMany({
       where,

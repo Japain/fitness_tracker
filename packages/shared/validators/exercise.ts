@@ -26,7 +26,10 @@ export const EXERCISE_TYPES = ['strength', 'cardio'] as const;
 export const exerciseListQuerySchema = z.object({
   category: z.enum(EXERCISE_CATEGORIES).optional(),
   type: z.enum(EXERCISE_TYPES).optional(),
-  search: z.string().min(1).max(100).optional(),
+  search: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string().min(1).max(100).optional()
+  ),
 });
 
 /**
