@@ -16,6 +16,7 @@ import {
   exerciseListQuerySchema,
   createExerciseSchema,
   updateExerciseSchema,
+  uuidSchema,
   type ExerciseListQuery,
   type CreateExerciseInput,
   type UpdateExerciseInput,
@@ -185,6 +186,16 @@ router.post('/', verifyCsrfToken, validateBody(createExerciseSchema), async (req
 router.patch('/:id', verifyCsrfToken, validateBody(updateExerciseSchema), async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Validate UUID format
+    const uuidValidation = uuidSchema.safeParse(id);
+    if (!uuidValidation.success) {
+      return res.status(400).json({
+        error: 'Invalid ID',
+        message: 'Exercise ID must be a valid UUID',
+      });
+    }
+
     const validatedBody = req.validatedBody as UpdateExerciseInput;
     const userId = (req.user as User).id;
 
@@ -257,9 +268,11 @@ router.patch('/:id', verifyCsrfToken, validateBody(updateExerciseSchema), async 
  * - Returns 403 Forbidden if user doesn't own exercise or attempting to delete library exercise
  * - Returns 404 Not Found if exercise doesn't exist
  *
- * Note: If exercise is used in any workouts, it will remain in those workouts
- * but won't be available for future workout creation. The exercise relationship
- * in WorkoutExercise is preserved (no cascade delete from Exercise side).
+ * Note: Deletion will FAIL if the exercise is used in any WorkoutExercise records
+ * due to the foreign key constraint with RESTRICT behavior (default in Prisma).
+ * In this case, a 409 Conflict error is returned with a user-friendly message.
+ * To allow deletion, the user must first remove all references to this exercise
+ * from their workouts, or the schema must be changed to use onDelete: SetNull or Cascade.
  *
  * @route DELETE /api/exercises/:id
  * @access Protected
@@ -267,6 +280,16 @@ router.patch('/:id', verifyCsrfToken, validateBody(updateExerciseSchema), async 
 router.delete('/:id', verifyCsrfToken, async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Validate UUID format
+    const uuidValidation = uuidSchema.safeParse(id);
+    if (!uuidValidation.success) {
+      return res.status(400).json({
+        error: 'Invalid ID',
+        message: 'Exercise ID must be a valid UUID',
+      });
+    }
+
     const userId = (req.user as User).id;
 
     // Verify ownership (also checks if exercise exists and is custom)
@@ -276,14 +299,28 @@ router.delete('/:id', verifyCsrfToken, async (req, res) => {
     }
 
     // Delete custom exercise
-    // Note: WorkoutExercise records referencing this exercise will remain
-    // (no onDelete: Cascade from Exercise -> WorkoutExercise in schema)
+    // This will fail with a foreign key constraint error if the exercise
+    // is referenced in any WorkoutExercise records
     await prisma.exercise.delete({
       where: { id },
     });
 
     res.status(204).end();
   } catch (error) {
+    // Check if error is a Prisma foreign key constraint violation
+    if (error && typeof error === 'object' && 'code' in error) {
+      const prismaError = error as { code: string; meta?: { cause?: string } };
+
+      // P2003: Foreign key constraint failed
+      // P2014: The change you are trying to make would violate the required relation
+      if (prismaError.code === 'P2003' || prismaError.code === 'P2014') {
+        return res.status(409).json({
+          error: 'Exercise in use',
+          message: 'This exercise cannot be deleted because it is used in one or more workouts. Remove the exercise from all workouts before deleting it.',
+        });
+      }
+    }
+
     logError('Failed to delete exercise', error, {
       userId: (req.user as User | undefined)?.id,
       exerciseId: req.params.id,

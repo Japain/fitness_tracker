@@ -10,6 +10,12 @@ import { z } from 'zod';
 // ============================================================================
 
 /**
+ * UUID validation schema
+ * Validates that a string is a valid UUID v4 format
+ */
+export const uuidSchema = z.string().uuid({ message: 'Invalid UUID format' });
+
+/**
  * Valid exercise categories
  */
 export const EXERCISE_CATEGORIES = ['Push', 'Pull', 'Legs', 'Core', 'Cardio'] as const;
