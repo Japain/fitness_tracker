@@ -334,24 +334,29 @@
 **Goal:** Implement exercise library browsing and custom exercise creation.
 
 ### Backend Exercise API
-- [x] **Create exercise routes (GET endpoint)** [@backend-typescript-dev] ✅ **PARTIALLY COMPLETED**
+- [x] **Create exercise routes (all CRUD operations)** [@backend-typescript-dev] ✅ **COMPLETED**
   - Created `packages/backend/src/routes/exercises.ts`
-  - ✅ Implemented `GET /api/exercises` (list exercises with filters)
+  - ✅ Implemented `GET /api/exercises` with query params (category, type, search filters)
   - ✅ Returns library exercises (isCustom=false) + user's custom exercises
   - ✅ Ordered by category and name
-  - ✅ Fixed error handling and type safety (2025-12-15)
-  - ⏳ TODO: Support query params for category/search filters
-  - ⏳ TODO: Implement `POST /api/exercises` (create custom exercise)
-  - ⏳ TODO: Implement `PATCH /api/exercises/:id` (update custom exercise)
-  - ⏳ TODO: Implement `DELETE /api/exercises/:id` (delete custom exercise)
+  - ✅ Implemented `POST /api/exercises` (create custom exercise)
+  - ✅ Implemented `PATCH /api/exercises/:id` (update custom exercise)
+  - ✅ Implemented `DELETE /api/exercises/:id` (delete custom exercise)
+  - ✅ Created Zod validation schemas in `packages/shared/validators/exercise.ts`
+  - ✅ All endpoints require authentication (requireAuth middleware)
+  - ✅ State-changing endpoints require CSRF token (verifyCsrfToken middleware)
+  - ✅ Duplicate name checking (case-insensitive for user's custom exercises)
   - **Depends on:** Authentication, requireAuth
   - **Reference:** `PROJECT_REQUIREMENTS.md` lines 870-876, `ARCHITECTURE_DECISIONS.md` lines 830-855
-  - **Completed (GET only):** 2025-12-15
+  - **Completed:** 2025-12-22
 
-- [ ] **Implement exercise ownership checks** [@backend-typescript-dev]
-  - In PATCH/DELETE routes, verify `exercise.userId === req.user.id`
-  - Return 403 Forbidden if user doesn't own custom exercise
-  - Prevent editing/deleting library exercises (isCustom=false)
+- [x] **Implement exercise ownership checks** [@backend-typescript-dev] ✅ **COMPLETED**
+  - ✅ Created `verifyExerciseOwnership()` helper in `packages/backend/src/utils/workoutHelpers.ts`
+  - ✅ In PATCH/DELETE routes, verify `exercise.userId === req.user.id`
+  - ✅ Return 403 Forbidden if user doesn't own custom exercise
+  - ✅ Prevent editing/deleting library exercises (isCustom=false)
+  - ✅ Proper error messages for all scenarios (404, 403)
+  - **Completed:** 2025-12-22
 
 ### Frontend Exercise Management
 - [ ] **Implement custom exercise creation** [@frontend-typescript-dev]

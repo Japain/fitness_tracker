@@ -5,7 +5,7 @@
 
 import { prisma } from '../lib/prisma';
 import { Response } from 'express';
-import type { User } from '@fitness-tracker/shared';
+import type { User, Exercise } from '@fitness-tracker/shared';
 
 /**
  * Verifies that a workout exists and belongs to the authenticated user
@@ -71,4 +71,46 @@ export async function verifyWorkoutExerciseOwnership(
   }
 
   return workoutExercise;
+}
+
+/**
+ * Verifies that an exercise exists and belongs to the authenticated user (for custom exercises)
+ * Returns the exercise if found and owned, sends appropriate error response and returns null if not found/forbidden
+ */
+export async function verifyExerciseOwnership(
+  exerciseId: string,
+  userId: string,
+  res: Response
+): Promise<Exercise | null> {
+  const exercise = await prisma.exercise.findUnique({
+    where: { id: exerciseId },
+  });
+
+  if (!exercise) {
+    res.status(404).json({
+      error: 'Exercise not found',
+      message: 'The requested exercise does not exist',
+    });
+    return null;
+  }
+
+  // Library exercises (isCustom = false) cannot be modified or deleted by anyone
+  if (!exercise.isCustom) {
+    res.status(403).json({
+      error: 'Forbidden',
+      message: 'Library exercises cannot be modified or deleted',
+    });
+    return null;
+  }
+
+  // Custom exercises can only be modified by their owner
+  if (exercise.userId !== userId) {
+    res.status(403).json({
+      error: 'Forbidden',
+      message: 'You do not have permission to modify this exercise',
+    });
+    return null;
+  }
+
+  return exercise as Exercise;
 }
