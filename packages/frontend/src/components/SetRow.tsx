@@ -101,18 +101,23 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
 
       if (field === 'weight') {
         const parsedWeight = parseFloat((value as string).trim());
-        updateData.weight = value && !isNaN(parsedWeight) ? parsedWeight : null;
+        // Weight can be 0 or greater (nonnegative)
+        updateData.weight = value && !isNaN(parsedWeight) && parsedWeight >= 0 ? parsedWeight : null;
         updateData.weightUnit = set.weightUnit || 'lbs';
       } else if (field === 'reps') {
         const parsedReps = parseInt((value as string).trim(), 10);
-        updateData.reps = value && !isNaN(parsedReps) ? parsedReps : null;
+        // Reps must be positive (>0) per validation schema
+        updateData.reps = value && !isNaN(parsedReps) && parsedReps > 0 ? parsedReps : null;
       } else if (field === 'duration') {
         // Convert minutes to seconds
         const parsedDuration = parseFloat((value as string).trim());
-        updateData.duration = value && !isNaN(parsedDuration) ? Math.round(parsedDuration * 60) : null;
+        // Duration must be positive (>0) per validation schema
+        const durationInSeconds = Math.round(parsedDuration * 60);
+        updateData.duration = value && !isNaN(parsedDuration) && durationInSeconds > 0 ? durationInSeconds : null;
       } else if (field === 'distance') {
         const parsedDistance = parseFloat((value as string).trim());
-        updateData.distance = value && !isNaN(parsedDistance) ? parsedDistance : null;
+        // Distance can be 0 or greater (nonnegative)
+        updateData.distance = value && !isNaN(parsedDistance) && parsedDistance >= 0 ? parsedDistance : null;
         updateData.distanceUnit = set.distanceUnit || 'km';
       } else if (field === 'completed') {
         updateData.completed = value;
