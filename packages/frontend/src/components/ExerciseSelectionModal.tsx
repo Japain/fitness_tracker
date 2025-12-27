@@ -25,28 +25,13 @@ import {
   RadioGroup,
 } from '@chakra-ui/react';
 import { Exercise, WorkoutSessionWithExercises } from '@fitness-tracker/shared';
+import {
+  EXERCISE_CATEGORIES,
+  EXERCISE_TYPES,
+  createExerciseSchema
+} from '../../../shared/validators/exercise';
 import { useExercises } from '../hooks/useExercises';
 import { apiRequest } from '../api/client';
-// Import validation constants and schema
-import { z } from 'zod';
-
-// Import categories and types from validation schema
-const EXERCISE_CATEGORIES = ['Push', 'Pull', 'Legs', 'Core', 'Cardio'] as const;
-const EXERCISE_TYPES = ['strength', 'cardio'] as const;
-
-// Create exercise schema for client-side validation
-const createExerciseSchema = z.object({
-  name: z.string()
-    .min(1, { message: 'Exercise name is required' })
-    .max(100, { message: 'Exercise name must be 100 characters or less' })
-    .transform((val) => val.trim()),
-  category: z.enum(EXERCISE_CATEGORIES, {
-    errorMap: () => ({ message: 'Category must be one of: Push, Pull, Legs, Core, Cardio' }),
-  }),
-  type: z.enum(EXERCISE_TYPES, {
-    errorMap: () => ({ message: 'Type must be either strength or cardio' }),
-  }),
-});
 
 /**
  * Exercise Selection Modal Component
