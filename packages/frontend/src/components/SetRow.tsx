@@ -111,10 +111,15 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
       } else if (field === 'duration') {
         // Convert minutes to seconds
         const parsedDuration = parseFloat((value as string).trim());
-        // Duration must be positive (>0) per validation schema
-        // Check parsedDuration > 0 BEFORE converting to avoid rounding edge cases
+        // Duration must be positive (>0) per validation schema and must round to at least 1 second
         const durationInSeconds = Math.round(parsedDuration * 60);
-        updateData.duration = value && !isNaN(parsedDuration) && parsedDuration > 0 ? durationInSeconds : null;
+        updateData.duration =
+          value &&
+          !isNaN(parsedDuration) &&
+          parsedDuration > 0 &&
+          durationInSeconds > 0
+            ? durationInSeconds
+            : null;
       } else if (field === 'distance') {
         const parsedDistance = parseFloat((value as string).trim());
         // Distance can be 0 or greater (nonnegative)

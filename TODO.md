@@ -1,10 +1,26 @@
 # Fitness Tracker - Implementation TODO
 
-**Version:** 1.7
-**Date:** 2025-12-22
-**Status:** Phase 3 Complete - Code Quality Improvements Finished
+**Version:** 1.8
+**Date:** 2025-12-27
+**Status:** Phase 4 Complete - Exercise Management & PR #17 Review Issues Addressed
 
 ## Recent Completed Work
+
+### PR #17 Review Fixes (2025-12-27)
+- ✅ Fixed duration validation edge case in SetRow component (values rounding to 0 seconds)
+- ✅ Enhanced UX for custom exercise creation with better error handling and feedback
+- ✅ Restored TODO comment consistency across ActiveWorkout and ExerciseSelectionModal
+- ✅ Documented Vite/CommonJS compatibility issue with shared package barrel exports
+- ✅ All TypeScript compilation and production builds passing
+- ✅ **Pull Request:** #17 ready for re-review and merge
+
+### Phase 4 - Exercise Management (2025-12-22)
+- ✅ Backend exercise API with CRUD operations (create, read, update, delete custom exercises)
+- ✅ Frontend custom exercise creation in ExerciseSelectionModal with Zod validation
+- ✅ Exercise library loading strategy with SWR caching and client-side filtering
+- ✅ TODO functionality completed (exercise notes editing, workout menu with options)
+- ✅ Exercise ownership verification preventing unauthorized modifications
+- ✅ **Details:** See Phase 4 section below for complete implementation details
 
 ### Code Quality Improvements (2025-12-22)
 - ✅ SetRow component refactored with reusable SetInput component (~100 lines of code removed)
@@ -31,6 +47,19 @@
 - ✅ Complete backend workout API with comprehensive Zod validation
 - ✅ Fixed authentication race condition and PR #7 validation issues
 - ✅ **Details:** See `FRONTEND_SESSION_NOTES.md` and `context/VALIDATION_IMPLEMENTATION_SUMMARY.md`
+
+---
+
+## Known Issues & Technical Debt
+
+### Vite/CommonJS Compatibility Issue
+- **Issue:** Frontend cannot import validation schemas from `@fitness-tracker/shared/validators` due to Vite's poor compatibility with CommonJS barrel exports
+- **Current Workaround:** Validation schemas and constants duplicated in `ExerciseSelectionModal.tsx`
+- **Impact:** Code duplication, potential maintenance burden if schemas change
+- **Proper Fix:** Convert shared package to ES modules (ESM) with proper exports
+- **Priority:** P2 (Medium - technical debt, not blocking functionality)
+- **Reference:** Pull Request #17, `packages/frontend/src/components/ExerciseSelectionModal.tsx` lines 33-51
+- **Tracked In:** Phase 4 - Consider during broader shared package refactoring
 
 ---
 
@@ -310,12 +339,12 @@
   - Improves performance by preventing redundant localStorage reads
   - **Reference:** PR #10 Comment 15, Commit 21ec336
 
-- [ ] **Implement TODO functionality** [@frontend-typescript-dev]
-  - Replace alert() placeholders with actual functionality:
-    - Edit exercise notes (ExerciseCard.tsx:84)
-    - Menu button with options: Add notes, Cancel workout, Settings (ActiveWorkout.tsx:47)
+- [x] **Implement TODO functionality** [@frontend-typescript-dev] ✅ **COMPLETED 2025-12-22**
+  - Replaced alert() placeholders with actual functionality:
+    - Edit exercise notes modal with save functionality (ExerciseCard.tsx)
+    - Menu button with three options: Add Notes to Workout, Cancel Workout, Settings (disabled placeholder) (ActiveWorkout.tsx)
   - **Priority:** P3 (Low - nice-to-have)
-  - **Reference:** PR #10 Comment 8
+  - **Reference:** PR #10 Comment 8, Implemented in Phase 3
 
 - [x] **Add SVG accessibility attributes** [@frontend-typescript-dev] ✅ **COMPLETED 2025-12-22**
   - Added `aria-hidden="true"` to all decorative SVG icons across 5 files
@@ -359,20 +388,23 @@
   - **Completed:** 2025-12-22
 
 ### Frontend Exercise Management
-- [ ] **Implement custom exercise creation** [@frontend-typescript-dev]
-  - Update ExerciseSelectionModal with "Create Custom Exercise" flow
-  - Show inline form: exercise name, category, type (strength/cardio)
-  - Call `POST /api/exercises` on submit
-  - Add new exercise to active workout immediately
-  - Update exercise list with new custom exercise
-  - **Depends on:** Backend exercise API
-  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 402-428
+- [x] **Implement custom exercise creation** [@frontend-typescript-dev] ✅ **COMPLETED 2025-12-22**
+  - Updated ExerciseSelectionModal with "Create Custom Exercise" flow
+  - Inline form with exercise name, category, type (strength/cardio) inputs
+  - Calls `POST /api/exercises` on submit with Zod validation
+  - Adds new exercise to active workout immediately
+  - Updates exercise list via SWR refetch
+  - **Depends on:** Backend exercise API (completed)
+  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 402-428, `ExerciseSelectionModal.tsx`
+  - **Completed:** 2025-12-22
 
-- [ ] **Implement exercise library loading strategy** [@frontend-typescript-dev]
-  - Fetch all exercises on app load (cache in memory)
-  - Store in Zustand or SWR cache
-  - Use cached data for instant search/filter
-  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 196-201
+- [x] **Implement exercise library loading strategy** [@frontend-typescript-dev] ✅ **COMPLETED 2025-12-22**
+  - Created useExercises hook with SWR caching (1-minute deduplication)
+  - Fetches all exercises on mount, cached in SWR memory
+  - Client-side filtering with useExercisesByCategory and useExerciseSearch
+  - No re-fetching on focus/reconnect for stable data
+  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 196-201, `hooks/useExercises.ts`
+  - **Completed:** 2025-12-22
 
 ---
 

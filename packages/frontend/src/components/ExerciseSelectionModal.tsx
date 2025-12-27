@@ -25,13 +25,30 @@ import {
   RadioGroup,
 } from '@chakra-ui/react';
 import { Exercise, WorkoutSessionWithExercises } from '@fitness-tracker/shared';
-import {
-  EXERCISE_CATEGORIES,
-  EXERCISE_TYPES,
-  createExerciseSchema
-} from '../../../shared/validators/exercise';
 import { useExercises } from '../hooks/useExercises';
 import { apiRequest } from '../api/client';
+// Import validation constants and schema
+import { z } from 'zod';
+
+// TODO: Import from @fitness-tracker/shared/validators once Vite CommonJS compatibility is resolved
+// Currently duplicated due to Vite build issue with CommonJS barrel exports from shared package
+// Tracking issue: Vite cannot resolve CommonJS modules from @fitness-tracker/shared/validators
+// Temporary workaround: Define locally (matches @fitness-tracker/shared/validators/exercise)
+const EXERCISE_CATEGORIES = ['Push', 'Pull', 'Legs', 'Core', 'Cardio'] as const;
+const EXERCISE_TYPES = ['strength', 'cardio'] as const;
+
+const createExerciseSchema = z.object({
+  name: z.string()
+    .min(1, { message: 'Exercise name is required' })
+    .max(100, { message: 'Exercise name must be 100 characters or less' })
+    .transform((val) => val.trim()),
+  category: z.enum(EXERCISE_CATEGORIES, {
+    errorMap: () => ({ message: 'Category must be one of: Push, Pull, Legs, Core, Cardio' }),
+  }),
+  type: z.enum(EXERCISE_TYPES, {
+    errorMap: () => ({ message: 'Type must be either strength or cardio' }),
+  }),
+});
 
 /**
  * Exercise Selection Modal Component
@@ -185,6 +202,7 @@ function ExerciseSelectionModal({
       setCustomExerciseType('strength');
       setFormErrors({});
     } catch (error) {
+      // TODO: Implement centralized error handling pattern
       toast({
         title: 'Failed to add exercise',
         description: error instanceof Error ? error.message : 'An unexpected error occurred while adding the exercise. Please try again.',
@@ -225,37 +243,47 @@ function ExerciseSelectionModal({
     }
 
     setIsAdding(true);
+    let createdExercise: Exercise | null = null;
 
     try {
       // Create custom exercise
-      const newExercise = await apiRequest<Exercise>('/api/exercises', {
+      createdExercise = await apiRequest<Exercise>('/api/exercises', {
         method: 'POST',
         body: validationResult.data,
-      });
-
-      toast({
-        title: 'Exercise created',
-        description: `${newExercise.name} created successfully`,
-        status: 'success',
-        duration: 2000,
-        isClosable: true,
-        position: 'top',
       });
 
       // Refresh exercise list to include new custom exercise
       await refetch();
 
       // Add the newly created exercise to the workout immediately
-      await handleSelectExercise(newExercise);
-    } catch (error) {
+      await handleSelectExercise(createdExercise);
+
       toast({
-        title: 'Failed to create exercise',
-        description: error instanceof Error ? error.message : 'An unexpected error occurred while creating the exercise. Please try again.',
+        title: 'Exercise created',
+        description: `${createdExercise.name} created and added to workout successfully`,
+        status: 'success',
+        duration: 2000,
+        isClosable: true,
+        position: 'top',
+      });
+    } catch (error) {
+      const isCreationSucceeded = createdExercise !== null;
+
+      toast({
+        title: isCreationSucceeded
+          ? 'Exercise created, but could not be added to workout'
+          : 'Failed to create exercise',
+        description: error instanceof Error
+          ? error.message
+          : isCreationSucceeded
+            ? 'The exercise was created successfully, but an error occurred while adding it to the workout. You can add it manually from the exercise list.'
+            : 'An unexpected error occurred while creating the exercise. Please try again.',
         status: 'error',
         duration: 5000,
         isClosable: true,
         position: 'top',
       });
+    } finally {
       setIsAdding(false);
     }
   };

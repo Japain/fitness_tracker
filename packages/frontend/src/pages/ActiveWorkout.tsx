@@ -157,6 +157,7 @@ function ActiveWorkout() {
       // Navigate to workout detail view
       navigate(`/history/${id}`);
     } catch (error) {
+      // TODO: Implement centralized error handling pattern
       toast({
         title: 'Failed to finish workout',
         description: error instanceof Error ? error.message : 'An unexpected error occurred while finishing the workout. Please try again.',
