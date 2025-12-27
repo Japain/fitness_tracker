@@ -72,6 +72,7 @@ function AuthPage() {
           w="full"
           h="56px"
           bg="white"
+          color="neutral.900"
           border="2px solid"
           borderColor="neutral.700"
           borderRadius="md"

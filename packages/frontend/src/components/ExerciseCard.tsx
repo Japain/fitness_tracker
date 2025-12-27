@@ -15,6 +15,15 @@ import {
   AlertDialogContent,
   AlertDialogOverlay,
   useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Textarea,
+  FormControl,
+  FormLabel,
 } from '@chakra-ui/react';
 import { WorkoutExerciseWithExercise } from '@fitness-tracker/shared';
 import { apiRequest } from '../api/client';
@@ -39,6 +48,15 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement>(null);
 
+  // Notes modal state
+  const {
+    isOpen: isNotesOpen,
+    onOpen: onNotesOpen,
+    onClose: onNotesClose,
+  } = useDisclosure();
+  const [notes, setNotes] = useState(workoutExercise.notes || '');
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
+
   const { exercise, sets = [] } = workoutExercise;
   const isStrength = exercise.type === 'strength';
 
@@ -53,18 +71,19 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
       const newSetNumber = sets.length + 1;
 
       // Default values based on exercise type
+      // Note: reps and duration must be positive (>0) per validation schema
       const setData = isStrength
         ? {
             setNumber: newSetNumber,
-            reps: 0,
-            weight: 0,
+            reps: 1, // Default to 1 rep (user will update)
+            weight: null, // Optional field
             weightUnit: 'lbs' as const,
             completed: false,
           }
         : {
             setNumber: newSetNumber,
-            duration: 0,
-            distance: 0,
+            duration: 60, // Default to 60 seconds (1 minute)
+            distance: null, // Optional field
             distanceUnit: 'km' as const,
             completed: false,
           };
@@ -117,7 +136,6 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
       // Refresh workout data
       onUpdate();
     } catch (error) {
-      // TODO: Implement centralized error handling pattern
       toast({
         title: 'Failed to remove exercise',
         description: error instanceof Error ? error.message : 'An unexpected error occurred while removing the exercise. Please try again.',
@@ -127,6 +145,56 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
         position: 'top',
       });
     }
+  };
+
+  /**
+   * Handle saving exercise notes
+   * Updates the notes field for the workout exercise
+   */
+  const handleSaveNotes = async () => {
+    setIsSavingNotes(true);
+
+    try {
+      await apiRequest(`/api/workouts/${workoutId}/exercises/${workoutExercise.id}`, {
+        method: 'PATCH',
+        body: {
+          notes: notes.trim() || null, // Send null for empty notes
+        },
+      });
+
+      toast({
+        title: 'Notes saved',
+        status: 'success',
+        duration: 2000,
+        isClosable: true,
+        position: 'top',
+      });
+
+      // Close modal
+      onNotesClose();
+
+      // Refresh workout data
+      onUpdate();
+    } catch (error) {
+      toast({
+        title: 'Failed to save notes',
+        description: error instanceof Error ? error.message : 'An unexpected error occurred while saving notes. Please try again.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+        position: 'top',
+      });
+    } finally {
+      setIsSavingNotes(false);
+    }
+  };
+
+  /**
+   * Open notes modal and sync state with current notes
+   */
+  const handleOpenNotesModal = () => {
+    setNotes(workoutExercise.notes || '');
+    onNotesOpen();
   };
 
   return (
@@ -161,10 +229,7 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
             size="sm"
             minH="44px"
             minW="44px"
-            onClick={() => {
-              // TODO: Implement edit modal for exercise notes
-              alert('Edit functionality coming soon:\n- Add/edit notes for this exercise');
-            }}
+            onClick={handleOpenNotesModal}
             _hover={{
               bg: 'neutral.100',
               color: 'neutral.700',
@@ -262,6 +327,55 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
           </AlertDialogContent>
         </AlertDialogOverlay>
       </AlertDialog>
+
+      {/* Exercise Notes Modal */}
+      <Modal isOpen={isNotesOpen} onClose={onNotesClose} isCentered size="md">
+        <ModalOverlay />
+        <ModalContent mx="lg">
+          <ModalHeader>
+            Exercise Notes
+            <Box as="span" fontWeight="normal" fontSize="sm" color="neutral.600" display="block" mt="xs">
+              {exercise.name}
+            </Box>
+          </ModalHeader>
+
+          <ModalBody>
+            <FormControl>
+              <FormLabel fontSize="sm" fontWeight="semibold" color="neutral.700">
+                Notes (optional)
+              </FormLabel>
+              <Textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Add notes about form, weight progression, how you felt, etc."
+                rows={5}
+                fontSize="md"
+                border="2px solid"
+                borderColor="neutral.300"
+                borderRadius="md"
+                _focus={{
+                  borderColor: 'primary.500',
+                  boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
+                }}
+              />
+            </FormControl>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button variant="ghost" mr="md" onClick={onNotesClose} isDisabled={isSavingNotes}>
+              Cancel
+            </Button>
+            <Button
+              colorScheme="primary"
+              onClick={handleSaveNotes}
+              isLoading={isSavingNotes}
+              loadingText="Saving..."
+            >
+              Save Notes
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }
