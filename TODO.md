@@ -1,10 +1,24 @@
 # Fitness Tracker - Implementation TODO
 
-**Version:** 1.8
-**Date:** 2025-12-27
-**Status:** Phase 4 Complete - Exercise Management & PR #17 Review Issues Addressed
+**Version:** 1.9
+**Date:** 2025-12-29
+**Status:** Phase 4 Backend Complete - Exercise Library Page Implementation Plan Added
 
 ## Recent Completed Work
+
+### Exercise Library Page Planning (2025-12-29)
+- ✅ Reviewed Exercise Library design specification (`mockups/EXERCISE-LIBRARY-DESIGN-SPEC.md`)
+- ✅ Reviewed Exercise Library HTML mockup (`mockups/html/07-exercise-library.html`)
+- ✅ Analyzed ExerciseSelectionModal for shared components (60% overlap identified)
+- ✅ Created comprehensive shared components analysis (`context/EXERCISE-LIBRARY-SHARED-COMPONENTS-ANALYSIS.md`)
+  - Identified 5 components to extract (~350 lines of code savings)
+  - Documented implementation strategy (Phase 1: Extract, Phase 2: Build)
+  - Provided detailed props interfaces and usage examples
+- ✅ Updated TODO.md with succinct tasks referencing analysis document
+  - Added "Refactor: Extract Shared Components" subsection (6 tasks)
+  - Simplified "Frontend Exercise Library Page" subsection (5 tasks)
+  - Reduced duplication, improved maintainability
+- **Next Steps:** Begin component extraction (ExerciseSearchBar, CategoryFilter, etc.)
 
 ### PR #17 Review Fixes (2025-12-27)
 - ✅ Fixed duration validation edge case in SetRow component (values rounding to 0 seconds)
@@ -405,6 +419,106 @@
   - No re-fetching on focus/reconnect for stable data
   - **Reference:** `PROJECT_REQUIREMENTS.md` lines 196-201, `hooks/useExercises.ts`
   - **Completed:** 2025-12-22
+
+### Refactor: Extract Shared Components from ExerciseSelectionModal
+
+**Goal:** Extract reusable components to avoid duplication between ExerciseSelectionModal and Exercise Library page (~350 lines saved).
+
+**Reference:** `context/EXERCISE-LIBRARY-SHARED-COMPONENTS-ANALYSIS.md` for complete implementation details
+
+- [ ] **Extract ExerciseSearchBar component** [@frontend-typescript-dev]
+  - Extract from ExerciseSelectionModal (lines 353-384)
+  - Create `components/ExerciseSearchBar.tsx` with reusable props
+  - Update ExerciseSelectionModal to use extracted component
+  - **Test:** Modal search functionality still works
+  - **Reference:** Analysis doc Section "Shared Components to Extract #1"
+
+- [ ] **Extract CategoryFilter component** [@frontend-typescript-dev]
+  - Extract from ExerciseSelectionModal (lines 413-458)
+  - Create `components/CategoryFilter.tsx` with showLabel and showClearAll props
+  - Update ExerciseSelectionModal to use extracted component
+  - **Test:** Horizontal scrolling, active states, filtering works
+  - **Reference:** Analysis doc Section "Shared Components to Extract #2"
+
+- [ ] **Extract validation constants to shared utility** [@frontend-typescript-dev]
+  - Create `utils/exerciseValidation.ts`
+  - Move EXERCISE_CATEGORIES, EXERCISE_TYPES, createExerciseSchema from modal
+  - Update ExerciseSelectionModal to import from utility
+  - **Purpose:** Single source of truth, resolves Vite/CommonJS duplication
+  - **Reference:** Analysis doc Section "Shared Components to Extract #5"
+
+- [ ] **Create filterExercises utility** [@frontend-typescript-dev]
+  - Create `utils/filterExercises.ts` with filtering logic for search, category, type
+  - Update ExerciseSelectionModal to use utility
+  - **Reference:** Analysis doc Section "Shared Utilities to Create #1"
+
+- [ ] **Extract ExerciseCard component with variants** [@frontend-typescript-dev]
+  - Create `components/ExerciseCard.tsx` with 'selectable' and 'actionable' variants
+  - Selectable variant: Modal (click to add, hover state, simple)
+  - Actionable variant: Library page (action buttons, badges, 2-row custom exercise layout)
+  - Update ExerciseSelectionModal to use ExerciseCard with variant="selectable"
+  - **Test:** Modal exercise selection, hover states, disabled states
+  - **Reference:** Analysis doc Section "Shared Components to Extract #3"
+
+- [ ] **Extract CustomExerciseForm component** [@frontend-typescript-dev]
+  - Create `components/CustomExerciseForm.tsx` supporting 'create' and 'edit' modes
+  - Support initialValues prop for edit mode
+  - Update ExerciseSelectionModal to use extracted form
+  - **Test:** Form validation, submission, error handling
+  - **Reference:** Analysis doc Section "Shared Components to Extract #4"
+
+### Frontend Exercise Library Page
+
+**Goal:** Implement comprehensive exercise browsing and management page.
+
+**Design Reference:** `mockups/EXERCISE-LIBRARY-DESIGN-SPEC.md`, `mockups/html/07-exercise-library.html`
+**Implementation Reference:** `context/EXERCISE-LIBRARY-SHARED-COMPONENTS-ANALYSIS.md`
+
+- [ ] **Create Exercise Library page structure** [@frontend-typescript-dev]
+  - Create `packages/frontend/src/pages/ExerciseLibrary/ExerciseLibraryPage.tsx`
+  - Add route to React Router: `/exercises`
+  - Add "Exercises" tab to BottomNav (3rd position, dumbbell icon)
+  - Set up basic page layout with TopNav and BottomNav
+  - **Depends on:** Component extraction tasks above
+  - **Reference:** Design spec Section 4 (Layout Structure)
+
+- [ ] **Implement filtering and sorting UI** [@frontend-typescript-dev]
+  - Integrate extracted ExerciseSearchBar and CategoryFilter components
+  - Create TypeFilter component (3-button segmented control: All/Strength/Cardio)
+  - Create ResultsHeader component (count + sort dropdown)
+  - Create `utils/sortExercises.ts` utility (name, recent, category sorting)
+  - **Reference:** Design spec Sections 5.3-5.6, Analysis doc "Shared Utilities #2"
+
+- [ ] **Implement exercise display and actions** [@frontend-typescript-dev]
+  - Use extracted ExerciseCard component with variant="actionable"
+  - Create ExerciseList container with virtual scrolling (react-window)
+  - Implement Add to Workout action (POST `/api/workouts/{id}/exercises`)
+  - Show loading states, success toasts ("Added ✓" for 2s), error handling
+  - **Depends on:** Backend workout API (completed in Phase 3)
+  - **Reference:** Design spec Sections 5.7-5.8, 6.3
+
+- [ ] **Implement Active Workout Banner** [@frontend-typescript-dev]
+  - Create ActiveWorkoutBanner component (conditional on active workout)
+  - Green gradient background, workout name/duration display
+  - "Quick Add" button opens ExerciseSelectionModal
+  - Integrate with existing `useActiveWorkout` hook
+  - **Reference:** Design spec Section 5.2
+
+- [ ] **Implement custom exercise CRUD modals** [@frontend-typescript-dev]
+  - Create CreateExerciseModal (bottom sheet, uses CustomExerciseForm)
+  - Create EditExerciseModal (bottom sheet, pre-fills form)
+  - Create DeleteConfirmationModal (standard dialog)
+  - Trigger from "+ Create" button (top nav) and card action buttons
+  - **Depends on:** Backend exercise API (completed)
+  - **Reference:** Design spec Sections 6.5-6.7, Analysis doc Section 3
+
+- [ ] **Implement accessibility and test** [@frontend-typescript-dev] [@user]
+  - Add ARIA labels to icon-only buttons, filter pills (aria-pressed)
+  - Screen reader announcements for filter changes and actions
+  - Ensure logical tab order and visible focus indicators
+  - **Testing:** Filter combinations, CRUD operations, virtual scroll performance
+  - **Mobile Testing:** 375px, 414px, 360px viewports, ≥48px touch targets
+  - **Reference:** Design spec Sections 7 (Accessibility) and 9 (Testing)
 
 ---
 
