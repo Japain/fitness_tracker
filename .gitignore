@@ -23,6 +23,9 @@ build/
 *.swo
 *~
 
+# MCP/Tools
+.playwright-mcp/
+
 # OS
 .DS_Store
 Thumbs.db

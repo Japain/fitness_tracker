@@ -26,6 +26,7 @@ Interactive HTML mockups with inline CSS. Open directly in browser for pixel-per
 | `04-workout-history.html` | Workout History List | Chronological list of completed workouts with monthly stats |
 | `05-workout-detail.html` | Workout Detail View | Read-only view of completed workout with full exercise details |
 | `06-authentication.html` | Authentication / Login | OAuth sign-in screen with Google authentication |
+| `07-exercise-library.html` | Exercise Library | Browse and manage exercise library with filtering, search, and custom exercise management |
 
 ### Screenshots (`/screenshots`)
 
@@ -37,6 +38,8 @@ Mobile viewport (375×667px) screenshots of each mockup for quick visual referen
 - `04-workout-history-v1.png`
 - `05-workout-detail-v1.png`
 - `06-authentication-v1.png`
+- `07-exercise-library-v1.png` (top of page with filters)
+- `07-exercise-library-custom-v1.png` (showing custom exercise with edit/delete actions)
 
 ### Documentation
 
@@ -47,6 +50,13 @@ Mobile viewport (375×667px) screenshots of each mockup for quick visual referen
   - Responsive behavior guidelines
   - Accessibility compliance checklist
   - Implementation guidelines for React/Chakra UI
+
+- **`EXERCISE-LIBRARY-DESIGN-SPEC.md`**: Detailed specification for Exercise Library page:
+  - UX research findings for exercise library patterns
+  - Design decisions and rationale
+  - Component specifications
+  - Interaction patterns
+  - API integration guidelines
 
 ---
 
@@ -133,6 +143,12 @@ Add Exercises (Recent picks) → Log Sets → Finish
 ### 3. View Workout History
 ```
 Dashboard → History (bottom nav) → Select Workout → View Details → Back to History
+```
+
+### 4. Browse and Add Exercise from Library
+```
+Dashboard → Exercises (bottom nav) → Search/Filter → Add to Active Workout OR
+Exercises → Create Custom Exercise → Save → Add to Workout
 ```
 
 ---
@@ -295,3 +311,4 @@ For questions about these designs or to request iterations, please reference:
 
 **Version History**
 - v1.0 (2025-11-24): Initial design system and 6 core screens
+- v1.1 (2025-12-28): Added Exercise Library page (screen 7) with comprehensive filtering and custom exercise management
