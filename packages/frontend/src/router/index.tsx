@@ -17,6 +17,7 @@ const AuthPage = lazy(() => import('../pages/AuthPage'));
 const ActiveWorkout = lazy(() => import('../pages/ActiveWorkout'));
 const WorkoutHistory = lazy(() => import('../pages/WorkoutHistory'));
 const WorkoutDetail = lazy(() => import('../pages/WorkoutDetail'));
+const ExerciseLibrary = lazy(() => import('../pages/ExerciseLibrary/ExerciseLibraryPage'));
 
 // Router configuration
 const router = createBrowserRouter([
@@ -67,6 +68,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <WorkoutDetail />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'exercises',
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <ExerciseLibrary />
           </Suspense>
         ),
       },
