@@ -63,6 +63,7 @@ export function CreateExerciseModal({
 
         <ModalBody p="lg">
           <CustomExerciseForm
+            key={isOpen ? 'open' : 'closed'}
             mode="create"
             onSubmit={handleSubmit}
             onCancel={onClose}

@@ -14,6 +14,7 @@ import { useExercises } from '../../hooks/useExercises';
 import { useActiveWorkout } from '../../hooks/useActiveWorkout';
 import { filterExercises } from '../../utils/filterExercises';
 import { sortExercises, ExerciseSortBy } from '../../utils/sortExercises';
+import { handleError } from '../../utils/errorHandling';
 import { apiRequest } from '../../api/client';
 import type { WorkoutExercise, Exercise } from '@fitness-tracker/shared';
 
@@ -111,15 +112,10 @@ export default function ExerciseLibraryPage() {
         isClosable: true,
       });
     } catch (err) {
-      console.error('Failed to add exercise to workout:', err);
-
-      toast({
+      handleError(err, {
         title: 'Failed to add exercise',
-        description: err instanceof Error ? err.message : 'Unknown error occurred',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+        consolePrefix: 'Failed to add exercise to workout:',
+      }, toast);
     } finally {
       setAddingExerciseId(null);
     }
@@ -148,18 +144,11 @@ export default function ExerciseLibraryPage() {
         isClosable: true,
       });
     } catch (err) {
-      console.error('Failed to create exercise:', err);
-
-      toast({
+      handleError(err, {
         title: 'Failed to create exercise',
-        description: err instanceof Error ? err.message : 'Unknown error occurred',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-
-      // Re-throw to prevent modal from closing
-      throw err;
+        consolePrefix: 'Failed to create exercise:',
+        rethrow: true,
+      }, toast);
     } finally {
       setIsSubmitting(false);
     }
@@ -188,18 +177,11 @@ export default function ExerciseLibraryPage() {
         isClosable: true,
       });
     } catch (err) {
-      console.error('Failed to update exercise:', err);
-
-      toast({
+      handleError(err, {
         title: 'Failed to update exercise',
-        description: err instanceof Error ? err.message : 'Unknown error occurred',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-
-      // Re-throw to prevent modal from closing
-      throw err;
+        consolePrefix: 'Failed to update exercise:',
+        rethrow: true,
+      }, toast);
     } finally {
       setIsSubmitting(false);
     }
@@ -227,18 +209,11 @@ export default function ExerciseLibraryPage() {
         isClosable: true,
       });
     } catch (err) {
-      console.error('Failed to delete exercise:', err);
-
-      toast({
+      handleError(err, {
         title: 'Failed to delete exercise',
-        description: err instanceof Error ? err.message : 'Unknown error occurred',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-
-      // Re-throw to prevent modal from closing
-      throw err;
+        consolePrefix: 'Failed to delete exercise:',
+        rethrow: true,
+      }, toast);
     } finally {
       setIsSubmitting(false);
     }
@@ -284,7 +259,6 @@ export default function ExerciseLibraryPage() {
             colorScheme="primary"
             size="md"
             h="44px"
-            aria-label="Create custom exercise"
             leftIcon={
               <Icon viewBox="0 0 24 24" boxSize="20px" aria-hidden="true">
                 <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />

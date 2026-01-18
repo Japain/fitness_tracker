@@ -110,6 +110,26 @@
 - **Status:** RESOLVED - No longer blocking functionality or causing maintenance burden
 - **Reference:** `context/SHARED_COMPONENTS_EXTRACTION_SUMMARY.md` Section 2.2
 
+### PR #20 Low Priority Issues (Optional Enhancements)
+**Source:** PR #20 Code Review Triage (2026-01-17)
+**Status:** Non-blocking improvements that can be addressed in future PRs
+
+- [ ] **Handle unknown category edge case in sortExercises**
+  - **File:** `packages/frontend/src/utils/sortExercises.ts:64`
+  - **Issue:** Unknown categories all get -1 from indexOf, causing unpredictable sort order
+  - **Impact:** Minor - only affects custom exercises with invalid categories (shouldn't happen with validation)
+  - **Suggested Fix:** Handle -1 case explicitly, place unknown categories at end
+  - **Priority:** P2 (Low)
+
+- [ ] **Add explicit optional chaining in ExerciseLibraryPage**
+  - **File:** `packages/frontend/src/pages/ExerciseLibrary/ExerciseLibraryPage.tsx:91`
+  - **Issue:** Could be more explicit by checking activeWorkout exists before accessing exercises
+  - **Impact:** None - current code works, just less explicit
+  - **Suggested Fix:** Add extra optional chaining for clarity: `activeWorkout?.exercises?.length`
+  - **Priority:** P2 (Low)
+
+**Note:** All critical, high, and medium priority issues from PR #20 have been resolved (2026-01-17).
+
 ---
 
 ## Table of Contents

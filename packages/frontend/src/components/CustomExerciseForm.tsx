@@ -41,6 +41,7 @@ interface CustomExerciseFormProps {
   onCancel: () => void;
   isLoading?: boolean;
   submitButtonText?: string;
+  loadingText?: string;
 }
 
 export function CustomExerciseForm({
@@ -54,6 +55,7 @@ export function CustomExerciseForm({
   onCancel,
   isLoading = false,
   submitButtonText = 'Create',
+  loadingText,
 }: CustomExerciseFormProps) {
   const [name, setName] = useState(initialValues.name);
   const [category, setCategory] = useState(initialValues.category);
@@ -65,6 +67,7 @@ export function CustomExerciseForm({
     setName(initialValues.name);
     setCategory(initialValues.category);
     setType(initialValues.type);
+    setFormErrors({}); // Clear validation errors when switching exercises
   }, [initialValues]);
 
   /**
@@ -95,6 +98,14 @@ export function CustomExerciseForm({
 
     // Call onSubmit with validated data
     await onSubmit(validationResult.data);
+  };
+
+  /**
+   * Handle cancel button click
+   */
+  const handleCancel = () => {
+    setFormErrors({}); // Clear validation errors before closing
+    onCancel();
   };
 
   return (
@@ -190,7 +201,7 @@ export function CustomExerciseForm({
           flex="1"
           h="52px"
           variant="outline"
-          onClick={onCancel}
+          onClick={handleCancel}
           isDisabled={isLoading}
         >
           Cancel
@@ -201,7 +212,7 @@ export function CustomExerciseForm({
           colorScheme="primary"
           onClick={handleSubmit}
           isLoading={isLoading}
-          loadingText={mode === 'create' ? 'Creating...' : 'Saving...'}
+          loadingText={loadingText ?? (mode === 'create' ? 'Creating...' : 'Saving...')}
         >
           {submitButtonText}
         </Button>

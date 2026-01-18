@@ -15,6 +15,10 @@ import { z } from 'zod';
 export const EXERCISE_CATEGORIES = ['Push', 'Pull', 'Legs', 'Core', 'Cardio'] as const;
 export const EXERCISE_TYPES = ['strength', 'cardio'] as const;
 
+// Export TypeScript literal types for type safety
+export type ExerciseCategory = (typeof EXERCISE_CATEGORIES)[number];
+export type ExerciseType = (typeof EXERCISE_TYPES)[number];
+
 export const createExerciseSchema = z.object({
   name: z.string()
     .min(1, { message: 'Exercise name is required' })

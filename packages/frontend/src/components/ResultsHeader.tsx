@@ -45,7 +45,6 @@ export function ResultsHeader({ count, sortBy, onSortChange }: ResultsHeaderProp
         }}
       >
         <option value="name">Sort by Name</option>
-        <option value="recent">Recently Used</option>
         <option value="category">Sort by Category</option>
       </Select>
     </Flex>
