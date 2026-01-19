@@ -39,8 +39,12 @@ export function EditExerciseModal({
 }: EditExerciseModalProps) {
   const handleSubmit = async (values: CustomExerciseFormValues) => {
     if (!exercise) return;
-    await onSubmit(exercise.id, values);
-    onClose();
+    try {
+      await onSubmit(exercise.id, values);
+      onClose(); // Only close on success
+    } catch (error) {
+      // Error already handled by parent toast, just don't close modal
+    }
   };
 
   // Don't render if no exercise selected
@@ -74,7 +78,7 @@ export function EditExerciseModal({
             mode="edit"
             initialValues={{
               name: exercise.name,
-              category: exercise.category,
+              category: exercise.category || 'Push',
               type: exercise.type,
             }}
             onSubmit={handleSubmit}

@@ -34,8 +34,12 @@ export function CreateExerciseModal({
   isLoading = false,
 }: CreateExerciseModalProps) {
   const handleSubmit = async (values: CustomExerciseFormValues) => {
-    await onSubmit(values);
-    onClose();
+    try {
+      await onSubmit(values);
+      onClose(); // Only close on success
+    } catch (error) {
+      // Error already handled by parent toast, just don't close modal
+    }
   };
 
   return (

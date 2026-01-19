@@ -89,7 +89,7 @@ export default function ExerciseLibraryPage() {
 
     try {
       // Calculate the next order index (last exercise index + 1)
-      const orderIndex = activeWorkout.exercises?.length ?? 0;
+      const orderIndex = activeWorkout?.exercises?.length ?? 0;
 
       // Add exercise to workout via API
       await apiRequest<WorkoutExercise>(`/api/workouts/${activeWorkout.id}/exercises`, {

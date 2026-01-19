@@ -32,7 +32,7 @@ function formatDuration(seconds: number): string {
 /**
  * Calculate workout duration based on start time
  */
-function useWorkoutDuration(startTime: string): number {
+function useWorkoutDuration(startTime: string | Date): number {
   const [duration, setDuration] = React.useState(0);
 
   React.useEffect(() => {

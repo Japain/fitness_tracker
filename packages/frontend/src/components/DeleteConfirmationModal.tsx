@@ -41,8 +41,12 @@ export function DeleteConfirmationModal({
 }: DeleteConfirmationModalProps) {
   const handleConfirm = async () => {
     if (!exercise) return;
-    await onConfirm(exercise.id);
-    onClose();
+    try {
+      await onConfirm(exercise.id);
+      onClose(); // Only close on success
+    } catch (error) {
+      // Error already handled by parent toast, just don't close modal
+    }
   };
 
   // Don't render if no exercise selected

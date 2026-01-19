@@ -1,5 +1,5 @@
 import { Exercise } from '@fitness-tracker/shared';
-import { EXERCISE_CATEGORIES } from './exerciseValidation';
+import { EXERCISE_CATEGORIES, ExerciseCategory } from './exerciseValidation';
 
 /**
  * Exercise Sorting Utility
@@ -34,8 +34,15 @@ export function sortExercises(
       const categoryOrder = [...EXERCISE_CATEGORIES];
 
       return sorted.sort((a, b) => {
-        const catA = categoryOrder.indexOf(a.category);
-        const catB = categoryOrder.indexOf(b.category);
+        const catA = a.category ? categoryOrder.indexOf(a.category as ExerciseCategory) : -1;
+        const catB = b.category ? categoryOrder.indexOf(b.category as ExerciseCategory) : -1;
+
+        // Handle unknown categories (indexOf returns -1 if not found)
+        if (catA === -1 && catB === -1) {
+          return a.name.localeCompare(b.name); // Both unknown - sort by name
+        }
+        if (catA === -1) return 1;  // Unknown categories go to end
+        if (catB === -1) return -1;
 
         if (catA !== catB) {
           // Different categories - use category order
