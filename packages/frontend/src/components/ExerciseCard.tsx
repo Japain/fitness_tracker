@@ -263,13 +263,14 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
 
       {/* Sets Table */}
       <VStack spacing="0" align="stretch">
-        {sets.map((set) => (
+        {sets.map((set, index) => (
           <SetRow
             key={set.id}
             set={set}
             workoutId={workoutId}
             workoutExerciseId={workoutExercise.id}
             exerciseType={exercise.type}
+            isLastSet={index === sets.length - 1}
             onUpdate={onUpdate}
           />
         ))}

@@ -123,7 +123,7 @@ function ExerciseSelectionModal({
 
   /**
    * Handle exercise selection
-   * Adds exercise to workout and closes modal
+   * Adds exercise to workout and creates initial set
    */
   const handleSelectExercise = async (exercise: Exercise) => {
     setIsAdding(true);
@@ -132,13 +132,40 @@ function ExerciseSelectionModal({
       // Get current exercise count from workout for orderIndex
       const orderIndex = workout.exercises?.length || 0;
 
-      await apiRequest(`/api/workouts/${workoutId}/exercises`, {
+      // Add exercise to workout
+      const workoutExercise = await apiRequest<{ id: string }>(`/api/workouts/${workoutId}/exercises`, {
         method: 'POST',
         body: {
           exerciseId: exercise.id,
           orderIndex,
         },
       });
+
+      // Create initial set with default values based on exercise type
+      const isStrength = exercise.type === 'strength';
+      const initialSetData = isStrength
+        ? {
+            setNumber: 1,
+            reps: 1, // Default to 1 rep (user will update)
+            weight: null, // Optional field
+            weightUnit: 'lbs' as const,
+            completed: false,
+          }
+        : {
+            setNumber: 1,
+            duration: 60, // Default to 60 seconds (1 minute)
+            distance: null, // Optional field
+            distanceUnit: 'km' as const,
+            completed: false,
+          };
+
+      await apiRequest(
+        `/api/workouts/${workoutId}/exercises/${workoutExercise.id}/sets`,
+        {
+          method: 'POST',
+          body: initialSetData,
+        }
+      );
 
       // Add to recent exercises
       addToRecentExercises(exercise.id);
