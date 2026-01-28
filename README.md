@@ -82,7 +82,14 @@ fitness_tracker/
    - `WorkoutExercise` - Exercise-to-workout relationships
    - `WorkoutSet` - Individual set data (reps, weight, duration, distance)
 
-5. **Configure environment variables**
+5. **Generate Prisma Client**
+   ```bash
+   cd packages/backend
+   DATABASE_URL="postgresql://fitness_tracker:dev_password_change_in_production@localhost:5432/fitness_tracker_dev" npx prisma generate
+   cd ../..
+   ```
+
+6. **Configure environment variables**
 
    Environment variables are managed at the root level:
    - `.env.development` - Local development (already configured for Docker PostgreSQL)
@@ -96,9 +103,35 @@ fitness_tracker/
 
    You'll need to add OAuth credentials when you reach Phase 2 (Authentication).
 
+#### What to Expect on First Run
+
+When you run `npm run dev` for the first time, you'll see three services starting:
+
+```bash
+[shared]   8:18:30 PM - Starting compilation in watch mode...
+[shared]   8:18:31 PM - Found 0 errors. Watching for file changes.
+
+[backend]  🚀 Server running on port 3000 in development mode
+[backend]  📊 Database: localhost:5432
+[backend]  🌐 CORS enabled for: http://localhost:5173
+[backend]  🔒 Security headers enabled via Helmet
+
+[frontend] VITE v5.4.21  ready in 157 ms
+[frontend] ➜  Local:   http://localhost:5173/
+```
+
+**Startup sequence:**
+1. **Shared package** compiles TypeScript types (1-2 seconds)
+2. **Backend** starts once shared types are available
+3. **Frontend** starts and connects to backend
+
+If the backend fails with a module error, wait for the shared package to show "Found 0 errors" and restart with `npm run dev`.
+
 ### Running the Application
 
 #### Quick Start (Recommended)
+
+⚠️ **Important:** All commands below should be run from the **project root directory**.
 
 Start all services together:
 
@@ -106,7 +139,7 @@ Start all services together:
 # 1. Start PostgreSQL database
 docker-compose up -d
 
-# 2. Start both backend and frontend
+# 2. Start both backend and frontend (from project root!)
 npm run dev
 ```
 
@@ -114,6 +147,20 @@ The application will be available at:
 - **Frontend**: http://localhost:5173
 - **Backend API**: http://localhost:3000
 - **Database**: localhost:5432
+
+**Verify all services started successfully:**
+```bash
+# Backend health check
+curl http://localhost:3000/api/health
+# Should return: {"status":"ok","database":"connected",...}
+
+# Database status
+docker-compose ps
+# Should show: fitness_tracker_postgres with status "Up"
+
+# Frontend - open in browser:
+# http://localhost:5173
+```
 
 #### Running Services Individually
 
@@ -202,6 +249,7 @@ docker start fitness_tracker_postgres
 **Option 2 - Remove and recreate:**
 ```bash
 # Remove the existing container (keeps data)
+docker stop fitness_tracker_postgres
 docker rm fitness_tracker_postgres
 
 # Start fresh
@@ -269,6 +317,80 @@ docker-compose up -d
 cd packages/backend
 npx prisma migrate dev
 npx prisma db seed
+cd ../..
+npm run dev
+```
+
+#### Startup Failures
+
+**Error: `@prisma/client did not initialize yet`**
+
+Prisma Client needs to be generated after installation or schema changes:
+
+```bash
+cd packages/backend
+DATABASE_URL="postgresql://fitness_tracker:dev_password_change_in_production@localhost:5432/fitness_tracker_dev" npx prisma generate
+cd ../..
+npm run dev
+```
+
+**Error: `Cannot find module '.../@fitness-tracker/shared/dist/...'`**
+
+The shared TypeScript package needs to compile before the backend can use it. Either:
+
+1. Wait a few seconds and restart (shared package compiles automatically):
+   ```bash
+   # Press Ctrl+C to stop
+   npm run dev  # Restart after shared package compiles
+   ```
+
+2. Or manually build the shared package first:
+   ```bash
+   cd packages/shared
+   npm run build
+   cd ../..
+   npm run dev
+   ```
+
+**Error: `command not found: concurrently`**
+
+Root dependencies need to be installed:
+
+```bash
+npm install  # Run from project root
+npm run dev
+```
+
+**Error: Commands not working or wrong directory**
+
+⚠️ **Important:** Always run `npm run dev` from the **project root directory**, not from individual package directories:
+
+```bash
+# ✅ Correct - from project root
+cd /path/to/fitness_tracker
+npm run dev
+
+# ❌ Wrong - from package directory
+cd packages/backend
+npm run dev  # This only starts backend, not all services
+```
+
+**Module resolution errors or stale builds**
+
+Clean and rebuild all packages:
+
+```bash
+# Clean shared package
+cd packages/shared
+rm -rf dist
+npm run build
+
+# Regenerate Prisma Client
+cd ../backend
+rm -rf node_modules/.prisma
+DATABASE_URL="postgresql://fitness_tracker:dev_password_change_in_production@localhost:5432/fitness_tracker_dev" npx prisma generate
+
+# Restart from root
 cd ../..
 npm run dev
 ```
