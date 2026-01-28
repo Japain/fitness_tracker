@@ -16,12 +16,16 @@ import { apiRequest } from '../api/client';
  *
  * Individual set row with inputs for weight/reps (strength) or duration/distance (cardio)
  * Auto-saves on blur or Enter key
+ *
+ * For strength exercises, the last set shows a "Sets" multiplier field that allows
+ * users to quickly create multiple sets with the same weight/reps values.
  */
 interface SetRowProps {
   set: WorkoutSet;
   workoutId: string;
   workoutExerciseId: string;
   exerciseType: 'strength' | 'cardio';
+  isLastSet: boolean;
   onUpdate: () => void;
 }
 
@@ -70,7 +74,7 @@ function SetInput({ label, value, onChange, onBlur, onKeyDown, inputMode, isDisa
   );
 }
 
-function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: SetRowProps) {
+function SetRow({ set, workoutId, workoutExerciseId, exerciseType, isLastSet, onUpdate }: SetRowProps) {
   const toast = useToast();
 
   // Local state for inputs (for immediate UI updates)
@@ -79,7 +83,9 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
   const [duration, setDuration] = useState(set.duration ? (set.duration / 60).toString() : ''); // Convert seconds to minutes
   const [distance, setDistance] = useState(set.distance?.toString() || '');
   const [completed, setCompleted] = useState(set.completed);
+  const [sets, setSets] = useState('1'); // Sets multiplier (only shown on last set)
   const [isSaving, setIsSaving] = useState(false);
+  const [isCreatingSets, setIsCreatingSets] = useState(false);
 
   // Update local state when prop changes
   useEffect(() => {
@@ -198,11 +204,92 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
     updateSet('completed', newCompleted);
   };
 
-  // Render strength exercise inputs (Weight, Reps)
+  /**
+   * Handle Sets multiplier change
+   * Creates additional sets with the same weight/reps values
+   */
+  const handleSetsChange = async (value: string) => {
+    const numSets = parseInt(value.trim(), 10);
+
+    // Validate input
+    if (!value || isNaN(numSets) || numSets < 1) {
+      setSets(value); // Allow typing, validation happens on blur
+      return;
+    }
+
+    setSets(value);
+
+    // If sets is 1, nothing to do
+    if (numSets === 1) {
+      return;
+    }
+
+    // Create additional sets (numSets - 1, since current set already exists)
+    setIsCreatingSets(true);
+
+    try {
+      const currentSetNumber = set.setNumber;
+      const setData = exerciseType === 'strength'
+        ? {
+            reps: set.reps || 1,
+            weight: set.weight,
+            weightUnit: set.weightUnit || 'lbs',
+            completed: false,
+          }
+        : {
+            duration: set.duration || 60,
+            distance: set.distance,
+            distanceUnit: set.distanceUnit || 'km',
+            completed: false,
+          };
+
+      // Create additional sets sequentially
+      for (let i = 1; i < numSets; i++) {
+        await apiRequest(
+          `/api/workouts/${workoutId}/exercises/${workoutExerciseId}/sets`,
+          {
+            method: 'POST',
+            body: {
+              ...setData,
+              setNumber: currentSetNumber + i,
+            },
+          }
+        );
+      }
+
+      toast({
+        title: 'Sets added',
+        description: `Created ${numSets - 1} additional set${numSets - 1 > 1 ? 's' : ''}`,
+        status: 'success',
+        duration: 2000,
+        isClosable: true,
+        position: 'top',
+      });
+
+      // Refresh workout data
+      onUpdate();
+
+      // Reset sets input
+      setSets('1');
+    } catch (error) {
+      toast({
+        title: 'Failed to create sets',
+        description: error instanceof Error ? error.message : 'An unexpected error occurred while creating sets. Please try again.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+        position: 'top',
+      });
+    } finally {
+      setIsCreatingSets(false);
+    }
+  };
+
+  // Render strength exercise inputs (Weight, Reps, and Sets multiplier on last set)
   if (exerciseType === 'strength') {
     return (
       <Grid
-        templateColumns="40px 1fr 1fr 44px"
+        templateColumns={isLastSet ? "40px 1fr 1fr 1fr 44px" : "40px 1fr 1fr 44px"}
         gap="md"
         alignItems="center"
         py="md"
@@ -224,7 +311,7 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
           onBlur={(value) => handleBlur('weight', value)}
           onKeyDown={handleKeyDown}
           inputMode="decimal"
-          isDisabled={isSaving}
+          isDisabled={isSaving || isCreatingSets}
         />
 
         {/* Reps Input */}
@@ -235,30 +322,49 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
           onBlur={(value) => handleBlur('reps', value)}
           onKeyDown={handleKeyDown}
           inputMode="numeric"
-          isDisabled={isSaving}
+          isDisabled={isSaving || isCreatingSets}
         />
 
+        {/* Sets Multiplier Input (only shown on last set) */}
+        {isLastSet && (
+          <SetInput
+            label="Sets"
+            value={sets}
+            onChange={setSets}
+            onBlur={(value) => handleSetsChange(value)}
+            onKeyDown={handleKeyDown}
+            inputMode="numeric"
+            isDisabled={isSaving || isCreatingSets}
+          />
+        )}
+
         {/* Completion Checkbox */}
-        <Checkbox
-          aria-label="Mark set as completed"
-          isChecked={completed}
-          onChange={handleToggleCompleted}
-          colorScheme="green"
-          size="lg"
-          borderColor="neutral.300"
-          sx={{
-            '.chakra-checkbox__control': {
-              w: '24px',
-              h: '24px',
-              borderRadius: 'sm',
-              borderWidth: '2px',
-            },
-            '.chakra-checkbox__control[data-checked]': {
-              bg: 'success.500',
-              borderColor: 'success.500',
-            },
-          }}
-        />
+        <Box>
+          <Text fontSize="xs" color="neutral.600" fontWeight="medium" mb="xs">
+            Done
+          </Text>
+          <Checkbox
+            aria-label="Mark set as completed"
+            isChecked={completed}
+            onChange={handleToggleCompleted}
+            colorScheme="green"
+            size="lg"
+            borderColor="neutral.300"
+            isDisabled={isCreatingSets}
+            sx={{
+              '.chakra-checkbox__control': {
+                w: '24px',
+                h: '24px',
+                borderRadius: 'sm',
+                borderWidth: '2px',
+              },
+              '.chakra-checkbox__control[data-checked]': {
+                bg: 'success.500',
+                borderColor: 'success.500',
+              },
+            }}
+          />
+        </Box>
       </Grid>
     );
   }
@@ -303,26 +409,31 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, onUpdate }: S
       />
 
       {/* Completion Checkbox */}
-      <Checkbox
-        aria-label="Mark set as completed"
-        isChecked={completed}
-        onChange={handleToggleCompleted}
-        colorScheme="green"
-        size="lg"
-        borderColor="neutral.300"
-        sx={{
-          '.chakra-checkbox__control': {
-            w: '24px',
-            h: '24px',
-            borderRadius: 'sm',
-            borderWidth: '2px',
-          },
-          '.chakra-checkbox__control[data-checked]': {
-            bg: 'success.500',
-            borderColor: 'success.500',
-          },
-        }}
-      />
+      <Box>
+        <Text fontSize="xs" color="neutral.600" fontWeight="medium" mb="xs">
+          Done
+        </Text>
+        <Checkbox
+          aria-label="Mark set as completed"
+          isChecked={completed}
+          onChange={handleToggleCompleted}
+          colorScheme="green"
+          size="lg"
+          borderColor="neutral.300"
+          sx={{
+            '.chakra-checkbox__control': {
+              w: '24px',
+              h: '24px',
+              borderRadius: 'sm',
+              borderWidth: '2px',
+            },
+            '.chakra-checkbox__control[data-checked]': {
+              bg: 'success.500',
+              borderColor: 'success.500',
+            },
+          }}
+        />
+      </Box>
     </Grid>
   );
 }
