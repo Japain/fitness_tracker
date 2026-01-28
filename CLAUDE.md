@@ -592,6 +592,107 @@ cd ../..
 npm run dev
 ```
 
+### Troubleshooting Startup Issues
+
+If you encounter errors when starting the application, try these solutions:
+
+#### Error: `@prisma/client did not initialize yet`
+
+**Problem:** Prisma Client hasn't been generated after schema changes or fresh install.
+
+**Solution:**
+```bash
+cd packages/backend
+DATABASE_URL="postgresql://fitness_tracker:dev_password_change_in_production@localhost:5432/fitness_tracker_dev" npx prisma generate
+cd ../..
+npm run dev
+```
+
+#### Error: `Cannot find module '.../@fitness-tracker/shared/dist/...'`
+
+**Problem:** The shared package hasn't been compiled yet, or the backend started before compilation finished.
+
+**Solution:** Wait for the shared package to compile (watch for "Found 0 errors" message), then restart:
+```bash
+# Stop the dev server (Ctrl+C)
+npm run dev  # Restart - shared package should now be compiled
+```
+
+**Alternative:** Build the shared package first:
+```bash
+cd packages/shared
+npm run build
+cd ../..
+npm run dev
+```
+
+#### Error: `command not found: concurrently`
+
+**Problem:** Dependencies aren't fully installed at the root level.
+
+**Solution:**
+```bash
+npm install  # Reinstall dependencies at root
+npm run dev
+```
+
+#### Error: Module resolution or import errors
+
+**Problem:** Stale build artifacts or incomplete compilation.
+
+**Solution:** Clean rebuild of all packages:
+```bash
+# Clean the shared package
+cd packages/shared
+rm -rf dist
+npm run build
+
+# Clean and regenerate Prisma Client
+cd ../backend
+rm -rf node_modules/.prisma
+DATABASE_URL="postgresql://fitness_tracker:dev_password_change_in_production@localhost:5432/fitness_tracker_dev" npx prisma generate
+
+# Return to root and restart
+cd ../..
+npm run dev
+```
+
+#### Commands Must Run from Root Directory
+
+**Important:** The `npm run dev` command MUST be run from the project root (`/home/ripl/code/fitness_tracker`), not from individual package directories. This is because:
+- The root `package.json` uses `concurrently` to start all services together
+- Environment variables are loaded from root-level `.env` files
+- TypeScript project references require proper build ordering
+
+**Wrong:**
+```bash
+cd packages/backend
+npm run dev  # This only starts the backend
+```
+
+**Correct:**
+```bash
+cd /home/ripl/code/fitness_tracker  # Go to project root
+npm run dev  # Starts all services: shared, backend, frontend
+```
+
+#### Verify Services Are Running
+
+After starting with `npm run dev`, check that all services started successfully:
+
+```bash
+# Check backend health
+curl http://localhost:3000/api/health
+# Expected: {"status":"ok","database":"connected",...}
+
+# Check frontend (from browser)
+open http://localhost:5173
+
+# Check database
+docker-compose ps
+# Expected: fitness_tracker_postgres with status "Up" and "(healthy)"
+```
+
 ## Development Commands
 
 ```bash
@@ -604,7 +705,7 @@ npm install
 # Start database (first time setup)
 docker-compose up -d              # Start PostgreSQL in Docker
 
-# Development (runs all packages)
+# Development (runs all packages) - MUST RUN FROM PROJECT ROOT
 npm run dev                       # Starts both frontend and backend
 
 # Run packages individually
