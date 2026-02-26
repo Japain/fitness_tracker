@@ -213,7 +213,7 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, isLastSet, on
 
     // Validate input
     if (!value || isNaN(numSets) || numSets < 1) {
-      setSets(value); // Allow typing, validation happens on blur
+      setSets('1'); // Reset to valid default when invalid value on blur
       return;
     }
 
@@ -231,13 +231,13 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, isLastSet, on
       const currentSetNumber = set.setNumber;
       const setData = exerciseType === 'strength'
         ? {
-            reps: set.reps || 1,
+            reps: set.reps ?? 1,
             weight: set.weight,
             weightUnit: set.weightUnit || 'lbs',
             completed: false,
           }
         : {
-            duration: set.duration || 60,
+            duration: set.duration ?? 60,
             distance: set.distance,
             distanceUnit: set.distanceUnit || 'km',
             completed: false,
@@ -350,7 +350,7 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, isLastSet, on
             colorScheme="green"
             size="lg"
             borderColor="neutral.300"
-            isDisabled={isCreatingSets}
+            isDisabled={isSaving || isCreatingSets}
             sx={{
               '.chakra-checkbox__control': {
                 w: '24px',

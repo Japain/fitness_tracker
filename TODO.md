@@ -700,6 +700,14 @@
   - Test form inputs trigger correct mobile keyboard
   - Verify workout logging can be completed in <30 seconds
 
+### Frontend Unit Testing
+- [ ] **Set up frontend testing infrastructure** [@frontend-typescript-dev]
+  - Install: `npm install -D vitest @testing-library/react @testing-library/user-event @testing-library/jest-dom jsdom`
+  - Configure `vitest.config.ts` with jsdom environment
+  - Add `"test": "vitest"` script to `packages/frontend/package.json`
+  - Write unit tests for components (SetRow, ExerciseSelectionModal, ExerciseCard)
+  - **Note:** Currently no test infrastructure exists in the frontend package; all changes have been manually verified only
+
 ### Backend Testing
 - [ ] **Write integration tests for API endpoints** [@backend-typescript-dev]
   - Install: `npm install -D jest supertest @types/jest @types/supertest`

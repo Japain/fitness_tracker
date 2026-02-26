@@ -16,6 +16,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { Exercise, WorkoutSessionWithExercises } from '@fitness-tracker/shared';
+import type { WorkoutExerciseWithExercise } from '@fitness-tracker/shared';
 import { useExercises } from '../hooks/useExercises';
 import { apiRequest } from '../api/client';
 import { ExerciseSearchBar } from './ExerciseSearchBar';
@@ -133,7 +134,7 @@ function ExerciseSelectionModal({
       const orderIndex = workout.exercises?.length || 0;
 
       // Add exercise to workout
-      const workoutExercise = await apiRequest<{ id: string }>(`/api/workouts/${workoutId}/exercises`, {
+      const workoutExercise = await apiRequest<WorkoutExerciseWithExercise>(`/api/workouts/${workoutId}/exercises`, {
         method: 'POST',
         body: {
           exerciseId: exercise.id,
@@ -159,13 +160,25 @@ function ExerciseSelectionModal({
             completed: false,
           };
 
-      await apiRequest(
-        `/api/workouts/${workoutId}/exercises/${workoutExercise.id}/sets`,
-        {
-          method: 'POST',
-          body: initialSetData,
-        }
-      );
+      try {
+        await apiRequest(
+          `/api/workouts/${workoutId}/exercises/${workoutExercise.id}/sets`,
+          {
+            method: 'POST',
+            body: initialSetData,
+          }
+        );
+      } catch (setError) {
+        console.error('Failed to create initial set for workout exercise', setError);
+        toast({
+          title: 'Exercise added without initial set',
+          description: 'The exercise was added to your workout, but the initial set could not be created. You can add sets manually.',
+          status: 'warning',
+          duration: 4000,
+          isClosable: true,
+          position: 'top',
+        });
+      }
 
       // Add to recent exercises
       addToRecentExercises(exercise.id);
