@@ -74,6 +74,8 @@ function SetInput({ label, value, onChange, onBlur, onKeyDown, inputMode, isDisa
   );
 }
 
+const MAX_SETS = 20;
+
 function SetRow({ set, workoutId, workoutExerciseId, exerciseType, isLastSet, onUpdate }: SetRowProps) {
   const toast = useToast();
 
@@ -217,6 +219,19 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, isLastSet, on
       return;
     }
 
+    if (numSets > MAX_SETS) {
+      setSets(String(MAX_SETS));
+      toast({
+        title: `Maximum ${MAX_SETS} sets`,
+        description: `You can create at most ${MAX_SETS} sets at once.`,
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+        position: 'top',
+      });
+      return;
+    }
+
     setSets(value);
 
     // If sets is 1, nothing to do
@@ -243,19 +258,21 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, isLastSet, on
             completed: false,
           };
 
-      // Create additional sets sequentially
-      for (let i = 1; i < numSets; i++) {
-        await apiRequest(
-          `/api/workouts/${workoutId}/exercises/${workoutExerciseId}/sets`,
-          {
-            method: 'POST',
-            body: {
-              ...setData,
-              setNumber: currentSetNumber + i,
-            },
-          }
-        );
-      }
+      // Create additional sets in parallel
+      await Promise.all(
+        Array.from({ length: numSets - 1 }, (_, i) =>
+          apiRequest(
+            `/api/workouts/${workoutId}/exercises/${workoutExerciseId}/sets`,
+            {
+              method: 'POST',
+              body: {
+                ...setData,
+                setNumber: currentSetNumber + i + 1,
+              },
+            }
+          )
+        )
+      );
 
       toast({
         title: 'Sets added',
@@ -393,7 +410,7 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, isLastSet, on
         onBlur={(value) => handleBlur('duration', value)}
         onKeyDown={handleKeyDown}
         inputMode="decimal"
-        isDisabled={isSaving}
+        isDisabled={isSaving || isCreatingSets}
       />
 
       {/* Distance Input */}
@@ -405,7 +422,7 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, isLastSet, on
         onBlur={(value) => handleBlur('distance', value)}
         onKeyDown={handleKeyDown}
         inputMode="decimal"
-        isDisabled={isSaving}
+        isDisabled={isSaving || isCreatingSets}
       />
 
       {/* Completion Checkbox */}
@@ -420,6 +437,7 @@ function SetRow({ set, workoutId, workoutExerciseId, exerciseType, isLastSet, on
           colorScheme="green"
           size="lg"
           borderColor="neutral.300"
+          isDisabled={isSaving || isCreatingSets}
           sx={{
             '.chakra-checkbox__control': {
               w: '24px',
