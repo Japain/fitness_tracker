@@ -1,12 +1,12 @@
 # Fitness Tracker - Implementation TODO
 
-**Version:** 1.13
+**Version:** 1.14
 **Date:** 2026-03-04
-**Status:** Phase 5 In Progress - State Persistence & Offline Support (6/9 tasks complete)
+**Status:** Phase 5 Complete - State Persistence & Offline Support (9/9 tasks complete)
 
 ## Recent Completed Work
 
-### Phase 5 - State Persistence & Offline Support (2026-03-03/04, partial)
+### Phase 5 - State Persistence & Offline Support (2026-03-03/04)
 - ✅ Backend: Added `workoutStatus: 'active' | 'incomplete' | 'completed'` computed field to `GET /api/workouts` responses
   - `packages/backend/src/routes/workouts.ts` — `getWorkoutStatus()` helper, 24h boundary logic
 - ✅ Shared types: Added `workoutStatus?` to `WorkoutSession` and `_pending?` to `WorkoutExerciseWithExercise`
@@ -19,9 +19,14 @@
   - Persists active workout ID to localStorage; returns `activeWorkoutFallbackId` when SWR data unavailable; exports `ACTIVE_WORKOUT_KEY`
 - ✅ Frontend: Created `useAddExercise` hook at `packages/frontend/src/hooks/useAddExercise.ts`
   - Optimistic SWR cache update with `_pending: true` temp entry; triggers revalidation on success; offline → queues via `requestQueue`; online error → rollback
-- **Remaining:** Tasks 7–9 (ExerciseSelectionModal refactor, ExerciseCard pending badge, Dashboard incomplete workout banner)
+- ✅ Frontend: Refactored `ExerciseSelectionModal` to use `useAddExercise`
+  - Shows "Exercise queued" toast when offline; skips initial set creation for pending exercises
+- ✅ Frontend: Updated `ExerciseCard` with pending UI
+  - Yellow "Syncing..." badge with spinner; Add Set / delete / notes edit buttons disabled when `_pending`
+- ✅ Frontend: Added `IncompleteWorkoutBanner` to Dashboard
+  - `useRecentWorkouts` exposes `incompleteWorkouts`; orange dismissible banner for workouts >24h old with no `endTime`
+- **PR:** `persistence` branch → open PR at https://github.com/Japain/fitness_tracker/pull/new/persistence
 - **Plan:** `docs/plans/2026-03-03-phase5-state-persistence.md`
-- **Branch:** `persistence`
 
 ### Exercise Library Page Implementation (2026-01-17)
 - ✅ Created complete Exercise Library page at `/exercises` route
