@@ -16,9 +16,9 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { Exercise, WorkoutSessionWithExercises } from '@fitness-tracker/shared';
-import type { WorkoutExerciseWithExercise } from '@fitness-tracker/shared';
 import { useExercises } from '../hooks/useExercises';
 import { apiRequest } from '../api/client';
+import { useAddExercise } from '../hooks/useAddExercise';
 import { ExerciseSearchBar } from './ExerciseSearchBar';
 import { CategoryFilter } from './CategoryFilter';
 import { ExerciseListItem } from './ExerciseListItem';
@@ -56,6 +56,7 @@ function ExerciseSelectionModal({
 }: ExerciseSelectionModalProps) {
   const toast = useToast();
   const { exercises, isLoading, refetch } = useExercises();
+  const { addExercise } = useAddExercise();
 
   // Validate workoutId is provided
   if (!workoutId) {
@@ -124,89 +125,77 @@ function ExerciseSelectionModal({
 
   /**
    * Handle exercise selection
-   * Adds exercise to workout and creates initial set
+   * Adds exercise to workout with optimistic UI; queues request when offline
    */
   const handleSelectExercise = async (exercise: Exercise) => {
     setIsAdding(true);
 
     try {
-      // Get current exercise count from workout for orderIndex
       const orderIndex = workout.exercises?.length || 0;
 
-      // Add exercise to workout
-      const workoutExercise = await apiRequest<WorkoutExerciseWithExercise>(`/api/workouts/${workoutId}/exercises`, {
-        method: 'POST',
-        body: {
-          exerciseId: exercise.id,
-          orderIndex,
-        },
+      const { workoutExerciseId, pending } = await addExercise({
+        workoutId,
+        exercise,
+        orderIndex,
       });
 
-      // Create initial set with default values based on exercise type
-      const isStrength = exercise.type === 'strength';
-      const initialSetData = isStrength
-        ? {
-            setNumber: 1,
-            reps: 1, // Default to 1 rep (user will update)
-            weight: null, // Optional field
-            weightUnit: 'lbs' as const,
-            completed: false,
-          }
-        : {
-            setNumber: 1,
-            duration: 60, // Default to 60 seconds (1 minute)
-            distance: null, // Optional field
-            distanceUnit: 'km' as const,
-            completed: false,
-          };
+      // Create initial set only when we have a confirmed workoutExerciseId
+      if (!pending && workoutExerciseId) {
+        const isStrength = exercise.type === 'strength';
+        const initialSetData = isStrength
+          ? { setNumber: 1, reps: 1, weight: null, weightUnit: 'lbs' as const, completed: false }
+          : { setNumber: 1, duration: 60, distance: null, distanceUnit: 'km' as const, completed: false };
 
-      try {
-        await apiRequest(
-          `/api/workouts/${workoutId}/exercises/${workoutExercise.id}/sets`,
-          {
-            method: 'POST',
-            body: initialSetData,
-          }
-        );
-      } catch (setError) {
-        console.error('Failed to create initial set for workout exercise', setError);
+        try {
+          await apiRequest(
+            `/api/workouts/${workoutId}/exercises/${workoutExerciseId}/sets`,
+            { method: 'POST', body: initialSetData }
+          );
+          onExerciseAdded();
+        } catch (setError) {
+          console.error('Failed to create initial set', setError);
+          toast({
+            title: 'Exercise added without initial set',
+            description: 'The exercise was added, but the initial set could not be created. You can add sets manually.',
+            status: 'warning',
+            duration: 4000,
+            isClosable: true,
+            position: 'top',
+          });
+        }
+      } else if (pending) {
+        // Offline — exercise is queued; skip initial set creation
         toast({
-          title: 'Exercise added without initial set',
-          description: 'The exercise was added to your workout, but the initial set could not be created. You can add sets manually.',
-          status: 'warning',
-          duration: 4000,
+          title: 'Exercise queued',
+          description: `${exercise.name} will sync when you're back online.`,
+          status: 'info',
+          duration: 3000,
           isClosable: true,
           position: 'top',
         });
       }
 
-      // Add to recent exercises
       addToRecentExercises(exercise.id);
 
-      toast({
-        title: 'Exercise added',
-        description: `${exercise.name} added to workout`,
-        status: 'success',
-        duration: 2000,
-        isClosable: true,
-        position: 'top',
-      });
+      if (!pending) {
+        toast({
+          title: 'Exercise added',
+          description: `${exercise.name} added to workout`,
+          status: 'success',
+          duration: 2000,
+          isClosable: true,
+          position: 'top',
+        });
+      }
 
-      // Refresh workout data
-      onExerciseAdded();
-
-      // Close modal
       onClose();
-
-      // Reset state
       setSearchQuery('');
       setSelectedCategory('All');
       setShowCreateForm(false);
     } catch (error) {
-      // TODO: Implement centralized error handling pattern
       toast({
         title: 'Failed to add exercise',
-        description: error instanceof Error ? error.message : 'An unexpected error occurred while adding the exercise. Please try again.',
+        description: error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.',
         status: 'error',
         duration: 5000,
         isClosable: true,
