@@ -12,6 +12,11 @@ import {
   Skeleton,
   SkeletonText,
   useToast,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
+  CloseButton,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -41,7 +46,7 @@ function Dashboard() {
   const toast = useToast();
   const user = useAuthStore((state) => state.user);
 
-  const { workouts: recentWorkouts, isLoading: workoutsLoading } = useRecentWorkouts(3);
+  const { workouts: recentWorkouts, incompleteWorkouts, isLoading: workoutsLoading } = useRecentWorkouts(3);
   const { activeWorkout } = useActiveWorkout();
   const { stats, isLoading: statsLoading } = useWeeklyStats();
 
@@ -148,6 +153,14 @@ function Dashboard() {
           Ready to crush your workout?
         </Text>
       </VStack>
+
+      {/* Incomplete Workout Banner - shown when a workout is >24h old with no endTime */}
+      {incompleteWorkouts.length > 0 && !activeWorkout && (
+        <IncompleteWorkoutBanner
+          workout={incompleteWorkouts[0]}
+          onNavigate={() => navigate(`/history/${incompleteWorkouts[0].id}`)}
+        />
+      )}
 
       {/* In-Progress Workout Banner - shown when activeWorkout exists */}
       {activeWorkout && (
@@ -498,6 +511,61 @@ function WorkoutCard({ workout, formatDate, calculateDuration, onClick }: Workou
         {formatExercises()}
       </Text>
     </Box>
+  );
+}
+
+/**
+ * Incomplete Workout Banner Component
+ * Shows when a workout has no endTime and startTime is >24h ago
+ */
+interface IncompleteWorkoutBannerProps {
+  workout: {
+    id: string;
+    startTime: Date | string;
+  };
+  onNavigate: () => void;
+}
+
+function IncompleteWorkoutBanner({ workout, onNavigate }: IncompleteWorkoutBannerProps) {
+  const [isDismissed, setIsDismissed] = useState(false);
+
+  if (isDismissed) return null;
+
+  const date = new Date(workout.startTime);
+  const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+  return (
+    <Alert
+      status="warning"
+      borderRadius="md"
+      mb="2xl"
+      alignItems="flex-start"
+    >
+      <AlertIcon mt="1px" />
+      <Box flex={1}>
+        <AlertTitle fontSize="sm" fontWeight="semibold">
+          Incomplete workout from {formatted}
+        </AlertTitle>
+        <AlertDescription fontSize="sm">
+          <Button
+            variant="link"
+            colorScheme="orange"
+            fontSize="sm"
+            fontWeight="semibold"
+            onClick={onNavigate}
+            minH="auto"
+            p={0}
+          >
+            View workout →
+          </Button>
+        </AlertDescription>
+      </Box>
+      <CloseButton
+        onClick={() => setIsDismissed(true)}
+        alignSelf="flex-start"
+        size="sm"
+      />
+    </Alert>
   );
 }
 
