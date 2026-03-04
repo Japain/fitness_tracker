@@ -1,10 +1,27 @@
 # Fitness Tracker - Implementation TODO
 
-**Version:** 1.11
-**Date:** 2026-01-17
-**Status:** Phase 4 Complete - Exercise Library Page Fully Implemented and Tested
+**Version:** 1.13
+**Date:** 2026-03-04
+**Status:** Phase 5 In Progress - State Persistence & Offline Support (6/9 tasks complete)
 
 ## Recent Completed Work
+
+### Phase 5 - State Persistence & Offline Support (2026-03-03/04, partial)
+- ✅ Backend: Added `workoutStatus: 'active' | 'incomplete' | 'completed'` computed field to `GET /api/workouts` responses
+  - `packages/backend/src/routes/workouts.ts` — `getWorkoutStatus()` helper, 24h boundary logic
+- ✅ Shared types: Added `workoutStatus?` to `WorkoutSession` and `_pending?` to `WorkoutExerciseWithExercise`
+  - `packages/shared/types/workout.ts`
+- ✅ Frontend: Created `RequestQueue` class at `packages/frontend/src/api/requestQueue.ts`
+  - localStorage persistence, `online` event replay, exponential backoff (max 3 retries), uses `apiRequest` for CSRF token auto-inclusion
+- ✅ Frontend: Created `NetworkStatusBanner` component at `packages/frontend/src/components/NetworkStatusBanner.tsx`
+  - Sticky yellow Alert banner, listens to `window.online/offline` events; added to `AppLayout.tsx` above TopNav
+- ✅ Frontend: Updated `useActiveWorkout` hook (`packages/frontend/src/hooks/useActiveWorkout.ts`)
+  - Persists active workout ID to localStorage; returns `activeWorkoutFallbackId` when SWR data unavailable; exports `ACTIVE_WORKOUT_KEY`
+- ✅ Frontend: Created `useAddExercise` hook at `packages/frontend/src/hooks/useAddExercise.ts`
+  - Optimistic SWR cache update with `_pending: true` temp entry; triggers revalidation on success; offline → queues via `requestQueue`; online error → rollback
+- **Remaining:** Tasks 7–9 (ExerciseSelectionModal refactor, ExerciseCard pending badge, Dashboard incomplete workout banner)
+- **Plan:** `docs/plans/2026-03-03-phase5-state-persistence.md`
+- **Branch:** `persistence`
 
 ### Exercise Library Page Implementation (2026-01-17)
 - ✅ Created complete Exercise Library page at `/exercises` route
@@ -581,46 +598,53 @@
 
 **Goal:** Ensure workout data survives browser closure and handle intermittent connectivity.
 
-### Frontend State Persistence
-- [ ] **Implement active workout resumption** [@frontend-typescript-dev]
-  - On app mount, call `GET /api/workouts/active`
-  - If active workout found, show "Resume Workout?" prompt
-  - Navigate to `/workout/:id` on resume
-  - Store active workout ID in localStorage as backup
-  - **Depends on:** Backend active workout endpoint
-  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 490-526
+### Backend Data Persistence
+- [x] **Implement abandoned workout handling** [@backend-typescript-dev] ✅ **COMPLETED 2026-03-03**
+  - Added `workoutStatus` computed field to `GET /api/workouts` response (no API shape change)
+  - Active: endTime = null, startTime < 24 hours ago
+  - Incomplete: endTime = null, startTime > 24 hours ago
+  - Completed: endTime != null
+  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 442-487
+  - **Commit:** ed867f1
 
-- [ ] **Create request queue for offline support** [@frontend-typescript-dev]
-  - Create `packages/frontend/src/api/requestQueue.ts`
-  - Implement RequestQueue class with localStorage persistence
-  - Queue failed requests for retry
-  - Process queue on `window.addEventListener('online')`
-  - Implement exponential backoff (max 3 retries)
+### Frontend State Persistence
+- [x] **Create request queue for offline support** [@frontend-typescript-dev] ✅ **COMPLETED 2026-03-03**
+  - Created `packages/frontend/src/api/requestQueue.ts`
+  - RequestQueue class with localStorage persistence (`'fitness-tracker:request-queue'`)
+  - Processes queue on `window.addEventListener('online')`
+  - Exponential backoff (max 3 retries), uses `apiRequest` for CSRF token auto-inclusion
   - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1723-1832
+  - **Commit:** 4648100
+
+- [ ] **Implement active workout resumption** [@frontend-typescript-dev]
+  - Store active workout ID in localStorage as backup in `useActiveWorkout` hook
+  - On app mount, call `GET /api/workouts/active` (already done via Dashboard's `useActiveWorkout`)
+  - If active workout found, show "Resume Workout?" prompt (already done via `InProgressBanner`)
+  - Navigate to `/workout/:id` on resume (already done)
+  - **Remaining:** Export `activeWorkoutFallbackId` from hook for offline resilience
+  - **Depends on:** Backend active workout endpoint (done)
+  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 490-526
 
 - [ ] **Implement optimistic UI updates** [@frontend-typescript-dev]
   - Create `packages/frontend/src/hooks/useAddExercise.ts`
-  - Update UI immediately with temporary ID
+  - Update UI immediately with temporary ID via SWR cache mutation
   - Send request to backend
-  - Replace temporary data with real data on success
-  - Rollback on failure (if online) or queue (if offline)
-  - Show "Syncing..." badge on pending items
+  - Replace temporary data with real data on success (revalidate)
+  - Rollback on failure (if online) or queue via `requestQueue` (if offline)
+  - Show "Syncing..." badge on pending items (in ExerciseCard)
+  - Refactor `ExerciseSelectionModal.handleSelectExercise` to use the hook
   - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1836-1905
 
 - [ ] **Add network status indicator** [@frontend-typescript-dev]
+  - Create `NetworkStatusBanner` component, add to `AppLayout.tsx`
   - Listen to `window.addEventListener('online')` / `'offline'`
   - Show alert banner when offline: "You're offline. Changes will sync when reconnected."
-  - Update UI when back online
   - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1908-1926
 
-### Backend Data Persistence
-- [ ] **Implement abandoned workout handling** [@backend-typescript-dev]
-  - Update `GET /api/workouts` to categorize workouts:
-    - Active: endTime = null, startTime < 24 hours ago
-    - Incomplete: endTime = null, startTime > 24 hours ago
-    - Completed: endTime != null
-  - Don't auto-delete abandoned workouts
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 442-487
+- [ ] **Show incomplete workout banner on Dashboard** [@frontend-typescript-dev]
+  - Expose `incompleteWorkouts` (workoutStatus === 'incomplete') from `useRecentWorkouts`
+  - Show dismissable orange banner when incomplete workouts exist and no active workout running
+  - **Depends on:** Backend workoutStatus field (done)
 
 ---
 
