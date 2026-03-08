@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import useSWR from 'swr';
 import type { WorkoutSessionWithExercises } from '@fitness-tracker/shared';
-import { fetcher, ApiError } from '../api/client';
+import { fetcher } from '../api/client';
 
 const ACTIVE_WORKOUT_KEY = 'fitness-tracker:active-workout-id';
 
@@ -12,13 +12,7 @@ const ACTIVE_WORKOUT_KEY = 'fitness-tracker:active-workout-id';
 export function useActiveWorkout() {
   const { data, error, mutate, isLoading } = useSWR<WorkoutSessionWithExercises | null>(
     '/api/workouts/active',
-    fetcher,
-    {
-      shouldRetryOnError: (err) => {
-        if (err instanceof ApiError && err.status === 404) return false;
-        return true;
-      },
-    }
+    fetcher
   );
 
   // Persist active workout ID to localStorage when loaded
