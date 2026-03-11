@@ -46,7 +46,7 @@ function Dashboard() {
   const toast = useToast();
   const user = useAuthStore((state) => state.user);
 
-  const { workouts: recentWorkouts, incompleteWorkouts, isLoading: workoutsLoading } = useRecentWorkouts(3);
+  const { workouts: recentWorkouts, isLoading: workoutsLoading } = useRecentWorkouts(3);
   const { activeWorkout } = useActiveWorkout();
   const { stats, isLoading: statsLoading } = useWeeklyStats();
 
@@ -155,15 +155,15 @@ function Dashboard() {
       </VStack>
 
       {/* Incomplete Workout Banner - shown when a workout is >24h old with no endTime */}
-      {incompleteWorkouts.length > 0 && !activeWorkout && (
+      {activeWorkout?.workoutStatus === 'incomplete' && (
         <IncompleteWorkoutBanner
-          workout={incompleteWorkouts[0]}
-          onNavigate={() => navigate(`/history/${incompleteWorkouts[0].id}`)}
+          workout={activeWorkout}
+          onNavigate={() => navigate(`/history/${activeWorkout.id}`)}
         />
       )}
 
-      {/* In-Progress Workout Banner - shown when activeWorkout exists */}
-      {activeWorkout && (
+      {/* In-Progress Workout Banner - shown when activeWorkout is recent (<24h) */}
+      {activeWorkout?.workoutStatus === 'active' && (
         <InProgressBanner
           startTime={activeWorkout.startTime}
           onResume={() => navigate(`/workout/${activeWorkout.id}`)}

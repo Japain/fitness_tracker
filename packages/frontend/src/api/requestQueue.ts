@@ -1,3 +1,4 @@
+import { mutate } from 'swr';
 import { apiRequest } from './client';
 
 interface QueuedRequest {
@@ -19,6 +20,17 @@ class RequestQueue {
   constructor() {
     this.loadFromStorage();
     window.addEventListener('online', () => this.processQueue());
+
+    // Bug #6 fix: if the app starts while already online and there are queued
+    // requests from a previous session, the 'online' event will never fire.
+    // Wait for the page to be fully loaded before attempting to replay.
+    if (navigator.onLine && this.queue.length > 0) {
+      if (document.readyState === 'complete') {
+        this.processQueue();
+      } else {
+        window.addEventListener('load', () => this.processQueue(), { once: true });
+      }
+    }
   }
 
   async enqueue(url: string, method: QueuedRequest['method'], body: unknown): Promise<string> {
@@ -56,6 +68,9 @@ class RequestQueue {
           break;
         }
         request.retries++;
+        // Bug #11 fix: persist the updated retry count immediately so that a
+        // page reload mid-backoff cannot reset it to 0 and exceed MAX_RETRIES.
+        this.saveToStorage();
         if (request.retries >= MAX_RETRIES) {
           console.error('Request failed after max retries, dropping:', request);
           this.queue.shift();
@@ -64,6 +79,13 @@ class RequestQueue {
           await this.delay(Math.pow(2, request.retries) * 1000);
         }
       }
+    }
+
+    // Bug #10 fix: after the queue drains, force SWR to refetch the active
+    // workout so any stale optimistic entries (temp IDs, _pending flags) are
+    // replaced with real server data.
+    if (this.queue.length === 0) {
+      mutate('/api/workouts/active');
     }
 
     this.isProcessing = false;
