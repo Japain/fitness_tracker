@@ -44,7 +44,7 @@ export function useActiveWorkout() {
 
   return {
     activeWorkout: data,
-    activeWorkoutFallbackId: data ? null : fallbackId,
+    activeWorkoutFallbackId: data === undefined ? fallbackId : null,
     isLoading,
     isError: error,
     refetch: mutate,

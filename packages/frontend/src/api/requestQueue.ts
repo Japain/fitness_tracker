@@ -1,5 +1,5 @@
 import { mutate } from 'swr';
-import { apiRequest } from './client';
+import { apiRequest, fetchCsrfToken, getCsrfToken } from './client';
 
 interface QueuedRequest {
   id: string;
@@ -55,6 +55,19 @@ class RequestQueue {
 
   async processQueue(): Promise<void> {
     if (this.isProcessing || this.queue.length === 0) return;
+
+    // Ensure CSRF token is available before sending any requests.
+    // The token may not be initialized yet if processQueue fires at module load
+    // time (before fetchCsrfToken() completes in main.tsx).
+    if (!getCsrfToken()) {
+      try {
+        await fetchCsrfToken();
+      } catch {
+        // Can't reach the server — abort and wait for the next online event.
+        return;
+      }
+    }
+
     this.isProcessing = true;
 
     while (this.queue.length > 0) {
@@ -110,7 +123,11 @@ class RequestQueue {
         this.queue = JSON.parse(saved) as QueuedRequest[];
       }
     } catch {
-      localStorage.removeItem(STORAGE_KEY);
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        // Storage unavailable — ignore
+      }
       this.queue = [];
     }
   }

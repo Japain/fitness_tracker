@@ -37,9 +37,6 @@ export function useRecentWorkouts(limit: number = 3) {
 
   return {
     workouts: data?.workouts ?? [],
-    incompleteWorkouts: (data?.workouts ?? []).filter(
-      (w) => w.workoutStatus === 'incomplete'
-    ),
     pagination: data?.pagination,
     isLoading,
     error,

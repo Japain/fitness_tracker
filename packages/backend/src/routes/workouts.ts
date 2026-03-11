@@ -196,7 +196,7 @@ router.get('/active', async (req, res) => {
       return res.status(204).end();
     }
 
-    res.json(activeWorkout);
+    res.json({ ...activeWorkout, workoutStatus: getWorkoutStatus(activeWorkout) });
   } catch (error) {
     logError('Failed to fetch active workout', error, { userId: (req.user as User | undefined)?.id });
     res.status(500).json({
