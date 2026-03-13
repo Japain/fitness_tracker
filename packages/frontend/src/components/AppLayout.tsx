@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import TopNav from './TopNav';
 import BottomNav from './BottomNav';
+import { NetworkStatusBanner } from './NetworkStatusBanner';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -26,6 +27,7 @@ function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <Flex direction="column" minH="100vh" bg="neutral.50">
+      <NetworkStatusBanner />
       {/* Top Navigation */}
       <TopNav user={user} />
 

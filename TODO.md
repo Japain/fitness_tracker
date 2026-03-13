@@ -1,10 +1,32 @@
 # Fitness Tracker - Implementation TODO
 
-**Version:** 1.11
-**Date:** 2026-01-17
-**Status:** Phase 4 Complete - Exercise Library Page Fully Implemented and Tested
+**Version:** 1.14
+**Date:** 2026-03-04
+**Status:** Phase 5 Complete - State Persistence & Offline Support (9/9 tasks complete)
 
 ## Recent Completed Work
+
+### Phase 5 - State Persistence & Offline Support (2026-03-03/04)
+- ✅ Backend: Added `workoutStatus: 'active' | 'incomplete' | 'completed'` computed field to `GET /api/workouts` responses
+  - `packages/backend/src/routes/workouts.ts` — `getWorkoutStatus()` helper, 24h boundary logic
+- ✅ Shared types: Added `workoutStatus?` to `WorkoutSession` and `_pending?` to `WorkoutExerciseWithExercise`
+  - `packages/shared/types/workout.ts`
+- ✅ Frontend: Created `RequestQueue` class at `packages/frontend/src/api/requestQueue.ts`
+  - localStorage persistence, `online` event replay, exponential backoff (max 3 retries), uses `apiRequest` for CSRF token auto-inclusion
+- ✅ Frontend: Created `NetworkStatusBanner` component at `packages/frontend/src/components/NetworkStatusBanner.tsx`
+  - Sticky yellow Alert banner, listens to `window.online/offline` events; added to `AppLayout.tsx` above TopNav
+- ✅ Frontend: Updated `useActiveWorkout` hook (`packages/frontend/src/hooks/useActiveWorkout.ts`)
+  - Persists active workout ID to localStorage; returns `activeWorkoutFallbackId` when SWR data unavailable; exports `ACTIVE_WORKOUT_KEY`
+- ✅ Frontend: Created `useAddExercise` hook at `packages/frontend/src/hooks/useAddExercise.ts`
+  - Optimistic SWR cache update with `_pending: true` temp entry; triggers revalidation on success; offline → queues via `requestQueue`; online error → rollback
+- ✅ Frontend: Refactored `ExerciseSelectionModal` to use `useAddExercise`
+  - Shows "Exercise queued" toast when offline; skips initial set creation for pending exercises
+- ✅ Frontend: Updated `ExerciseCard` with pending UI
+  - Yellow "Syncing..." badge with spinner; Add Set / delete / notes edit buttons disabled when `_pending`
+- ✅ Frontend: Added `IncompleteWorkoutBanner` to Dashboard
+  - Orange dismissible banner for workouts >24h old with no `endTime`; driven by `activeWorkout.workoutStatus === 'incomplete'` from `useActiveWorkout`
+- **PR:** `persistence` branch → open PR at https://github.com/Japain/fitness_tracker/pull/new/persistence
+- **Plan:** `docs/plans/2026-03-03-phase5-state-persistence.md`
 
 ### Exercise Library Page Implementation (2026-01-17)
 - ✅ Created complete Exercise Library page at `/exercises` route
@@ -155,7 +177,7 @@
   - Install PostgreSQL 15+ locally or use Docker
   - Create database: `fitness_tracker_dev`
   - Note connection string for .env file
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` Section 4.1
+  - **Reference:** `context/ARCHITECTURE_DECISIONS.md` Section 4.1
 
 - [x] **Create PostgreSQL production database** [@user]
   - Set up managed PostgreSQL on Railway, Supabase, or AWS RDS
@@ -171,7 +193,7 @@
     - Development: `http://localhost:3000/api/auth/google/callback`
     - Production: `https://yourdomain.com/api/auth/google/callback`
   - Save Client ID and Client Secret
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` Section 1.1
+  - **Reference:** `context/ARCHITECTURE_DECISIONS.md` Section 1.1
 
 ### Environment Variables
 - [x] **Create backend .env files** [@user]
@@ -182,7 +204,7 @@
     - `GOOGLE_CLIENT_SECRET` (from OAuth setup)
     - `SESSION_SECRET` (generate random 32-character string)
     - `GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback`
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` Section 4.3
+  - **Reference:** `context/ARCHITECTURE_DECISIONS.md` Section 4.3
 
 - [x] **Create frontend .env files** [@user]
   - Copy `packages/frontend/.env.example` to `.env.development`
@@ -445,7 +467,7 @@
   - ✅ State-changing endpoints require CSRF token (verifyCsrfToken middleware)
   - ✅ Duplicate name checking (case-insensitive for user's custom exercises)
   - **Depends on:** Authentication, requireAuth
-  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 870-876, `ARCHITECTURE_DECISIONS.md` lines 830-855
+  - **Reference:** `PROJECT_REQUIREMENTS.md` lines 870-876, `context/ARCHITECTURE_DECISIONS.md` lines 830-855
   - **Completed:** 2025-12-22
 
 - [x] **Implement exercise ownership checks** [@backend-typescript-dev] ✅ **COMPLETED**
@@ -581,46 +603,42 @@
 
 **Goal:** Ensure workout data survives browser closure and handle intermittent connectivity.
 
+### Backend Data Persistence
+- [x] **Implement abandoned workout handling** [@backend-typescript-dev] ✅ **COMPLETED 2026-03-03**
+  - Added `workoutStatus` computed field to `GET /api/workouts` response (no API shape change)
+  - Active: endTime = null, startTime < 24 hours ago
+  - Incomplete: endTime = null, startTime > 24 hours ago
+  - Completed: endTime != null
+  - **Reference:** `context/ARCHITECTURE_DECISIONS.md` lines 442-487
+  - **Commit:** ed867f1
+
 ### Frontend State Persistence
-- [ ] **Implement active workout resumption** [@frontend-typescript-dev]
-  - On app mount, call `GET /api/workouts/active`
-  - If active workout found, show "Resume Workout?" prompt
-  - Navigate to `/workout/:id` on resume
-  - Store active workout ID in localStorage as backup
-  - **Depends on:** Backend active workout endpoint
+- [x] **Create request queue for offline support** [@frontend-typescript-dev] ✅ **COMPLETED 2026-03-03**
+  - Created `packages/frontend/src/api/requestQueue.ts`
+  - RequestQueue class with localStorage persistence (`'fitness-tracker:request-queue'`)
+  - Processes queue on `window.addEventListener('online')`
+  - Exponential backoff (max 3 retries), uses `apiRequest` for CSRF token auto-inclusion
+  - **Reference:** `context/ARCHITECTURE_DECISIONS.md` lines 1723-1832
+  - **Commit:** 4648100
+
+- [x] **Implement active workout resumption** [@frontend-typescript-dev] ✅ **COMPLETED**
+  - Active workout ID persisted to localStorage in `useActiveWorkout`; exports `activeWorkoutFallbackId` for offline resilience
+  - `InProgressBanner` on Dashboard; navigates to `/workout/:id` on resume
   - **Reference:** `PROJECT_REQUIREMENTS.md` lines 490-526
 
-- [ ] **Create request queue for offline support** [@frontend-typescript-dev]
-  - Create `packages/frontend/src/api/requestQueue.ts`
-  - Implement RequestQueue class with localStorage persistence
-  - Queue failed requests for retry
-  - Process queue on `window.addEventListener('online')`
-  - Implement exponential backoff (max 3 retries)
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1723-1832
+- [x] **Implement optimistic UI updates** [@frontend-typescript-dev] ✅ **COMPLETED**
+  - `useAddExercise` hook at `packages/frontend/src/hooks/useAddExercise.ts`
+  - Optimistic SWR cache update with `_pending: true`; revalidates on success; rolls back on online error; queues via `requestQueue` when offline
+  - `ExerciseSelectionModal` refactored to use hook; `ExerciseCard` shows "Syncing..." badge and disables actions when `_pending`
+  - **Reference:** `context/ARCHITECTURE_DECISIONS.md` lines 1836-1905
 
-- [ ] **Implement optimistic UI updates** [@frontend-typescript-dev]
-  - Create `packages/frontend/src/hooks/useAddExercise.ts`
-  - Update UI immediately with temporary ID
-  - Send request to backend
-  - Replace temporary data with real data on success
-  - Rollback on failure (if online) or queue (if offline)
-  - Show "Syncing..." badge on pending items
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1836-1905
+- [x] **Add network status indicator** [@frontend-typescript-dev] ✅ **COMPLETED**
+  - `NetworkStatusBanner` component in `AppLayout.tsx`; listens to `online`/`offline` events
+  - **Reference:** `context/ARCHITECTURE_DECISIONS.md` lines 1908-1926
 
-- [ ] **Add network status indicator** [@frontend-typescript-dev]
-  - Listen to `window.addEventListener('online')` / `'offline'`
-  - Show alert banner when offline: "You're offline. Changes will sync when reconnected."
-  - Update UI when back online
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1908-1926
-
-### Backend Data Persistence
-- [ ] **Implement abandoned workout handling** [@backend-typescript-dev]
-  - Update `GET /api/workouts` to categorize workouts:
-    - Active: endTime = null, startTime < 24 hours ago
-    - Incomplete: endTime = null, startTime > 24 hours ago
-    - Completed: endTime != null
-  - Don't auto-delete abandoned workouts
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 442-487
+- [x] **Show incomplete workout banner on Dashboard** [@frontend-typescript-dev] ✅ **COMPLETED**
+  - Orange dismissible banner driven by `activeWorkout.workoutStatus === 'incomplete'`; separate `InProgressBanner` for active (<24h) workouts
+  - **Depends on:** Backend workoutStatus field (done)
 
 ---
 
@@ -737,18 +755,18 @@
 ### Security Testing
 - [ ] **Implement rate limiting** [@backend-typescript-dev]
   - Install: `npm install express-rate-limit`
-  - Apply rate limits per `ARCHITECTURE_DECISIONS.md` Section 4.2:
+  - Apply rate limits per `context/ARCHITECTURE_DECISIONS.md` Section 4.2:
     - Auth endpoints: 5 requests per 15 minutes
     - Workout endpoints: 200 requests per minute (lenient for set logging)
     - Exercise endpoints: 100 requests per minute
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1009-1087
+  - **Reference:** `context/ARCHITECTURE_DECISIONS.md` lines 1009-1087
 
 - [ ] **Add security headers with Helmet** [@backend-typescript-dev]
   - Configure Content Security Policy
   - Set HSTS headers (max-age 1 year)
   - Enable X-Frame-Options: DENY
   - **Depends on:** Helmet middleware (should already be added in Phase 1)
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 2130-2159
+  - **Reference:** `context/ARCHITECTURE_DECISIONS.md` lines 2130-2159
 
 - [ ] **Test authentication security** [@backend-typescript-dev] [@user]
   - Verify session cookies are httpOnly, secure (in prod), sameSite
@@ -842,7 +860,7 @@
   - Install: `npm install @sentry/react @sentry/node`
   - Configure Sentry DSN in frontend and backend
   - Test error reporting
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 2073-2120
+  - **Reference:** `context/ARCHITECTURE_DECISIONS.md` lines 2073-2120
 
 - [ ] **Set up analytics with PostHog** [@frontend-typescript-dev] [@user]
   - Set up self-hosted PostHog or use cloud (optional)
@@ -850,13 +868,13 @@
   - Configure PostHog in frontend
   - Track key events: workout_started, workout_completed, exercise_added
   - Implement opt-out for users
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1963-2070
+  - **Reference:** `context/ARCHITECTURE_DECISIONS.md` lines 1963-2070
 
 - [ ] **Configure Lighthouse CI** [@frontend-typescript-dev]
   - Create `.github/workflows/lighthouse.yml`
   - Configure Lighthouse CI to run on PRs
   - Set assertions: performance >80%, accessibility >90%
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 2205-2258
+  - **Reference:** `context/ARCHITECTURE_DECISIONS.md` lines 2205-2258
 
 ---
 
@@ -904,13 +922,13 @@
   - Create `packages/frontend/public/service-worker.js`
   - Cache static assets (HTML, CSS, JS)
   - Implement offline page fallback
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1934-1942
+  - **Reference:** `context/ARCHITECTURE_DECISIONS.md` lines 1934-1942
 
 - [ ] **Use IndexedDB for local storage** [@frontend-typescript-dev]
   - Install: `npm install idb`
   - Store workouts locally in IndexedDB
   - Sync to backend when online
-  - **Reference:** `ARCHITECTURE_DECISIONS.md` lines 1944-1956
+  - **Reference:** `context/ARCHITECTURE_DECISIONS.md` lines 1944-1956
 
 ### Additional OAuth Providers
 - [ ] **Add GitHub OAuth** [@backend-typescript-dev] [@user]

@@ -11,6 +11,8 @@ export interface WorkoutSession {
   notes?: string;              // Optional workout notes
   createdAt: Date;
   updatedAt: Date;
+  // Computed by backend — present in list responses, absent from active workout endpoint
+  workoutStatus?: 'active' | 'incomplete' | 'completed';
 }
 
 /**
@@ -64,6 +66,8 @@ export interface WorkoutSet {
 export interface WorkoutExerciseWithExercise extends WorkoutExercise {
   exercise: Exercise;
   sets?: WorkoutSet[];
+  // Present only for optimistic UI items not yet confirmed by backend
+  _pending?: boolean;
 }
 
 /**

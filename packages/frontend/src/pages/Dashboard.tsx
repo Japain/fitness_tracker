@@ -12,6 +12,11 @@ import {
   Skeleton,
   SkeletonText,
   useToast,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
+  CloseButton,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -149,8 +154,16 @@ function Dashboard() {
         </Text>
       </VStack>
 
-      {/* In-Progress Workout Banner - shown when activeWorkout exists */}
-      {activeWorkout && (
+      {/* Incomplete Workout Banner - shown when a workout is >24h old with no endTime */}
+      {activeWorkout?.workoutStatus === 'incomplete' && (
+        <IncompleteWorkoutBanner
+          workout={activeWorkout}
+          onNavigate={() => navigate(`/history/${activeWorkout.id}`)}
+        />
+      )}
+
+      {/* In-Progress Workout Banner - shown when activeWorkout is recent (<24h) */}
+      {activeWorkout?.workoutStatus === 'active' && (
         <InProgressBanner
           startTime={activeWorkout.startTime}
           onResume={() => navigate(`/workout/${activeWorkout.id}`)}
@@ -498,6 +511,61 @@ function WorkoutCard({ workout, formatDate, calculateDuration, onClick }: Workou
         {formatExercises()}
       </Text>
     </Box>
+  );
+}
+
+/**
+ * Incomplete Workout Banner Component
+ * Shows when a workout has no endTime and startTime is >24h ago
+ */
+interface IncompleteWorkoutBannerProps {
+  workout: {
+    id: string;
+    startTime: Date | string;
+  };
+  onNavigate: () => void;
+}
+
+function IncompleteWorkoutBanner({ workout, onNavigate }: IncompleteWorkoutBannerProps) {
+  const [isDismissed, setIsDismissed] = useState(false);
+
+  if (isDismissed) return null;
+
+  const date = new Date(workout.startTime);
+  const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+  return (
+    <Alert
+      status="warning"
+      borderRadius="md"
+      mb="2xl"
+      alignItems="flex-start"
+    >
+      <AlertIcon mt="1px" />
+      <Box flex={1}>
+        <AlertTitle fontSize="sm" fontWeight="semibold">
+          Incomplete workout from {formatted}
+        </AlertTitle>
+        <AlertDescription fontSize="sm">
+          <Button
+            variant="link"
+            colorScheme="orange"
+            fontSize="sm"
+            fontWeight="semibold"
+            onClick={onNavigate}
+            minH="auto"
+            p={0}
+          >
+            View workout →
+          </Button>
+        </AlertDescription>
+      </Box>
+      <CloseButton
+        onClick={() => setIsDismissed(true)}
+        alignSelf="flex-start"
+        size="sm"
+      />
+    </Alert>
   );
 }
 

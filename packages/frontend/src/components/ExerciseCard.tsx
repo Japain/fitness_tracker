@@ -7,6 +7,8 @@ import {
   VStack,
   Icon,
   IconButton,
+  Badge,
+  Spinner,
   useToast,
   AlertDialog,
   AlertDialogBody,
@@ -57,7 +59,7 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
   const [notes, setNotes] = useState(workoutExercise.notes || '');
   const [isSavingNotes, setIsSavingNotes] = useState(false);
 
-  const { exercise, sets = [] } = workoutExercise;
+  const { exercise, sets = [], _pending = false } = workoutExercise;
   const isStrength = exercise.type === 'strength';
 
   /**
@@ -208,9 +210,25 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
     >
       {/* Exercise Header */}
       <HStack justify="space-between" align="flex-start" mb="md">
-        <Heading fontSize="lg" fontWeight="semibold" color="neutral.900">
-          {exercise.name}
-        </Heading>
+        <HStack spacing="sm" align="center">
+          <Heading fontSize="lg" fontWeight="semibold" color="neutral.900">
+            {exercise.name}
+          </Heading>
+          {_pending && (
+            <Badge
+              colorScheme="yellow"
+              display="flex"
+              alignItems="center"
+              gap="4px"
+              px="sm"
+              py="xs"
+              borderRadius="sm"
+            >
+              <Spinner size="xs" mr={1} />
+              Syncing...
+            </Badge>
+          )}
+        </HStack>
 
         <HStack spacing="xs">
           {/* Edit button */}
@@ -229,6 +247,7 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
             size="sm"
             minH="44px"
             minW="44px"
+            isDisabled={_pending}
             onClick={handleOpenNotesModal}
             _hover={{
               bg: 'neutral.100',
@@ -252,6 +271,7 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
             size="sm"
             minH="44px"
             minW="44px"
+            isDisabled={_pending}
             onClick={onOpen}
             _hover={{
               bg: 'error.50',
@@ -289,6 +309,7 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
         fontWeight="semibold"
         mt="md"
         onClick={handleAddSet}
+        isDisabled={_pending || isAddingSet}
         isLoading={isAddingSet}
         loadingText="Adding..."
         _hover={{

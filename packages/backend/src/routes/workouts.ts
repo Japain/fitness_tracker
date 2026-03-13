@@ -17,6 +17,12 @@ import type { Prisma } from '@prisma/client';
 
 const router = Router();
 
+function getWorkoutStatus(workout: { endTime: Date | null; startTime: Date }): 'active' | 'incomplete' | 'completed' {
+  if (workout.endTime !== null) return 'completed';
+  const hoursSince = (Date.now() - new Date(workout.startTime).getTime()) / (1000 * 60 * 60);
+  return hoursSince < 24 ? 'active' : 'incomplete';
+}
+
 /**
  * All workout routes require authentication
  * This ensures req.user is available and typed
@@ -139,7 +145,7 @@ router.get('/', validateQuery(workoutListQuerySchema), async (req, res) => {
     ]);
 
     res.json({
-      workouts,
+      workouts: workouts.map((w) => ({ ...w, workoutStatus: getWorkoutStatus(w) })),
       pagination: {
         total,
         limit,
@@ -190,7 +196,7 @@ router.get('/active', async (req, res) => {
       return res.status(204).end();
     }
 
-    res.json(activeWorkout);
+    res.json({ ...activeWorkout, workoutStatus: getWorkoutStatus(activeWorkout) });
   } catch (error) {
     logError('Failed to fetch active workout', error, { userId: (req.user as User | undefined)?.id });
     res.status(500).json({
