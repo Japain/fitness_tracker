@@ -1,10 +1,28 @@
 # Fitness Tracker - Implementation TODO
 
-**Version:** 1.15
-**Date:** 2026-03-18
-**Status:** Phase 6 In Progress - Automated Testing (5/11 tasks complete)
+**Version:** 1.16
+**Date:** 2026-03-19
+**Status:** Phase 6 In Progress - Automated Testing (11/11 tasks complete, branch not merged)
 
 ## Recent Completed Work
+
+### Phase 6 - Automated Testing, Frontend + Root Script (2026-03-19)
+- ✅ Frontend test infrastructure: Vitest + RTL + jsdom
+  - `packages/frontend/vitest.config.ts`, `packages/frontend/src/__tests__/setup.ts`
+  - `packages/frontend/package.json` — added `"test": "vitest run"`
+- ✅ filterExercises utility tests: 16 tests — search, category, type, combined AND logic, edge cases
+  - `packages/frontend/src/__tests__/utils/filterExercises.test.ts`
+- ✅ dateFormatting utility tests: 21 tests — `calculateDuration`, `calculateDurationMinutes`, `formatSecondsToMinutesSeconds`, `formatDurationHours`, `formatMinutesForDisplay`
+  - `packages/frontend/src/__tests__/utils/dateFormatting.test.ts`
+- ✅ sortExercises utility tests: 7 tests — name sort, category-order sort, no-mutation guarantee, edge cases
+  - `packages/frontend/src/__tests__/utils/sortExercises.test.ts`
+- ✅ RequestQueue unit tests: 7 tests — offline enqueue, online processing, localStorage persistence, retry/drop (3 attempts before drop)
+  - `packages/frontend/src/__tests__/api/requestQueue.test.ts`
+- ✅ Root `npm test` script updated to run backend then frontend sequentially
+  - `package.json` — `npm run test -w packages/backend && npm run test -w packages/frontend`
+- **Total: 78 tests passing** (27 backend + 51 frontend)
+- **Branch:** `testing` (not yet merged to main)
+- **Plan:** `docs/superpowers/plans/2026-03-15-automated-testing.md`
 
 ### Phase 6 - Automated Testing, Backend (2026-03-18)
 - ✅ Backend: Refactored `index.ts` → extracted `createApp()` factory into `packages/backend/src/app.ts`
@@ -739,11 +757,10 @@
   - Verify workout logging can be completed in <30 seconds
 
 ### Frontend Unit Testing
-- [ ] **Set up frontend testing + write utility/queue unit tests** [@frontend-typescript-dev]
+- ✅ **Set up frontend testing + write utility/queue unit tests** [@frontend-typescript-dev]
   - **Plan:** `docs/superpowers/plans/2026-03-15-automated-testing.md` — Tasks 6–10
   - Vitest + @testing-library/react + @testing-library/jest-dom + jsdom
-  - Tests: `filterExercises`, `sortExercises`, `dateFormatting` utilities + `RequestQueue` class
-  - **Note:** Currently no test infrastructure exists in the frontend package
+  - 51 tests passing: `filterExercises` (16), `dateFormatting` (21), `sortExercises` (7), `RequestQueue` (7)
 
 ### Backend Testing
 - ✅ **Set up backend testing + write API integration tests** [@backend-typescript-dev]
@@ -753,8 +770,9 @@
   - **P0 covered:** user data segregation + exercise ownership enforcement
 
 ### Root Test Script
-- [ ] **Wire root `npm test` to run both backend and frontend suites** [@backend-typescript-dev]
+- ✅ **Wire root `npm test` to run both backend and frontend suites** [@backend-typescript-dev]
   - **Plan:** `docs/superpowers/plans/2026-03-15-automated-testing.md` — Task 11
+  - `npm run test -w packages/backend && npm run test -w packages/frontend` (sequential)
 
 ### End-to-End Testing
 - [ ] **Write E2E tests with Playwright** [@frontend-typescript-dev] [@backend-typescript-dev]
