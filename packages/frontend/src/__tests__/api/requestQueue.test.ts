@@ -20,14 +20,6 @@ function setOnline(online: boolean) {
 
 async function freshQueue() {
   vi.resetModules();
-  vi.mock('../../api/client', () => ({
-    apiRequest: vi.fn(),
-    fetchCsrfToken: vi.fn().mockResolvedValue(undefined),
-    getCsrfToken: vi.fn().mockReturnValue('mock-csrf-token'),
-  }));
-  vi.mock('swr', () => ({
-    mutate: vi.fn(),
-  }));
 
   const { requestQueue } = await import('../../api/requestQueue');
   const { apiRequest } = await import('../../api/client');
