@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "concurrently -n \"shared,backend,frontend\" -c \"blue,green,yellow\" \"npm run dev --workspace=packages/shared\" \"npm run dev --workspace=packages/backend\" \"npm run dev --workspace=packages/frontend\"",
     "build": "npm run build --workspaces",
-    "test": "npm run test --workspaces",
+    "test": "npm run test -w packages/backend && npm run test -w packages/frontend",
     "lint": "npm run lint --workspaces"
   },
   "keywords": [
