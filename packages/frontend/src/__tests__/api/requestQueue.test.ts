@@ -122,19 +122,21 @@ describe('RequestQueue', () => {
       apiRequest.mockRejectedValue(new Error('Server error'));
 
       // Mock setTimeout to call callback immediately (avoids exponential backoff delays)
-      vi.spyOn(globalThis, 'setTimeout').mockImplementation(((fn: () => void) => {
+      const setTimeoutSpy = vi.spyOn(globalThis, 'setTimeout').mockImplementation(((fn: () => void) => {
         fn();
         return 0;
       }) as typeof setTimeout);
 
-      await requestQueue.enqueue('/api/test', 'POST', {});
+      try {
+        await requestQueue.enqueue('/api/test', 'POST', {});
 
-      // Request dropped after MAX_RETRIES failures
-      expect(requestQueue.pendingCount).toBe(0);
-      // 3 calls total: retries goes 0→1→2→3>=MAX_RETRIES, drops
-      expect(apiRequest).toHaveBeenCalledTimes(3);
-
-      vi.restoreAllMocks();
+        // Request dropped after MAX_RETRIES failures
+        expect(requestQueue.pendingCount).toBe(0);
+        // 3 calls total: retries goes 0→1→2→3>=MAX_RETRIES, drops
+        expect(apiRequest).toHaveBeenCalledTimes(3);
+      } finally {
+        setTimeoutSpy.mockRestore();
+      }
     });
   });
 });
