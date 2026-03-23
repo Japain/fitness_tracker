@@ -31,7 +31,7 @@ export async function setup() {
         "sess" json NOT NULL,
         "expire" timestamp(6) NOT NULL,
         CONSTRAINT "session_pkey" PRIMARY KEY ("sid")
-      ) WITH (OIDS=FALSE)
+      )
     `;
     await prisma.$executeRaw`
       CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire")

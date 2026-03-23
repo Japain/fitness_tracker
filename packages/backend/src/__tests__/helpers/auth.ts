@@ -9,7 +9,7 @@ const SESSION_SECRET = process.env.SESSION_SECRET || 'test-session-secret-32-cha
 
 /**
  * Signs a session ID the same way express-session does.
- * Cookie value format: s:<sid>.<HMAC-SHA256-base64url(sid)>
+ * Cookie value format: s:<sid>.<HMAC-SHA256-base64(sid)-padding-stripped>
  */
 function signSessionId(sid: string): string {
   const hash = crypto
