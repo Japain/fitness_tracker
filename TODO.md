@@ -1,10 +1,48 @@
 # Fitness Tracker - Implementation TODO
 
-**Version:** 1.14
-**Date:** 2026-03-04
-**Status:** Phase 5 Complete - State Persistence & Offline Support (9/9 tasks complete)
+**Version:** 1.16
+**Date:** 2026-03-19
+**Status:** Phase 6 In Progress - Automated Testing (11/11 tasks complete, branch not merged)
 
 ## Recent Completed Work
+
+### Phase 6 - Automated Testing, Frontend + Root Script (2026-03-19)
+- ✅ Frontend test infrastructure: Vitest + RTL + jsdom
+  - `packages/frontend/vitest.config.ts`, `packages/frontend/src/__tests__/setup.ts`
+  - `packages/frontend/package.json` — added `"test": "vitest run"`
+- ✅ filterExercises utility tests: 16 tests — search, category, type, combined AND logic, edge cases
+  - `packages/frontend/src/__tests__/utils/filterExercises.test.ts`
+- ✅ dateFormatting utility tests: 21 tests — `calculateDuration`, `calculateDurationMinutes`, `formatSecondsToMinutesSeconds`, `formatDurationHours`, `formatMinutesForDisplay`
+  - `packages/frontend/src/__tests__/utils/dateFormatting.test.ts`
+- ✅ sortExercises utility tests: 7 tests — name sort, category-order sort, no-mutation guarantee, edge cases
+  - `packages/frontend/src/__tests__/utils/sortExercises.test.ts`
+- ✅ RequestQueue unit tests: 7 tests — offline enqueue, online processing, localStorage persistence, retry/drop (3 attempts before drop)
+  - `packages/frontend/src/__tests__/api/requestQueue.test.ts`
+- ✅ Root `npm test` script updated to run backend then frontend sequentially
+  - `package.json` — `npm run test -w packages/backend && npm run test -w packages/frontend`
+- **Total: 78 tests passing** (27 backend + 51 frontend)
+- **Branch:** `testing` (not yet merged to main)
+- **Plan:** `docs/superpowers/plans/2026-03-15-automated-testing.md`
+
+### Phase 6 - Automated Testing, Backend (2026-03-18)
+- ✅ Backend: Refactored `index.ts` → extracted `createApp()` factory into `packages/backend/src/app.ts`
+  - Enables Supertest to import the app without triggering `app.listen()`
+  - Added `NODE_ENV=test` branch to `packages/backend/src/config/env.ts` (loads `.env.test`)
+  - Added `isTest` flag to `config` object
+- ✅ Backend test infrastructure: Vitest + Supertest, `fitness_tracker_test` DB, `.env.test`, `vitest.config.ts`
+  - `pool: 'forks'`, `fileParallelism: false` (Vitest v4 API for sequential test execution)
+  - `packages/backend/vitest.config.ts`, `.env.test` at project root
+- ✅ Backend test helpers and setup: `globalSetup.ts` (session table), `setup.ts` (per-file truncation), `helpers/auth.ts` (`createAuthCookie`, `getCsrfToken`)
+  - Auth bypasses OAuth: inserts HMAC-signed session directly into DB
+  - `globalSetup.ts` manually loads dotenv (runs in isolated worker before app modules)
+- ✅ Workout API integration tests: 13 tests — POST/GET/PATCH coverage + P0 user data segregation
+  - `packages/backend/src/__tests__/workouts.test.ts`
+- ✅ Exercise API integration tests: 10 tests — GET/POST/PATCH/DELETE + P0 ownership enforcement
+  - `packages/backend/src/__tests__/exercises.test.ts`
+  - Fixed CJS/ESM `instanceof ZodError` boundary bug in `validateRequest.ts` (duck-type fallback)
+- **Total: 27 backend tests passing** (4 smoke + 13 workout + 10 exercise)
+- **Branch:** `testing`
+- **Plan:** `docs/superpowers/plans/2026-03-15-automated-testing.md`
 
 ### Phase 5 - State Persistence & Offline Support (2026-03-03/04)
 - ✅ Backend: Added `workoutStatus: 'active' | 'incomplete' | 'completed'` computed field to `GET /api/workouts` responses
@@ -719,29 +757,22 @@
   - Verify workout logging can be completed in <30 seconds
 
 ### Frontend Unit Testing
-- [ ] **Set up frontend testing infrastructure** [@frontend-typescript-dev]
-  - Install: `npm install -D vitest @testing-library/react @testing-library/user-event @testing-library/jest-dom jsdom`
-  - Configure `vitest.config.ts` with jsdom environment
-  - Add `"test": "vitest"` script to `packages/frontend/package.json`
-  - Write unit tests for components (SetRow, ExerciseSelectionModal, ExerciseCard)
-  - **Note:** Currently no test infrastructure exists in the frontend package; all changes have been manually verified only
+- ✅ **Set up frontend testing + write utility/queue unit tests** [@frontend-typescript-dev]
+  - **Plan:** `docs/superpowers/plans/2026-03-15-automated-testing.md` — Tasks 6–10
+  - Vitest + @testing-library/react + @testing-library/jest-dom + jsdom
+  - 51 tests passing: `filterExercises` (16), `dateFormatting` (21), `sortExercises` (7), `RequestQueue` (7)
 
 ### Backend Testing
-- [ ] **Write integration tests for API endpoints** [@backend-typescript-dev]
-  - Install: `npm install -D jest supertest @types/jest @types/supertest`
-  - Create test database
-  - Test authentication routes (Google OAuth mock)
-  - Test workout CRUD operations
-  - Test exercise CRUD operations
-  - Test user data segregation (critical security test)
-  - Verify no cross-user data leakage
-  - **Priority:** P0 for data segregation tests
+- ✅ **Set up backend testing + write API integration tests** [@backend-typescript-dev]
+  - **Plan:** `docs/superpowers/plans/2026-03-15-automated-testing.md` — Tasks 1–5
+  - Vitest + Supertest against `fitness_tracker_test` DB; extracted `app.ts` from `index.ts`
+  - 27 tests passing: workout CRUD, exercise CRUD, `workoutStatus` computed field, active workout conflict (409)
+  - **P0 covered:** user data segregation + exercise ownership enforcement
 
-- [ ] **Test active workout state management** [@backend-typescript-dev]
-  - Test creating workout when one already active (should return 409)
-  - Test resuming active workout
-  - Test finishing workout
-  - Test abandoned workout detection
+### Root Test Script
+- ✅ **Wire root `npm test` to run both backend and frontend suites** [@backend-typescript-dev]
+  - **Plan:** `docs/superpowers/plans/2026-03-15-automated-testing.md` — Task 11
+  - `npm run test -w packages/backend && npm run test -w packages/frontend` (sequential)
 
 ### End-to-End Testing
 - [ ] **Write E2E tests with Playwright** [@frontend-typescript-dev] [@backend-typescript-dev]
@@ -751,6 +782,7 @@
   - Test custom exercise creation
   - Test browser closure and resumption
   - Run in CI/CD pipeline
+  - **Note:** Deferred from the automated testing plan — separate plan needed
 
 ### Security Testing
 - [ ] **Implement rate limiting** [@backend-typescript-dev]

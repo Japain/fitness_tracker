@@ -4,6 +4,8 @@ import path from 'path';
 // Load environment variables from root .env file based on NODE_ENV
 const envFile = process.env.NODE_ENV === 'production'
   ? '.env.production'
+  : process.env.NODE_ENV === 'test'
+  ? '.env.test'
   : '.env.development';
 
 // Load from project root (two levels up from this file)
@@ -50,6 +52,7 @@ export const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   isDevelopment: process.env.NODE_ENV !== 'production',
   isProduction: process.env.NODE_ENV === 'production',
+  isTest: process.env.NODE_ENV === 'test',
 
   database: {
     url: process.env.DATABASE_URL!,

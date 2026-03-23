@@ -727,10 +727,71 @@ npx prisma migrate dev            # Create and apply migrations
 npx prisma db seed                # Seed exercise library
 npx prisma studio                 # Open database GUI
 
+# Testing
+npm run test                      # Run all tests (backend then frontend)
+npm run test -w packages/backend  # Backend integration tests only
+npm run test -w packages/frontend # Frontend unit tests only
+
 # Other
-npm run test                      # Run tests across all packages
 npm run lint                      # Lint all packages
 ```
+
+## Testing
+
+The project uses [Vitest](https://vitest.dev/) for both backend and frontend tests.
+
+**78 tests total: 27 backend + 51 frontend**
+
+### Running Tests
+
+```bash
+# Run all tests (from project root)
+npm run test
+
+# Run individual suites
+npm run test -w packages/backend   # Backend integration tests
+npm run test -w packages/frontend  # Frontend unit tests
+```
+
+### Backend Tests (Integration)
+
+Backend tests run against a real PostgreSQL test database (`fitness_tracker_test`). The Docker container must be running.
+
+**One-time test database setup:**
+```bash
+# Create the test database
+docker exec -it fitness_tracker_postgres psql -U fitness_tracker -d postgres \
+  -c "CREATE DATABASE fitness_tracker_test;"
+
+# Apply migrations to test database
+cd packages/backend
+DATABASE_URL="postgresql://fitness_tracker:dev_password_change_in_production@localhost:5432/fitness_tracker_test" \
+  npx prisma migrate deploy
+
+# Seed the test database (exercise library)
+DATABASE_URL="postgresql://fitness_tracker:dev_password_change_in_production@localhost:5432/fitness_tracker_test" \
+  npx prisma db seed
+cd ../..
+```
+
+The test environment is configured in `.env.test` (project root). Tests load this file automatically via `NODE_ENV=test`.
+
+**Test files:**
+- `packages/backend/src/__tests__/health.test.ts` — health check endpoint
+- `packages/backend/src/__tests__/workouts.test.ts` — workout CRUD + user segregation (13 tests)
+- `packages/backend/src/__tests__/exercises.test.ts` — exercise CRUD + ownership (10 tests)
+
+**Test isolation:** Each test file truncates its test data before running (users with `@test.invalid` emails and cascade). Tests run sequentially (`fileParallelism: false`) to avoid Prisma prepared-statement conflicts.
+
+### Frontend Tests (Unit)
+
+Frontend tests run in a jsdom environment with no external dependencies.
+
+**Test files:**
+- `packages/frontend/src/__tests__/utils/filterExercises.test.ts` — exercise filtering (16 tests)
+- `packages/frontend/src/__tests__/utils/dateFormatting.test.ts` — date utilities (21 tests)
+- `packages/frontend/src/__tests__/utils/sortExercises.test.ts` — exercise sorting (7 tests)
+- `packages/frontend/src/__tests__/api/requestQueue.test.ts` — offline request queue (7 tests)
 
 ## Database Usage Patterns
 

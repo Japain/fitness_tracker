@@ -19,11 +19,18 @@ export function validateBody<T>(schema: ZodSchema<T>) {
       req.validatedBody = validated;
       next();
     } catch (error) {
-      if (error instanceof ZodError) {
+      // Check for ZodError by name or instanceof to handle CJS/ESM module boundary differences.
+      // When the shared validators package (compiled CJS) throws a ZodError and validateRequest.ts
+      // (loaded as ESM by Vitest) does instanceof ZodError, they may be different module instances.
+      // Checking .name and .issues provides a robust alternative.
+      const isZodError = error instanceof ZodError ||
+        (error !== null && typeof error === 'object' && (error as any).name === 'ZodError' && Array.isArray((error as any).issues));
+      if (isZodError) {
+        const zodError = error as ZodError;
         return res.status(400).json({
           error: 'Validation error',
           message: 'Invalid request data',
-          details: error.issues.map((err) => ({
+          details: zodError.issues.map((err) => ({
             field: err.path.join('.'),
             message: err.message,
           })),
@@ -51,11 +58,15 @@ export function validateQuery<T>(schema: ZodSchema<T>) {
       req.validatedQuery = validated;
       next();
     } catch (error) {
-      if (error instanceof ZodError) {
+      // Check for ZodError by name or instanceof — see validateBody comment above.
+      const isZodError = error instanceof ZodError ||
+        (error !== null && typeof error === 'object' && (error as any).name === 'ZodError' && Array.isArray((error as any).issues));
+      if (isZodError) {
+        const zodError = error as ZodError;
         return res.status(400).json({
           error: 'Validation error',
           message: 'Invalid query parameters',
-          details: error.issues.map((err) => ({
+          details: zodError.issues.map((err) => ({
             field: err.path.join('.'),
             message: err.message,
           })),

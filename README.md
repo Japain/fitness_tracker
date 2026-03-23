@@ -452,6 +452,53 @@ Build all packages:
 npm run build
 ```
 
+### Testing
+
+The project uses [Vitest](https://vitest.dev/) for both backend and frontend tests (78 tests: 27 backend + 51 frontend).
+
+#### Quick Start
+
+```bash
+# Run all tests (from project root)
+npm run test
+
+# Run individual suites
+npm run test -w packages/backend   # Backend integration tests
+npm run test -w packages/frontend  # Frontend unit tests
+```
+
+#### Backend Test Setup (one-time)
+
+Backend tests run against a dedicated PostgreSQL test database. The Docker container must be running.
+
+```bash
+# Create the test database
+docker exec -it fitness_tracker_postgres psql -U fitness_tracker -d postgres \
+  -c "CREATE DATABASE fitness_tracker_test;"
+
+# Apply migrations and seed the test database
+cd packages/backend
+DATABASE_URL="postgresql://fitness_tracker:dev_password_change_in_production@localhost:5432/fitness_tracker_test" \
+  npx prisma migrate deploy
+DATABASE_URL="postgresql://fitness_tracker:dev_password_change_in_production@localhost:5432/fitness_tracker_test" \
+  npx prisma db seed
+cd ../..
+```
+
+Test environment variables are pre-configured in `.env.test` at the project root.
+
+#### What's Tested
+
+| Suite | Type | Tests | Description |
+|-------|------|-------|-------------|
+| `backend/health` | Integration | 4 | Health check endpoint |
+| `backend/workouts` | Integration | 13 | Workout CRUD + user data segregation |
+| `backend/exercises` | Integration | 10 | Exercise CRUD + ownership enforcement |
+| `frontend/filterExercises` | Unit | 16 | Exercise filtering utility |
+| `frontend/dateFormatting` | Unit | 21 | Date formatting utilities |
+| `frontend/sortExercises` | Unit | 7 | Exercise sorting utility |
+| `frontend/requestQueue` | Unit | 7 | Offline request queue behavior |
+
 ## Tech Stack
 
 - **Frontend**: React, TypeScript, Vite
