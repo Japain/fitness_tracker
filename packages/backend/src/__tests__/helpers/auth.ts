@@ -1,11 +1,13 @@
 // packages/backend/src/__tests__/helpers/auth.ts
 import crypto from 'crypto';
-import { randomUUID } from 'crypto';
 import request from 'supertest';
 import type { Application } from 'express';
 import { prisma } from '../../lib/prisma';
 
-const SESSION_SECRET = process.env.SESSION_SECRET || 'test-session-secret-32-chars-min-x';
+const SESSION_SECRET = process.env.SESSION_SECRET as string;
+if (!SESSION_SECRET) {
+  throw new Error('SESSION_SECRET must be set in the test environment (.env.test)');
+}
 
 /**
  * Signs a session ID the same way express-session does.
@@ -25,7 +27,7 @@ function signSessionId(sid: string): string {
  * connect.sid cookie string to include in Supertest request Cookie headers.
  */
 export async function createAuthCookie(userId: string): Promise<string> {
-  const sid = randomUUID();
+  const sid = crypto.randomUUID();
   const expire = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
   const sessData = JSON.stringify({
