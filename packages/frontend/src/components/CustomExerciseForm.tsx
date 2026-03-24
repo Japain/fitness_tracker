@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type RefObject } from 'react';
 import {
   VStack,
   HStack,
@@ -42,6 +42,7 @@ interface CustomExerciseFormProps {
   isLoading?: boolean;
   submitButtonText?: string;
   loadingText?: string;
+  nameInputRef?: RefObject<HTMLInputElement>;
 }
 
 export function CustomExerciseForm({
@@ -56,6 +57,7 @@ export function CustomExerciseForm({
   isLoading = false,
   submitButtonText = 'Create',
   loadingText,
+  nameInputRef,
 }: CustomExerciseFormProps) {
   const [name, setName] = useState(initialValues.name);
   const [category, setCategory] = useState(initialValues.category);
@@ -116,6 +118,7 @@ export function CustomExerciseForm({
           Exercise Name
         </FormLabel>
         <Input
+          ref={nameInputRef}
           type="text"
           placeholder="e.g., Dumbbell Curl"
           value={name}

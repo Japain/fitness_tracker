@@ -53,7 +53,7 @@ export function DeleteConfirmationModal({
   if (!exercise) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="sm" isCentered>
+    <Modal isOpen={isOpen} onClose={onClose} size="sm" isCentered motionPreset="slideInBottom">
       <ModalOverlay />
       <ModalContent mx="lg">
         <ModalHeader

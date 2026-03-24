@@ -8,8 +8,9 @@ import {
   VStack,
   HStack,
   Icon,
-  Spinner,
   Center,
+  Skeleton,
+  SkeletonText,
   useToast,
   useDisclosure,
   Menu,
@@ -124,9 +125,27 @@ function ActiveWorkout() {
 
   if (!workout) {
     return (
-      <Center h="50vh">
-        <Spinner size="xl" color="primary.500" thickness="4px" />
-      </Center>
+      <Box p="xl" maxW="600px" mx="auto" w="full">
+        <Skeleton h="32px" w="180px" borderRadius="md" />
+        <Skeleton h="20px" w="120px" mt="xs" borderRadius="md" />
+        <Box mt="2xl">
+          <Box
+            bg="white"
+            border="1px solid"
+            borderColor="neutral.200"
+            borderRadius="md"
+            p="lg"
+            boxShadow="sm"
+          >
+            <HStack justify="space-between">
+              <Skeleton h="24px" w="160px" />
+              <Skeleton h="24px" w="64px" />
+            </HStack>
+            <Skeleton h="18px" w="60px" mt="sm" />
+            <SkeletonText noOfLines={3} spacing="3" mt="md" />
+          </Box>
+        </Box>
+      </Box>
     );
   }
 
@@ -395,7 +414,7 @@ function ActiveWorkout() {
       />
 
       {/* Workout Notes Modal */}
-      <Modal isOpen={isNotesOpen} onClose={onNotesClose} isCentered size="md">
+      <Modal isOpen={isNotesOpen} onClose={onNotesClose} isCentered size="md" motionPreset="slideInBottom">
         <ModalOverlay />
         <ModalContent mx="lg">
           <ModalHeader>Workout Notes</ModalHeader>

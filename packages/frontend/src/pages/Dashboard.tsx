@@ -187,15 +187,6 @@ function Dashboard() {
         onClick={handleStartWorkout}
         isLoading={isCreatingWorkout}
         loadingText="Starting..."
-        _hover={{
-          bg: 'primary.600',
-          transform: 'translateY(-1px)',
-          boxShadow: 'lg',
-        }}
-        _active={{
-          bg: 'primary.700',
-          transform: 'translateY(0)',
-        }}
       >
         Start New Workout
       </Button>
@@ -260,7 +251,11 @@ function Dashboard() {
             borderColor="neutral.200"
             textAlign="center"
           >
-            <Text color="neutral.600">No workouts yet. Start your first workout!</Text>
+            <Icon viewBox="0 0 24 24" boxSize="24px" color="neutral.400" aria-hidden="true">
+              <path fill="currentColor" d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z" />
+            </Icon>
+            <Text fontSize="sm" fontWeight="semibold" color="neutral.700" mt="sm">No workouts yet</Text>
+            <Text fontSize="xs" color="neutral.500" mt="xs">Hit "Start New Workout" above to begin.</Text>
           </Box>
         ) : (
           <VStack spacing="md" align="stretch">
@@ -299,7 +294,7 @@ function Dashboard() {
       </Box>
 
       {/* Active Workout Conflict Modal */}
-      <Modal isOpen={isConflictModalOpen} onClose={closeConflictModal} isCentered>
+      <Modal isOpen={isConflictModalOpen} onClose={closeConflictModal} isCentered motionPreset="slideInBottom">
         <ModalOverlay bg="blackAlpha.600" />
         <ModalContent mx="lg" borderRadius="md">
           <ModalHeader color="neutral.900">Active Workout Detected</ModalHeader>
@@ -341,6 +336,8 @@ function StatCard({ value, label, isLoading }: StatCardProps) {
       border="1px solid"
       borderColor="neutral.200"
       boxShadow="sm"
+      transition="all 150ms ease-in-out"
+      _hover={{ boxShadow: 'sm' }}
     >
       {isLoading ? (
         <>
