@@ -1,47 +1,35 @@
 # Fitness Tracker - Implementation TODO
 
-**Version:** 1.16
-**Date:** 2026-03-19
-**Status:** Phase 6 In Progress - Automated Testing (11/11 tasks complete, branch not merged)
+**Version:** 1.18
+**Date:** 2026-03-24
+**Status:** UI Polish Complete (branch `uiPolish`)
 
 ## Recent Completed Work
 
-### Phase 6 - Automated Testing, Frontend + Root Script (2026-03-19)
-- ✅ Frontend test infrastructure: Vitest + RTL + jsdom
-  - `packages/frontend/vitest.config.ts`, `packages/frontend/src/__tests__/setup.ts`
-  - `packages/frontend/package.json` — added `"test": "vitest run"`
-- ✅ filterExercises utility tests: 16 tests — search, category, type, combined AND logic, edge cases
-  - `packages/frontend/src/__tests__/utils/filterExercises.test.ts`
-- ✅ dateFormatting utility tests: 21 tests — `calculateDuration`, `calculateDurationMinutes`, `formatSecondsToMinutesSeconds`, `formatDurationHours`, `formatMinutesForDisplay`
-  - `packages/frontend/src/__tests__/utils/dateFormatting.test.ts`
-- ✅ sortExercises utility tests: 7 tests — name sort, category-order sort, no-mutation guarantee, edge cases
-  - `packages/frontend/src/__tests__/utils/sortExercises.test.ts`
-- ✅ RequestQueue unit tests: 7 tests — offline enqueue, online processing, localStorage persistence, retry/drop (3 attempts before drop)
-  - `packages/frontend/src/__tests__/api/requestQueue.test.ts`
-- ✅ Root `npm test` script updated to run backend then frontend sequentially
-  - `package.json` — `npm run test -w packages/backend && npm run test -w packages/frontend`
-- **Total: 78 tests passing** (27 backend + 51 frontend)
-- **Branch:** `testing` (not yet merged to main)
-- **Plan:** `docs/superpowers/plans/2026-03-15-automated-testing.md`
+### UI Polish (2026-03-24)
+- ✅ Empty state: Dashboard — dumbbell icon + "No workouts yet" heading + subtext
+- ✅ Empty state: Exercise Library — search icon + "No exercises found" + inline clear-filters link (`handleClearFilters`)
+- ✅ Skeleton screen: `ActiveWorkout.tsx` — structured `Skeleton`/`SkeletonText` replaces bare `<Spinner>`
+- ✅ Micro-animations: theme `solid` button — 150ms lift (`translateY(-1px)`, `boxShadow: md`) on hover; restored on active
+- ✅ Micro-animations: `StatCard` — subtle `boxShadow` on hover
+- ✅ Micro-animations: `motionPreset="slideInBottom"` on 4 modals (DeleteConfirmation, ExerciseCard notes, ActiveWorkout notes, Dashboard conflict)
+- ✅ A11y: contextual aria-labels — `"Delete <name>"` and `"Edit notes for <name>"` on icon buttons
+- ✅ A11y: `TopNav` logo wrapped in `<Link>` landmark; icon `aria-hidden="true"`
+- ✅ A11y: `AuthPage` logo icon `aria-hidden="true"`
+- ✅ A11y: `CustomExerciseForm` accepts `nameInputRef`; `CreateExerciseModal`/`EditExerciseModal` use `initialFocusRef`
+- **Branch:** `uiPolish`
+- **Spec:** `docs/superpowers/specs/2026-03-23-ui-polish-design.md`
 
-### Phase 6 - Automated Testing, Backend (2026-03-18)
-- ✅ Backend: Refactored `index.ts` → extracted `createApp()` factory into `packages/backend/src/app.ts`
-  - Enables Supertest to import the app without triggering `app.listen()`
-  - Added `NODE_ENV=test` branch to `packages/backend/src/config/env.ts` (loads `.env.test`)
-  - Added `isTest` flag to `config` object
-- ✅ Backend test infrastructure: Vitest + Supertest, `fitness_tracker_test` DB, `.env.test`, `vitest.config.ts`
-  - `pool: 'forks'`, `fileParallelism: false` (Vitest v4 API for sequential test execution)
-  - `packages/backend/vitest.config.ts`, `.env.test` at project root
-- ✅ Backend test helpers and setup: `globalSetup.ts` (session table), `setup.ts` (per-file truncation), `helpers/auth.ts` (`createAuthCookie`, `getCsrfToken`)
-  - Auth bypasses OAuth: inserts HMAC-signed session directly into DB
-  - `globalSetup.ts` manually loads dotenv (runs in isolated worker before app modules)
-- ✅ Workout API integration tests: 13 tests — POST/GET/PATCH coverage + P0 user data segregation
-  - `packages/backend/src/__tests__/workouts.test.ts`
-- ✅ Exercise API integration tests: 10 tests — GET/POST/PATCH/DELETE + P0 ownership enforcement
-  - `packages/backend/src/__tests__/exercises.test.ts`
-  - Fixed CJS/ESM `instanceof ZodError` boundary bug in `validateRequest.ts` (duck-type fallback)
-- **Total: 27 backend tests passing** (4 smoke + 13 workout + 10 exercise)
-- **Branch:** `testing`
+### Phase 6 - Automated Testing (2026-03-18/19)
+- ✅ Backend: `createApp()` factory in `app.ts`, `NODE_ENV=test` config branch, `.env.test`
+- ✅ Backend test infra: Vitest + Supertest, `fitness_tracker_test` DB, `pool: 'forks'`, `fileParallelism: false`
+- ✅ Backend test helpers: HMAC-signed session insert (bypasses OAuth), per-file truncation, CSRF helper
+- ✅ 27 backend tests: 4 smoke + 13 workout (CRUD + user segregation) + 10 exercise (CRUD + ownership)
+- ✅ Frontend test infra: Vitest + RTL + jsdom
+- ✅ 51 frontend tests: filterExercises (16), dateFormatting (21), sortExercises (7), RequestQueue (7)
+- ✅ Root `npm test` script runs backend then frontend sequentially
+- **Total: 78 tests passing** (27 backend + 51 frontend)
+- **Branch:** `testing` (ready to merge)
 - **Plan:** `docs/superpowers/plans/2026-03-15-automated-testing.md`
 
 ### Phase 5 - State Persistence & Offline Support (2026-03-03/04)
