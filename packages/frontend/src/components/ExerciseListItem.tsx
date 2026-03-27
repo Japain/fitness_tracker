@@ -192,7 +192,7 @@ function ActionableVariant({
                 Edit
               </Button>
               <IconButton
-                aria-label="Delete exercise"
+                aria-label={`Delete ${exercise.name}`}
                 icon={
                   <Icon viewBox="0 0 24 24" boxSize="20px" aria-hidden="true">
                     <path

@@ -137,14 +137,19 @@ const components = {
       solid: {
         bg: 'primary.500',
         color: 'white',
+        transition: 'all 150ms ease-in-out',
         _hover: {
           bg: 'primary.600',
+          transform: 'translateY(-1px)',
+          boxShadow: 'md',
           _disabled: {
             bg: 'primary.500',
           },
         },
         _active: {
           bg: 'primary.700',
+          transform: 'translateY(0)',
+          boxShadow: 'sm',
         },
       },
       outline: {

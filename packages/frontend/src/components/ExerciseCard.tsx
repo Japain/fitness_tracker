@@ -233,7 +233,7 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
         <HStack spacing="xs">
           {/* Edit button */}
           <IconButton
-            aria-label="Edit exercise notes"
+            aria-label={`Edit notes for ${exercise.name}`}
             icon={
               <Icon viewBox="0 0 24 24" boxSize="20px" aria-hidden="true">
                 <path
@@ -257,7 +257,7 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
 
           {/* Delete button */}
           <IconButton
-            aria-label="Delete exercise"
+            aria-label={`Delete ${exercise.name}`}
             icon={
               <Icon viewBox="0 0 24 24" boxSize="20px" aria-hidden="true">
                 <path
@@ -351,7 +351,7 @@ function ExerciseCard({ workoutExercise, workoutId, onUpdate }: ExerciseCardProp
       </AlertDialog>
 
       {/* Exercise Notes Modal */}
-      <Modal isOpen={isNotesOpen} onClose={onNotesClose} isCentered size="md">
+      <Modal isOpen={isNotesOpen} onClose={onNotesClose} isCentered size="md" motionPreset="slideInBottom">
         <ModalOverlay />
         <ModalContent mx="lg">
           <ModalHeader>

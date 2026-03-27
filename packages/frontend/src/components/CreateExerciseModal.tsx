@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -33,6 +34,8 @@ export function CreateExerciseModal({
   onSubmit,
   isLoading = false,
 }: CreateExerciseModalProps) {
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
   const handleSubmit = async (values: CustomExerciseFormValues) => {
     try {
       await onSubmit(values);
@@ -43,7 +46,7 @@ export function CreateExerciseModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="full" motionPreset="slideInBottom">
+    <Modal isOpen={isOpen} onClose={onClose} size="full" motionPreset="slideInBottom" initialFocusRef={nameInputRef}>
       <ModalOverlay />
       <ModalContent
         bg="white"
@@ -73,6 +76,7 @@ export function CreateExerciseModal({
             onCancel={onClose}
             isLoading={isLoading}
             submitButtonText="Create Exercise"
+            nameInputRef={nameInputRef}
           />
         </ModalBody>
       </ModalContent>

@@ -57,6 +57,12 @@ export default function ExerciseLibraryPage() {
   const { exercises, isLoading, error, refetch: refetchExercises } = useExercises();
   const { activeWorkout, refetch: refetchActiveWorkout } = useActiveWorkout();
 
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('All');
+    setSelectedType('all');
+  };
+
   // Client-side filtering and sorting
   const filteredAndSortedExercises = useMemo(() => {
     if (!exercises) return [];
@@ -317,9 +323,18 @@ export default function ExerciseLibraryPage() {
         )}
 
         {!isLoading && !error && filteredAndSortedExercises.length === 0 && (
-          <Text color="neutral.600" textAlign="center" py="xl">
-            No exercises found. Try adjusting your filters.
-          </Text>
+          <Box bg="white" border="1px solid" borderColor="neutral.200" borderRadius="md" p="xl" textAlign="center">
+            <Icon viewBox="0 0 24 24" boxSize="24px" color="neutral.400" aria-hidden="true">
+              <path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+            </Icon>
+            <Text fontSize="sm" fontWeight="semibold" color="neutral.700" mt="sm">No exercises found</Text>
+            <Text fontSize="xs" color="neutral.500" mt="xs">
+              Try a different search or{' '}
+              <Button variant="link" size="sm" colorScheme="primary" onClick={handleClearFilters}>
+                clear filters
+              </Button>
+            </Text>
+          </Box>
         )}
 
         {!isLoading && !error && filteredAndSortedExercises.length > 0 && (
